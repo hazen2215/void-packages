@@ -1,0 +1,29 @@
+# Template file for 'mrsh'
+pkgname=mrsh
+version=0.0.20210518
+revision=1
+_githash=cd3c3a48055ab4085d83f149ff4b4feba40b40cb
+build_style=configure
+configure_args="$(vopt_if static --static)"
+make_build_target="mrsh"
+hostmakedepends="pkg-config"
+makedepends="$(vopt_if readline readline-devel)
+ $(vopt_if libedit libedit-devel)"
+short_desc="Minimal POSIX shell"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://mrsh.sh"
+distfiles="https://github.com/emersion/mrsh/archive/${_githash}.tar.gz"
+checksum=d26e3fdee71ef168cf3f8ad2912c148b20aab524048e4ea899d6b83fb299ceab
+register_shell="/bin/sh /bin/mrsh"
+
+build_options="readline libedit static"
+build_options_default="readline"
+
+alternatives="
+ sh:sh:/usr/bin/mrsh"
+
+do_install() {
+	vbin mrsh
+	vlicense LICENSE
+}
