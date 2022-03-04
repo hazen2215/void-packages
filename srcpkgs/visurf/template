@@ -1,0 +1,40 @@
+# Template file for 'visurf'
+pkgname=visurf
+version=0.0.20220316
+revision=1
+_visurfversion=8f7036e440f47a37ec917b6856ba20cd747adceb
+_netsurfversion=3.10
+_libcssversion=f420dd16136de1dc07f18824c6d0f5540d5df6d1
+build_style=gnu-makefile
+make_use_env=yes
+make_build_args="TARGET=visurf"
+make_install_args="TARGET=visurf"
+hostmakedepends="pkg-config gperf flex bison wayland-devel tar perl"
+makedepends="cairo-devel expat-devel libjpeg-turbo libpng-devel
+ libxkbcommon-devel openssl-devel pango-devel wayland-protocols
+ libcurl-devel libwebp-devel"
+depends="netsurf"
+short_desc="Power-user frontend for netsurf with vi-inspired keybindings"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT, GPL-2.0-only"
+homepage="http://www.netsurf-browser.org"
+distfiles="https://git.sr.ht/~sircmpwn/visurf/archive/${_visurfversion}.tar.gz
+ http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-${_netsurfversion}.tar.gz
+ https://git.netsurf-browser.org/libcss.git/snapshot/libcss-${_libcssversion}.tar.gz"
+checksum="9f9983ac1cf6f2a9f15ca2b70a33e2f6aca416f8126321257eb4b1662b2e8e23
+ 495adf6b6614ce36fca6c605f7c321f9cb4a3df838043158122678ce2b3325b7
+ 5a78a6243fa25f6e2fe7e0db3d1b56f88f09636647416f222f759cd6f4344b23"
+
+build_wrksrc="netsurf-all-${_netsurfversion}"
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+post_extract() {
+	rm -r ${build_wrksrc}/{libcss,netsurf}
+	mv libcss-${_libcssversion} ${build_wrksrc}/libcss
+	mv visurf-${_visurfversion} ${build_wrksrc}/netsurf
+}
+
+post_install() {
+	rm -r ${DESTDIR}/usr/share/netsurf
+	vlicense netsurf/COPYING
+}
