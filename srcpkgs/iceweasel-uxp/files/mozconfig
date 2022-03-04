@@ -1,0 +1,55 @@
+ac_add_options --prefix=/usr
+ac_add_options --enable-release
+ac_add_options --enable-gold
+
+# Iceweasel-UXP
+ac_add_options --enable-application=application/iceweasel-uxp
+ac_add_options --disable-official-branding
+ac_add_options --with-branding=application/iceweasel-uxp/branding/iceweasel
+export MOZILLA_OFFICIAL=0
+export MOZ_TELEMETRY_REPORTING=0
+export MOZ_ADDON_SIGNING=1
+export MOZ_REQUIRE_SIGNING=0
+
+# Disable bloat
+ac_add_options --disable-safe-browsing
+ac_add_options --disable-url-classifier
+ac_add_options --disable-eme
+#ac_add_options --disable-webspeech
+#ac_add_options --disable-webspeechtestbackend
+ac_add_options --disable-mozril-geoloc
+ac_add_options --disable-nfc
+ac_add_options --disable-synth-pico
+ac_add_options --disable-gamepad
+ac_add_options --disable-startup-notification
+ac_add_options --disable-tests
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-userinfo
+ac_add_options --disable-sync
+
+# System libraries
+#ac_add_options --with-system-nspr # keep disabled for stability
+#ac_add_options --with-system-nss # keep disabled for stability
+#ac_add_options --with-system-icu
+ac_add_options --with-system-jpeg
+ac_add_options --with-system-zlib
+ac_add_options --with-system-bz2
+ac_add_options --with-system-libevent
+ac_add_options --with-system-libvpx
+ac_add_options --enable-system-hunspell
+#ac_add_options --enable-system-sqlite # keep disabled for stability
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+
+# Features
+ac_add_options --disable-gconf
+ac_add_options --enable-proxy-bypass-protection
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+
+STRIP_FLAGS="--strip-debug"
+
+# Other
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/moz-objdir
+
+# vim:set ft=sh:

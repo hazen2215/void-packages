@@ -1,0 +1,148 @@
+# Template file for 'iceweasel-uxp'
+pkgname=iceweasel-uxp
+version=3.0
+revision=1
+_UXPversion=2021.06.02
+hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
+ which diffutils"
+makedepends="libjpeg-turbo-devel pixman-devel libevent-devel libvpx-devel
+ hunspell-devel libffi-devel libXt-devel
+ $(vopt_if alsa alsa-lib-devel)
+ $(vopt_if dbus dbus-glib-devel) $(vopt_if pulseaudio pulseaudio-devel)
+ $(vopt_if xscreensaver libXScrnSaver-devel)
+ $(vopt_if jack jack-devel) $(vopt_if gtk3 gtk+3-devel gtk+-devel)"
+short_desc="XUL-based standalone web browser on the Unified XUL Platform (UXP)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0"
+homepage="https://wiki.hyperbola.info/doku.php?id=en:project:iceweasel-uxp"
+distfiles="https://repo.hyperbola.info:50000/other/iceweasel-uxp/iceweasel-uxp-${version}.tar.gz
+ https://repo.hyperbola.info:50000/other/UXP/UXP-${_UXPversion}.tar.gz"
+checksum="f215a9a07fd22e23a2ab4b3cc03f9c8a8f3fe9d1206124e41d0f7429d96e6acd
+ f35c441f62d334a895798ca533261b24e8c370ebd48f8453c4ce90440398b380"
+
+build_options="alsa jack dbus pulseaudio xscreensaver"
+build_options_default="alsa"
+
+post_extract() {
+	mkdir -p application
+	mv ../${pkgname}-${version} application/${pkgname}
+}
+
+post_patch() {
+	# Remove bad credit records for some CA issuers such as CNNIC, StartCom, Symantec and WoSign
+	vsed -e '/^# Certificate .*\(CNNIC\|China\|GDCA\|StartCom\|Symantec\|UCA\|WoSign\)/,/^CKA_TRUST_STEP_UP_APPROVED/d' \
+		-i security/nss/lib/ckfw/builtins/certdata.txt
+
+	# Add missing versionField.textContent in aboutDialog.js
+	vsed -i 's|let version [=] Services[.]appinfo[.]version[;]|let version = Services.appinfo.version;\n  versionField.textContent = version;|' application/$pkgname/base/content/aboutDialog.js
+
+	if [ "$build_option_gtk3" ]; then
+		patch -Np1 -i "${FILESDIR}/no-gtk2.patch"
+	fi
+}
+
+do_build() {
+	cp "${FILESDIR}/mozconfig" "${wrksrc}/.mozconfig"
+
+	case "$XBPS_TARGET_MACHINE" in
+	*-musl)
+		echo "ac_add_options --disable-jemalloc" >>.mozconfig
+		;;
+	esac
+
+	case "$XBPS_TARGET_MACHINE" in
+	x86_64*|i686*|arm*|aarch64*)
+		echo "ac_add_options --disable-elf-hack" >>.mozconfig
+		;;
+	esac
+
+	case "$XBPS_TARGET_MACHINE" in
+	arm*) ;;
+	*)
+		echo "ac_add_options --enable-pie" >>.mozconfig
+		echo "ac_add_options --with-pthreads" >>.mozconfig
+		;;
+	esac
+
+	if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+		export LDFLAGS+=" -latomic"
+	fi
+
+	if [ "$CROSS_BUILD" ]; then
+		export HOST_CFLAGS="${XBPS_CFLAGS}"
+		export HOST_CXXFLAGS="${XBPS_CXXFLAGS}"
+		export CFLAGS+=" -I${XBPS_CROSS_BASE}/usr/include/alsa \
+			-I${XBPS_CROSS_BASE}/usr/include/pulse \
+			-I${XBPS_CROSS_BASE}/usr/include/nspr \
+			-I${XBPS_CROSS_BASE}/usr/include/nss"
+		export CXXFLAGS+=" ${CFLAGS}"
+		export LDFLAGS+=" -L${XBPS_CROSS_BASE}/usr/lib"
+
+		export ac_cv_sqlite_secure_delete=yes \
+			ac_cv_sqlite_threadsafe=yes \
+			ac_cv_sqlite_enable_fts3=yes \
+			ac_cv_sqlite_dbstat_vtab=yes \
+			ac_cv_sqlite_enable_unlock_notify=yes \
+			ac_cv_prog_hostcxx_works=1
+		echo "ac_add_options --target=$XBPS_CROSS_TRIPLET" >>.mozconfig
+		echo "ac_add_options --host=$XBPS_TRIPLET" >>.mozconfig
+	else
+		echo "ac_add_options --target=$XBPS_TRIPLET" >>.mozconfig
+		echo "ac_add_options --host=$XBPS_TRIPLET" >>.mozconfig
+	fi
+
+	# work around large debug symbols on 32-bit hosts
+	if [ "$XBPS_WORDSIZE" = "32" ]; then
+		echo "ac_add_options --disable-debug-symbols" >>.mozconfig
+		echo "ac_add_options --disable-debug" >>.mozconfig
+		export LDFLAGS+=" -Wl,--no-keep-memory"
+	fi
+
+	export LDFLAGS+=" -Wl,-rpath=/usr/lib/${pkgname}"
+
+	# increase default stack size as UXP uses a recursive js parser
+	export LDFLAGS+=" -Wl,-z,stack-size=524288"
+
+	if [ "$SOURCE_DATE_EPOCH" ]; then
+		export MOZ_BUILD_DATE=$(date --date "@$SOURCE_DATE_EPOCH" "+%Y%m%d%H%M%S")
+	fi
+
+	export MOZ_MAKE_FLAGS="${makejobs}"
+	export MOZ_NOSPAM=1
+	export MOZBUILD_STATE_PATH="${wrksrc}/mozbuild"
+
+	cat <<! >>.mozconfig
+ac_add_options --enable-default-toolkit=cairo-gtk$(vopt_if gtk3 '3' '2')
+ac_add_options $(vopt_enable alsa)
+ac_add_options $(vopt_enable jack)
+ac_add_options $(vopt_enable sndio)
+ac_add_options $(vopt_enable dbus)
+ac_add_options $(vopt_enable pulseaudio)
+export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
+!
+
+	# _FORTIFY_SOURCE causes configure failures
+	export CPPFLAGS+=" -O2"
+
+	make -f client.mk build
+}
+
+do_install() {
+	make -f client.mk DESTDIR="$DESTDIR" INSTALL_SDK= install
+
+	vinstall ${FILESDIR}/vendor.js 644 usr/lib/${pkgname}/browser/defaults/preferences
+	vinstall ${FILESDIR}/iceweasel-uxp.desktop 644 usr/share/applications
+
+	for i in 16 32 48; do
+		vinstall ${wrksrc}/application/${pkgname}/branding/${pkgname%-*}/default${i}.png 644 \
+			usr/share/icons/hicolor/${i}x${i}/apps ${pkgname}.png
+	done
+
+	# Use system-provided dictionaries
+	rm -rf ${DESTDIR}/usr/lib/${pkgname}/{dictionaries,hyphenation}
+	ln -s /usr/share/hunspell ${DESTDIR}/usr/lib/${pkgname}/dictionaries
+	ln -s /usr/share/hyphen ${DESTDIR}/usr/lib/${pkgname}/hyphenation
+
+	# https://bugzilla.mozilla.org/show_bug.cgi?id=658850
+	ln -sf ${pkgname} "${DESTDIR}/usr/lib/${pkgname}/${pkgname}-bin"
+}

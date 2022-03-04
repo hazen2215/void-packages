@@ -1,0 +1,44 @@
+From 96b399b1986434df67b5fc02003df8a16e43122f Mon Sep 17 00:00:00 2001
+From: Gaming4JC <g4jc@hyperbola.info>
+Date: Sun, 24 May 2020 00:25:59 -0400
+Subject: [PATCH 06/12] Fix PGO Build
+
+---
+ Makefile.in            |  2 ++
+ gfx/thebes/gfxFont.cpp | 10 ++++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/Makefile.in b/Makefile.in
+index 6c2327388..6e4e49a4e 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -404,3 +404,5 @@ config/export:
+ endif
+ 
+ # There used to be build interdependencies here. They are now in config/recurse.mk
++
++pgo-profile-run:
+diff --git a/gfx/thebes/gfxFont.cpp b/gfx/thebes/gfxFont.cpp
+index a73252759..ad38e6fb1 100644
+--- a/gfx/thebes/gfxFont.cpp
++++ b/gfx/thebes/gfxFont.cpp
+@@ -2546,6 +2546,16 @@ IsBoundarySpace(char16_t aChar, char16_t aNextChar)
+ #endif
+ 
+ /* GetShapedWord is in gfxFont-Impl.h */
++template gfxShapedWord*
++gfxFont::GetShapedWord(DrawTarget *aDrawTarget,
++                       const uint8_t *aText,
++                       uint32_t    aLength,
++                       uint32_t    aHash,
++                       Script      aRunScript,
++                       bool        aVertical,
++                       int32_t     aAppUnitsPerDevUnit,
++                       uint32_t    aFlags,
++                       gfxTextPerfMetrics *aTextPerf);
+ 
+ bool
+ gfxFont::CacheHashEntry::KeyEquals(const KeyTypePointer aKey) const
+-- 
+2.25.2
+
