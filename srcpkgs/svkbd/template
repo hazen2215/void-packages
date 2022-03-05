@@ -1,0 +1,22 @@
+# Template file for 'svkbd'
+pkgname=svkbd
+version=0.4.1
+revision=1
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="libX11-devel libXtst-devel libXft-devel libXinerama-devel"
+short_desc="Simple virtual keyboard for X"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="http://tools.suckless.org/x/svkbd/"
+distfiles="https://dl.suckless.org/tools/svkbd-${version}.tar.gz"
+checksum=fbc261fc3e1d8142e1457b42d6d65083a00ae0f3a1f5ccf2472acc8b46ae0f5a
+
+pre_build() {
+	[ -e ${FILESDIR}/config.h ] && cp ${FILESDIR}/config.h config.h ||:
+}
+
+post_install() {
+	vdoc README.md
+	vlicense LICENSE
+}
