@@ -1,0 +1,18 @@
+# Template file for 'nclttr'
+pkgname=nclttr
+version=0.0.20210701
+revision=1
+_githash=3a6880a7e5b257b4c0dec422b73a0bffac3640a0
+wrksrc="nclttr-${_githash}"
+build_style=gnu-makefile
+makedepends="libXfixes-devel libXi-devel"
+short_desc="Hide idle cursor"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/duncaen/nclttr"
+distfiles="https://github.com/duncaen/nclttr/archive/${_githash}.tar.gz"
+checksum=865b1a3f91849255a0770c35f9604601e377152dc75741815547dd3d604ea12d
+
+post_install() {
+	vlicense LICENSE
+}
