@@ -1,0 +1,12 @@
+#!/bin/sh
+exec 2>&1
+
+[ -r ./conf ] && . ./conf
+
+# Null the legacy hotplugger as the service will take over from here.
+[ -f /proc/sys/kernel/hotplug ] &&
+	printf '\n' 2>/dev/null >/proc/sys/kernel/hotplug
+
+exec mdevd ${OPTS:=-f /dev/stdin -O4 -C} <<-!
+	$(cat ${CONF_FILE:-/etc/mdev.conf /etc/mdev.d/*.conf} 2>/dev/null)
+!
