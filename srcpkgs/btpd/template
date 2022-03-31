@@ -1,0 +1,17 @@
+# Template file for 'btpd'
+pkgname=btpd
+version=0.16.20200407
+revision=1
+_githash=a3a10dfe1ece4a726530353a7b208c0cb4ff7e0d
+build_style=gnu-configure
+makedepends="openssl-devel"
+short_desc="BitTorrent Protocol Daemon"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause, BSD-3-Clause"
+homepage="http://github.com/btpd/btpd"
+distfiles="http://github.com/btpd/btpd/archive/${_githash}.tar.gz"
+checksum=1d87859869d63d7f63d5a8533576fb45da8f429877e9a334b404f9d890ccbbc4
+
+post_install() {
+	vlicense LICENSE
+}
