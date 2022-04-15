@@ -1,0 +1,31 @@
+From c1649943ba8264534e2d65324531bd5ca7f90282 Mon Sep 17 00:00:00 2001
+From: Alexey Yerin <yyp@disroot.org>
+Date: Sat, 4 Mar 2023 23:16:59 +0300
+Subject: [PATCH] vis-menu: immediately exit if only one line of input was
+ provided
+
+---
+ vis-menu.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/vis-menu.c b/vis-menu.c
+index 444a26a..8a11a69 100644
+--- a/vis-menu.c
++++ b/vis-menu.c
+@@ -602,6 +602,13 @@ main(int argc, char **argv) {
+ 	}
+ 
+ 	readstdin();
++	if (!items || !items[0].text) {
++		return 0;
++	}
++	if (!items[1].text) {
++		printf("%s\n", items[0].text);
++		return 0;
++	}
+ 	setup();
+ 	int status = run();
+ 	cleanup();
+-- 
+2.38.4
+
