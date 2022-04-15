@@ -1,0 +1,46 @@
+diff --git a/main.c b/main.c
+index 858af23..266d70c 100644
+--- a/main.c
++++ b/main.c
+@@ -1394,25 +1394,37 @@ static const char *selections_match_next(Vis *vis, const char *keys, const Arg *
+ 	if (!buf)
+ 		return keys;
+ 
++	bool flip;
+ 	bool match_all = arg->b;
+ 	Filerange primary = sel;
++	Selection *new_sel;
+ 
+ 	for (;;) {
++		flip = view_cursor_get(view) == primary.start;
+ 		sel = find_next(txt, sel.end, buf);
+ 		if (!text_range_valid(&sel))
+ 			break;
+-		if (selection_new(view, &sel, !match_all) && !match_all)
+-			goto out;
++		if (new_sel = selection_new(view, &sel, !match_all)) {
++			if (flip)
++				view_selections_flip(new_sel);
++			if (!match_all)
++				goto out;
++		}
+ 	}
+ 
+ 	sel = primary;
+ 
+ 	for (;;) {
++		flip = view_cursor_get(view) == primary.start;
+ 		sel = find_prev(txt, sel.start, buf);
+ 		if (!text_range_valid(&sel))
+ 			break;
+-		if (selection_new(view, &sel, !match_all) && !match_all)
+-			break;
++		if (new_sel = selection_new(view, &sel, !match_all)) {
++			if (flip)
++				view_selections_flip(new_sel);
++			if (!match_all)
++				break;
++		}
+ 	}
+ 
+ out:
