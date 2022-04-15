@@ -1,0 +1,159 @@
+From d30b38742850dcacecad20180686e7972e5c21c4 Mon Sep 17 00:00:00 2001
+From: Randy Palamar <palamar@ualberta.ca>
+Date: Sat, 7 Jan 2023 19:05:07 -0700
+Subject: [PATCH] expose UI layout and allow it to be set from lua API
+
+one use of this is to automatically set the layout on WIN_OPEN based on
+the width and height of existing windows.
+
+fixes #812
+---
+ ui-terminal.c |  5 +++
+ ui.h          |  1 +
+ vis-lua.c     | 84 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 79 insertions(+), 11 deletions(-)
+
+diff --git a/ui-terminal.c b/ui-terminal.c
+index 9cdfd7e22..a05957a09 100644
+--- a/ui-terminal.c
++++ b/ui-terminal.c
+@@ -672,6 +672,11 @@ static bool ui_init(Ui *ui, Vis *vis) {
+ 	return false;
+ }
+ 
++enum UiLayout ui_layout_get(Ui *ui) {
++	UiTerm *tui = (UiTerm *)ui;
++	return tui->layout;
++}
++
+ Ui *ui_term_new(void) {
+ 	size_t styles_size = UI_STYLE_MAX * sizeof(CellStyle);
+ 	CellStyle *styles = calloc(1, styles_size);
+diff --git a/ui.h b/ui.h
+index d87384ae6..01fc3e298 100644
+--- a/ui.h
++++ b/ui.h
+@@ -116,5 +116,6 @@ struct UiWin {
+ };
+ 
+ bool is_default_color(CellColor c);
++enum UiLayout ui_layout_get(Ui *ui);
+ 
+ #endif
+diff --git a/vis-lua.c b/vis-lua.c
+index 24b911eae..c65bd1858 100644
+--- a/vis-lua.c
++++ b/vis-lua.c
+@@ -1529,8 +1529,50 @@ static const struct luaL_Reg vis_lua[] = {
+ 	{ NULL, NULL },
+ };
+ 
++/***
++ * The user interface.
++ *
++ * @type Ui
++ */
++/***
++ * Number of available colors.
++ * @tfield int colors
++ */
++/***
++ * Current layout.
++ * @tfield int layout
++ */
++static int ui_index(lua_State *L) {
++	Ui *ui = obj_ref_check(L, 1, VIS_LUA_TYPE_UI);
++
++	if (lua_isstring(L, 2)) {
++		const char *key = lua_tostring(L, 2);
++
++		if (strcmp(key, "layout") == 0) {
++			lua_pushunsigned(L, ui_layout_get(ui));
++			return 1;
++		}
++	}
++
++	return index_common(L);
++}
++
++/***
++ * Set the user interface layout.
++ * @function ui_arrange
++ * @tparam int layout the layout to set
++ * @usage
++ * ui:arrange(ui.layouts.VERTICAL)
++ */
++static int ui_arrange(lua_State *L) {
++	Ui *ui = obj_ref_check(L, 1, VIS_LUA_TYPE_UI);
++	ui->arrange(ui, luaL_checkint(L, 2));
++	return 1;
++}
++
+ static const struct luaL_Reg ui_funcs[] = {
+-	{ "__index", index_common },
++	{ "arrange", ui_arrange },
++	{ "__index", ui_index },
+ 	{ NULL, NULL },
+ };
+ 
+@@ -2479,16 +2521,6 @@ static const struct luaL_Reg window_marks_funcs[] = {
+ 	{ NULL, NULL },
+ };
+ 
+-/***
+- * The user interface.
+- *
+- * @type Ui
+- */
+-/***
+- * Number of available colors.
+- * @tfield int colors
+- */
+-
+ /***
+  * A file range.
+  *
+@@ -2505,6 +2537,19 @@ static const struct luaL_Reg window_marks_funcs[] = {
+  * @tfield int finish
+  */
+ 
++/***
++ * Layouts.
++ * @section Layouts
++ */
++
++/***
++ * Layouts constants.
++ * @table layouts
++ * @tfield int HORIZONTAL
++ * @tfield int VERTICAL
++ * @see Ui:arrange
++ */
++
+ /***
+  * Modes.
+  * @section Modes
+@@ -2852,6 +2897,23 @@ void vis_lua_init(Vis *vis) {
+ 	lua_pushunsigned(L, vis->ui->colors(vis->ui));
+ 	lua_setfield(L, -2, "colors");
+ 
++	lua_newtable(L);
++
++	static const struct {
++		enum UiLayout id;
++		const char *name;
++	} layouts[] = {
++		{ UI_LAYOUT_HORIZONTAL, "HORIZONTAL" },
++		{ UI_LAYOUT_VERTICAL,   "VERTICAL"   },
++	};
++
++	for (size_t i = 0; i < LENGTH(layouts); i++) {
++		lua_pushunsigned(L, layouts[i].id);
++		lua_setfield(L, -2, layouts[i].name);
++	}
++
++	lua_setfield(L, -2, "layouts");
++
+ 	obj_type_new(L, VIS_LUA_TYPE_REGISTERS);
+ 	lua_pushlightuserdata(L, vis);
+ 	luaL_setfuncs(L, registers_funcs, 1);

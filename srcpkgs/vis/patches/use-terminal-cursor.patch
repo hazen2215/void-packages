@@ -1,0 +1,271 @@
+From 0da934b4e070d057bcaacd63b0540ec37991bfec Mon Sep 17 00:00:00 2001
+From: Petros Pateros <petratman@gmail.com>
+Date: Wed, 9 Jun 2021 23:03:10 +0300
+Subject: [PATCH 1/4] move cursor to the expected location
+
+---
+ ui-terminal-curses.c |  4 +---
+ ui-terminal-vt100.c  | 12 ++----------
+ ui-terminal.c        | 13 ++++++++++++-
+ 3 files changed, 15 insertions(+), 14 deletions(-)
+
+diff --git a/ui-terminal-curses.c b/ui-terminal-curses.c
+index e5ab853b..6b60fc0e 100644
+--- a/ui-terminal-curses.c
++++ b/ui-terminal-curses.c
+@@ -229,6 +229,7 @@ static void ui_curses_blit(UiTerm *tui) {
+ 			cell++;
+ 		}
+ 	}
++	move(tui->row, tui->col);
+ 	wnoutrefresh(stdscr);
+ 	doupdate();
+ }
+@@ -243,14 +244,12 @@ static bool ui_curses_resize(UiTerm *tui, int width, int height) {
+ }
+ 
+ static void ui_curses_save(UiTerm *tui) {
+-	curs_set(1);
+ 	reset_shell_mode();
+ }
+ 
+ static void ui_curses_restore(UiTerm *tui) {
+ 	reset_prog_mode();
+ 	wclear(stdscr);
+-	curs_set(0);
+ }
+ 
+ static int ui_curses_colors(Ui *ui) {
+@@ -270,7 +269,6 @@ static bool ui_curses_init(UiTerm *tui, char *term) {
+ 	nonl();
+ 	keypad(stdscr, TRUE);
+ 	meta(stdscr, TRUE);
+-	curs_set(0);
+ 	return true;
+ }
+ 
+diff --git a/ui-terminal-vt100.c b/ui-terminal-vt100.c
+index 8ba8a1a5..b8c1d601 100644
+--- a/ui-terminal-vt100.c
++++ b/ui-terminal-vt100.c
+@@ -12,8 +12,6 @@
+  *
+  *  - CSI ? 1049 h             Save cursor and use Alternate Screen Buffer (DECSET)
+  *  - CSI ? 1049 l             Use Normal Screen Buffer and restore cursor (DECRST)
+- *  - CSI ? 25 l               Hide Cursor (DECTCEM)
+- *  - CSI ? 25 h               Show Cursor (DECTCEM)
+  *  - CSI 2 J                  Erase in Display (ED)
+  *  - CSI row ; column H       Cursor Position (CUP)
+  *  - CSI ... m                Character Attributes (SGR)
+@@ -97,10 +95,6 @@ static void screen_alternate(bool alternate) {
+ 	output_literal(alternate ? "\x1b[?1049h" : "\x1b[0m" "\x1b[?1049l" "\x1b[0m" );
+ }
+ 
+-static void cursor_visible(bool visible) {
+-	output_literal(visible ? "\x1b[?25h" : "\x1b[?25l");
+-}
+-
+ static void ui_vt100_blit(UiTerm *tui) {
+ 	Buffer *buf = &((UiVt100*)tui)->buf;
+ 	buffer_clear(buf);
+@@ -163,6 +157,8 @@ static void ui_vt100_blit(UiTerm *tui) {
+ 			cell++;
+ 		}
+ 	}
++	/* move cursor to the expected location */
++	buffer_appendf(buf, "\x1b[%d;%dH", tui->row + 1, tui->col + 1);
+ 	output(buffer_content(buf), buffer_length0(buf));
+ }
+ 
+@@ -173,11 +169,9 @@ static bool ui_vt100_resize(UiTerm *tui, int width, int height) {
+ }
+ 
+ static void ui_vt100_save(UiTerm *tui) {
+-	cursor_visible(true);
+ }
+ 
+ static void ui_vt100_restore(UiTerm *tui) {
+-	cursor_visible(false);
+ }
+ 
+ static int ui_vt100_colors(Ui *ui) {
+@@ -188,13 +182,11 @@ static int ui_vt100_colors(Ui *ui) {
+ static void ui_vt100_suspend(UiTerm *tui) {
+ 	if (!tui->termkey) return;
+ 	termkey_stop(tui->termkey);
+-	cursor_visible(true);
+ 	screen_alternate(false);
+ }
+ 
+ static void ui_vt100_resume(UiTerm *tui) {
+ 	screen_alternate(true);
+-	cursor_visible(false);
+ 	termkey_start(tui->termkey);
+ }
+ 
+diff --git a/ui-terminal.c b/ui-terminal.c
+index 9cdfd7e2..d00c6ec0 100644
+--- a/ui-terminal.c
++++ b/ui-terminal.c
+@@ -41,6 +41,7 @@ typedef struct {
+ 	UiTermWin *selwin;        /* the currently selected layout */
+ 	char info[MAX_WIDTH];     /* info message displayed at the bottom of the screen */
+ 	int width, height;        /* terminal dimensions available for all windows */
++	int row, col;             /* 0-based position of cursor in the terminal */
+ 	enum UiLayout layout;     /* whether windows are displayed horizontally or vertically */
+ 	TermKey *termkey;         /* libtermkey instance to handle keyboard input (stdin or /dev/tty) */
+ 	size_t ids;               /* bit mask of in use window ids */
+@@ -351,8 +352,18 @@ static void ui_draw(Ui *ui) {
+ 	debug("ui-draw\n");
+ 	UiTerm *tui = (UiTerm*)ui;
+ 	ui_arrange(ui, tui->layout);
+-	for (UiTermWin *win = tui->windows; win; win = win->next)
++	int dy = 0;
++	for (UiTermWin *win = tui->windows; win; win = win->next) {
+ 		ui_window_draw((UiWin*)win);
++		if (win == tui->selwin || win->win == tui->vis->win) {
++			View *view = win->win->view;
++			size_t pos = view_cursor_get(view);
++			view_coord_get(view, pos, NULL, &tui->row, &tui->col);
++			tui->row += dy;
++			tui->col += win->sidebar_width;
++		}
++		dy += win->height;
++	}
+ 	if (tui->info[0])
+ 		ui_draw_string(tui, 0, tui->height-1, tui->info, NULL, UI_STYLE_INFO);
+ 	ui_term_backend_blit(tui);
+
+From 4124d3c9d14223a3a0982c0026ebf909bb75cda4 Mon Sep 17 00:00:00 2001
+From: Petros Pateros <petratman@gmail.com>
+Date: Fri, 11 Jun 2021 16:06:22 +0300
+Subject: [PATCH 2/4] don't draw the primary cusror since the terminal already
+ does that
+
+---
+ vis.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/vis.c b/vis.c
+index cc61754c..080a1f3f 100644
+--- a/vis.c
++++ b/vis.c
+@@ -348,6 +348,8 @@ static void window_draw_selection(View *view, Selection *cur, CellStyle *style)
+ 	view_coord_get(view, sel.end, &end_line, NULL, &end_col);
+ 	if (!start_line && !end_line)
+ 		return;
++	if (end_col - start_col <= 1 && !view_selections_anchored(cur))
++		return;
+ 	if (!start_line) {
+ 		start_line = view_lines_first(view);
+ 		start_col = 0;
+@@ -423,7 +425,7 @@ static void window_draw_selections(Win *win) {
+ 		window_draw_cursor(win, s, &style_cursor, &style_selection);
+ 	}
+ 	window_draw_selection(win->view, sel, &style_selection);
+-	window_draw_cursor(win, sel, &style_cursor_primary, &style_selection);
++	window_draw_cursor_matching(win, sel, &style_cursor_primary);
+ 	for (Selection *s = view_selections_next(sel); s; s = view_selections_next(s)) {
+ 		window_draw_selection(win->view, s, &style_selection);
+ 		size_t pos = view_cursors_pos(s);
+
+From 6697b063b658a64308e9a952dbf5ecf3eba58a09 Mon Sep 17 00:00:00 2001
+From: Petros Pateros <petratman@gmail.com>
+Date: Fri, 11 Jun 2021 19:43:52 +0300
+Subject: [PATCH 3/4] deprecate STYLE_CURSOR_PRIMARY and add
+ STYLE_CURSOR_MATCHING
+
+Related #952.
+---
+ lua/themes/dark-16.lua   | 2 +-
+ lua/themes/light-16.lua  | 2 +-
+ lua/themes/solarized.lua | 2 +-
+ lua/themes/zenburn.lua   | 2 +-
+ lua/vis.lua              | 2 +-
+ ui-terminal.c            | 2 +-
+ ui.h                     | 2 +-
+ vis-lua.c                | 2 +-
+ vis.c                    | 7 +++----
+ 9 files changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/vis.c b/vis.c
+index 080a1f3f..17cbafcd 100644
+--- a/vis.c
++++ b/vis.c
+@@ -406,8 +406,6 @@ static void window_draw_cursor(Win *win, Selection *cur, CellStyle *style, CellS
+ 	if (!line || col == -1)
+ 		return;
+ 	line->cells[col].style = *style;
+-	window_draw_cursor_matching(win, cur, sel_style);
+-	return;
+ }
+ 
+ static void window_draw_selections(Win *win) {
+@@ -415,7 +413,7 @@ static void window_draw_selections(Win *win) {
+ 	Filerange viewport = view_viewport_get(view);
+ 	Selection *sel = view_selections_primary_get(view);
+ 	CellStyle style_cursor = win->ui->style_get(win->ui, UI_STYLE_CURSOR);
+-	CellStyle style_cursor_primary = win->ui->style_get(win->ui, UI_STYLE_CURSOR_PRIMARY);
++	CellStyle style_cursor_matching = win->ui->style_get(win->ui, UI_STYLE_CURSOR_PRIMARY);
+ 	CellStyle style_selection = win->ui->style_get(win->ui, UI_STYLE_SELECTION);
+ 	for (Selection *s = view_selections_prev(sel); s; s = view_selections_prev(s)) {
+ 		window_draw_selection(win->view, s, &style_selection);
+@@ -423,9 +421,10 @@ static void window_draw_selections(Win *win) {
+ 		if (pos < viewport.start)
+ 			break;
+ 		window_draw_cursor(win, s, &style_cursor, &style_selection);
++		window_draw_cursor_matching(win, s, &style_cursor_matching);
+ 	}
+ 	window_draw_selection(win->view, sel, &style_selection);
+-	window_draw_cursor_matching(win, sel, &style_cursor_primary);
++	window_draw_cursor_matching(win, sel, &style_cursor_matching);
+ 	for (Selection *s = view_selections_next(sel); s; s = view_selections_next(s)) {
+ 		window_draw_selection(win->view, s, &style_selection);
+ 		size_t pos = view_cursors_pos(s);
+
+From 66f5193a70c2ef0598fde50fa104be08040d9efb Mon Sep 17 00:00:00 2001
+From: Petros Pateros <petratman@gmail.com>
+Date: Wed, 8 Dec 2021 12:11:18 +0200
+Subject: [PATCH 4/4] ui-terminal: fix/extend terminal's cursor positioning
+
+for all window layouts
+---
+ ui-terminal.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/ui-terminal.c b/ui-terminal.c
+index ae523447..89fa4345 100644
+--- a/ui-terminal.c
++++ b/ui-terminal.c
+@@ -352,17 +352,25 @@ static void ui_draw(Ui *ui) {
+ 	debug("ui-draw\n");
+ 	UiTerm *tui = (UiTerm*)ui;
+ 	ui_arrange(ui, tui->layout);
+-	int dy = 0;
++	int dx = 0, dy = 0;
+ 	for (UiTermWin *win = tui->windows; win; win = win->next) {
+ 		ui_window_draw((UiWin*)win);
+-		if (win == tui->selwin || win->win == tui->vis->win) {
++		if (win == tui->selwin || win->win->parent) {
+ 			View *view = win->win->view;
+-			size_t pos = view_cursor_get(view);
+-			view_coord_get(view, pos, NULL, &tui->row, &tui->col);
+-			tui->row += dy;
++			view_coord_get(view, view_cursor_get(view), NULL, &tui->row, &tui->col);
+ 			tui->col += win->sidebar_width;
++			tui->row += dy;
++			if (!win->win->parent)
++				tui->col += dx;
++			else if (tui->layout == UI_LAYOUT_VERTICAL)
++				tui->row += win->prev->height;
+ 		}
+-		dy += win->height;
++		if (tui->layout == UI_LAYOUT_HORIZONTAL)
++			dy += win->height;
++		else if (win->win->parent)
++			dy += win->prev->height;
++		else
++			dx += win->width + 1; /* +1 for the |'s */
+ 	}
+ 	if (tui->info[0])
+ 		ui_draw_string(tui, 0, tui->height-1, tui->info, NULL, UI_STYLE_INFO);
