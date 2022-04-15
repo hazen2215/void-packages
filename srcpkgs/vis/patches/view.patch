@@ -1,0 +1,61 @@
+commit 63f03b16979de28652db1ff69f565a86fd2a6fac
+Author: hazen2215 <haz@disroot.org>
+Date:   Tue Aug 8 23:20:06 2023 +0900
+
+    view
+
+diff --git a/view.c b/view.c
+index 0b7ce36..ddf7ded 100644
+--- a/view.c
++++ b/view.c
+@@ -618,6 +618,21 @@ static bool view_viewport_down(View *view, int n) {
+ 	return true;
+ }
+ 
++static bool view_viewport_down2(View *view, int n) {
++	Line *line;
++	if (view->end >= text_size(view->text))
++		if (view->start >= text_size(view->text) - view->lastline->len)
++			return true;
++	if (n >= view->height) {
++		view->start = view->end;
++	} else {
++		for (line = view->topline; line && n > 0; line = line->next, n--)
++			view->start += line->len;
++	}
++	view_draw(view);
++	return true;
++}
++
+ static bool view_viewport_up(View *view, int n) {
+ 	/* scrolling up is somewhat tricky because we do not yet know where
+ 	 * the lines start, therefore scan backwards but stop at a reasonable
+@@ -685,7 +700,7 @@ void view_redraw_bottom(View *view) {
+ 
+ size_t view_slide_up(View *view, int lines) {
+ 	Selection *sel = view->selection;
+-	if (view_viewport_down(view, lines)) {
++	if (view_viewport_down2(view, lines)) {
+ 		if (sel->line == view->topline)
+ 			cursor_set(sel, view->topline, sel->col);
+ 		else
+@@ -752,11 +767,18 @@ size_t view_scroll_halfpage_up(View *view) {
+ }
+ 
+ size_t view_scroll_halfpage_down(View *view) {
++	Selection *sel = view->selection;
++	size_t line = text_lineno_by_pos(view->text, text_size(view->text));
++	line = 1 < line ? text_pos_by_lineno(view->text, line - 1) : 0;
++	if (sel->pos >= line)
++		return sel->pos;
+ 	size_t end = view->end;
+ 	size_t pos = view_scroll_down(view, view->height/2);
+ 	if (pos < text_size(view->text))
+ 		view_cursor_to(view, end);
+-	return view->selection->pos;
++	if (sel->pos >= line)
++		cursor_to(sel, line);
++	return sel->pos;
+ }
+ 
+ size_t view_scroll_down(View *view, int lines) {

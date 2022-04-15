@@ -17,3 +17,37 @@ conflicts="outils" # /usr/bin/vis
 post_install() {
 	vlicense LICENSE
 }
+
+conflicts=" "
+build_options="netbsd_curses ncurses static unibilium"
+build_options_default="static unibilium"
+
+vopt_conflict netbsd_curses ncurses
+
+hostmakedepends="pkgconf"
+makedepends="${makedepends/ncurses-devel/}
+ $(vopt_if netbsd_curses netbsd-curses-devel)
+ $(vopt_if ncurses ncurses-devel)
+ $(vopt_if unibilium unibilium-devel)"
+
+if [ "$build_option_static" ]; then
+	makedepends="${makedepends/acl-devel/} lua53-lpeg-static"
+	configure_args+=" --enable-lpeg-static"
+	LDFLAGS="-static"
+	depends="${depends/lua53-lpeg/}"
+fi
+
+post_patch() {
+	vsed -i configure \
+		-e 's,\$LDFLAGS_LUA,-L'${XBPS_CROSS_BASE}'/usr/lib/lua/5.3 &,g'
+}
+
+pre_configure() {
+	if [ -z "$build_option_netbsd_curses" ] && [ -z "$build_option_ncurses" ]; then
+		configure_args+=" --disable-curses"
+	fi
+
+	if [ "$build_option_unibilium" ]; then
+		vsed -i configure -e 's/\$LDFLAGS_TERMKEY/& -lunibilium/g'
+	fi
+}
