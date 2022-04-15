@@ -1,0 +1,12 @@
+diff --git a/vis-menu.c b/vis-menu.c
+index 946de56..8398dd0 100644
+--- a/vis-menu.c
++++ b/vis-menu.c
+@@ -459,6 +459,7 @@ run(void) {
+ 			}
+ 			break;
+ 		case CONTROL('C'):
++		case CONTROL('G'):
+ 			return 1;
+ 		case CONTROL('M'): /* Return */
+ 		case CONTROL('J'):
