@@ -1,0 +1,19 @@
+# Template file for 'cReddit'
+pkgname=cReddit
+version=0.0.20180718
+revision=1
+_githash=aa129b9c9b2a57b0faed1afb50ee6d4fc87e97a3
+build_style=gnu-makefile
+make_install_args="PREFIX=\${DESTDIR}/usr"
+make_use_env=yes
+makedepends="ncurses-devel libcurl-devel"
+short_desc="CLI Reddit client written in C"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/Cotix/cReddit"
+distfiles="https://github.com/Cotix/cReddit/archive/${_githash}.tar.gz"
+checksum=bbc09fe0f2d7d7abb24dbe447efe9a7717d17d482804629bb9a0ebf3736faa22
+
+post_install() {
+	vlicense LICENSE
+}

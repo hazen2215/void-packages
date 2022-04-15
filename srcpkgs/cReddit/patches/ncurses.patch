@@ -1,0 +1,14 @@
+diff --git a/src/creddit.mk b/src/creddit.mk
+index de8710c..0edae0f 100644
+--- a/src/creddit.mk
++++ b/src/creddit.mk
+@@ -4,8 +4,7 @@ CREDDIT_LDFLAGS:=$(PROJLDFILES) -L$(BUILD_DIR) -lreddit -lcurl
+ ifdef F_MACOSX
+ 	CREDDIT_LDFLAGS+=-lncurses
+ else
+-	CREDDIT_LDFLAGS+=-lncursesw
+-	CREDDIT_CFLAGS+=-DCREDDIT_USE_NCURSESW
++	CREDDIT_LDFLAGS+=-lncurses
+ endif
+ 
+ ifdef STATIC
