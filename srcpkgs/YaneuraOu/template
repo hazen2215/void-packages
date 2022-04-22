@@ -1,0 +1,20 @@
+# Template file for 'YaneuraOu'
+pkgname=YaneuraOu
+version=7.00
+revision=1
+build_style=gnu-makefile
+build_wrksrc=source
+make_build_args="COMPILER=g++ YANEURAOU_EDITION=YANEURAOU_ENGINE_KPPT
+ TARGET_CPU=SSE42"
+short_desc="World's Strongest Shogi engine"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/yaneurao/YaneuraOu/"
+distfiles="https://github.com/yaneurao/YaneuraOu/archive/v${version}.tar.gz"
+checksum=3547a074f0ca74610e3fcab40f51c2da85ff7056f0471bc6d371956daf03bfde
+
+LDFLAGS="-pthread"
+
+do_install() {
+	vbin YaneuraOu-by-gcc YaneuraOu
+}
