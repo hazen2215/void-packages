@@ -1,0 +1,27 @@
+# Template file for 'warpd'
+pkgname=warpd
+version=1.3.5
+revision=1
+build_style=gnu-makefile
+hostmakedepends="scdoc"
+makedepends="libXi-devel libXinerama-devel libXft-devel libXfixes-devel
+ libXtst-devel libX11-devel freetype-devel wayland-devel libxkbcommon-devel
+ cairo-devel"
+short_desc="Modal keyboard-driven virtual pointer"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/rvaiya/warpd"
+distfiles="https://github.com/rvaiya/warpd/archive/v${version}.tar.gz"
+checksum=708f551c7a3637319cca320a2849c334a69a7294c3bf268a3b2fbd5de6d980af
+CFLAGS="-I${XBPS_CROSS_BASE}/usr/include/freetype2"
+
+post_patch() {
+	vsed -i -e "s/VERSION/\"${version}\"/g" src/warpd.c
+}
+
+do_install() {
+	vbin bin/warpd
+	scdoc <man.md >warpd.1
+	vman warpd.1
+	vlicense LICENSE
+}
