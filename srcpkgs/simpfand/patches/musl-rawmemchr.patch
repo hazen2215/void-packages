@@ -1,0 +1,16 @@
+diff --git a/parse.c b/parse.c
+index 2514ec0..c17ffe8 100644
+--- a/parse.c
++++ b/parse.c
+@@ -25,7 +25,11 @@ size_t strtrim(char *str)
+                 return 0;
+         }
+ 
++#if defined(__GLIBC__)
+         right = (char*)rawmemchr(str, '\0') - 1;
++#else
++        right = (char*)memchr(str, '\0', (size_t) - 1) - 1;
++#endif
+         while(isspace((unsigned char)*right)) {
+                 right--;
+         }

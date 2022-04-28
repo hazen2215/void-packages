@@ -1,0 +1,23 @@
+# Template file for 'simpfand'
+pkgname=simpfand
+version=4.2.20170130
+revision=1
+_githash=dd100b5076d91b300cfd3e57302cd5b512ec916c
+build_style=gnu-makefile
+short_desc="Simple ThinkPad fan control daemon"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/hspak/simpfand"
+distfiles="https://github.com/hspak/simpfand/archive/${_githash}.tar.gz"
+checksum=117532da08aa26909c69d1944aa17db8fd014bcfbfb9a7e4bb2f809f85fa7b43
+build_options="static"
+LDFLAGS="$(vopt_if static -static)"
+
+post_install() {
+	vlicense LICENSE
+	vsconf simpfand.conf
+	vsv simpfand
+	vmkdir /etc/zzz.d/resume
+	vinstall ${FILESDIR}/50-simpfand.sh 755 /etc/zzz.d/resume
+	rm -rf ${DESTDIR}/usr/share/doc
+}
