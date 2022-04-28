@@ -1,0 +1,13 @@
+# Template file for 'gdrive'
+pkgname=gdrive
+version=2.1.1
+revision=1
+build_style=go
+go_import_path=github.com/prasmussen/gdrive
+hostmakedepends="git"
+short_desc="Google Drive CLI Client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/prasmussen/gdrive"
+distfiles="https://github.com/prasmussen/gdrive/archive/${version}.tar.gz"
+checksum=9092cb356acf58f2938954784605911e146497a18681199d0c0edc65b833a672
