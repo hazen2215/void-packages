@@ -1,0 +1,27 @@
+# Template file for 'sdhcp'
+pkgname=sdhcp
+version=0.0.20211015
+revision=1
+_githash=3ffc1b3c1fa8ba330c198b51b5ccd0d429441bc3
+build_style=gnu-makefile
+make_use_env=yes
+short_desc="Suckless DHCP client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/smaclennan/sdhcp"
+distfiles="https://github.com/smaclennan/sdhcp/archive/${_githash}.tar.gz"
+checksum=ee27409880039a94d78553db500abee96ad333dc82ad3630370376aab1a3024f
+build_options="static"
+LDFLAGS="$(vopt_if static -static)"
+
+post_extract() {
+	sed -i 's|^CFLAGS *=|override CFLAGS +=|g' config.mk
+	sed -i 's|^LDFLAGS *=|override LDFLAGS +=|g' config.mk
+	vsed -i -e 's/sbin/bin/g' Makefile
+}
+
+post_install() {
+	vinstall ${FILESDIR}/50-sdhcp.sh 755 /etc/zzz.d/resume
+	vsv sdhcp
+	vlicense LICENSE
+}
