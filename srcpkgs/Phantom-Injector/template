@@ -1,0 +1,17 @@
+# Template file for 'Phantom-Injector'
+pkgname=Phantom-Injector
+version=1.0.0
+revision=1
+build_style=cmake
+makedepends="SDL2-devel"
+short_desc=".so injector for linux (made to inject Phantom into minecraft)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT, LGPL-2.0-or-later"
+homepage="https://github.com/SomePineaple/Phantom-Injector"
+distfiles="https://github.com/SomePineaple/Phantom-Injector/archive/${version}.tar.gz"
+checksum=be036a78ef9a4181933086841151b7e51e2bce0a26e7ef413803a071d5eb2cfa
+
+do_install() {
+	vlicense LICENSE
+	vbin build/Phantom_Injector
+}
