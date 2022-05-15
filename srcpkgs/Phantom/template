@@ -1,0 +1,24 @@
+# Template file for 'Phantom'
+pkgname=Phantom
+version=b0.2.3
+revision=1
+build_style=cmake
+hostmakedepends="openjdk17"
+makedepends="SDL2-devel glu-devel"
+short_desc="Minecraft injection client, started as a UDP-CPP port for linux"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/SomePineaple/Phantom"
+distfiles="https://github.com/SomePineaple/Phantom/archive/${version}.tar.gz"
+checksum=77ffe1683cdd4cc6f8709661103f4e71de8eb0a535f8e06ea0968d171de01b10
+
+pre_configure() {
+	. /etc/profile.d/openjdk.sh
+	if [ "$XBPS_WORDSIZE" = "32" ]; then
+		export _JAVA_OPTIONS="-Xmx1024m"
+	fi
+}
+
+do_install() {
+	vinstall build/libphantom.so 644 usr/lib
+}
