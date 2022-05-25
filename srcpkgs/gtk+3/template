@@ -58,6 +58,30 @@ if [ -z "$CROSS_BUILD" ]; then
 	build_options_default+=" gtk_doc"
 fi
 
+hostmakedepends="${hostmakedepends/gettext-devel/}"
+hostmakedepends="${hostmakedepends/gtk-update-icon-cache/}"
+hostmakedepends="${hostmakedepends/perl/}"
+makedepends="${makedepends/at-spi2-atk-devel/atk-devel}"
+makedepends="${makedepends/iso-codes/}"
+depends=" "
+subpackages="gtk+3-devel"
+
+configure_args+=" -Dprint_backends=lpr,$(vopt_if cups 'cups,')file
+ -Ddemos=false -Dtests=false -Dexamples=false"
+post_patch() {
+	# Disable native language support, disable atk-bridge, don't compile schemas.
+	vsed -i meson.build \
+		-e '/compile_schemas/s/true/false/' \
+		-e '/ENABLE_NLS/s/1/0/' \
+		-e "/subdir('po/d" \
+		-e "/atk-bridge/d"
+
+	# Remove atk-bridge code.
+	vsed -i gtk/a11y/gtkaccessibility.c \
+		-e '/<atk-bridge.h>/d;/atk_bridge_adaptor_init/d'
+
+}
+
 pre_check() {
 	for t in $_broken_tests; do
 		test_dir="testsuite/${t%\/*}"
