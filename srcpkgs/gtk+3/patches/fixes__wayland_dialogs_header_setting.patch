@@ -1,0 +1,17 @@
+Index: b/gdk/wayland/gdkscreen-wayland.c
+===================================================================
+--- a/gdk/wayland/gdkscreen-wayland.c 2023-05-21 23:22:08.000000000 -0300
++++ b/gdk/wayland/gdkscreen-wayland.c 2023-06-22 04:50:25.890352858 -0300
+@@ -1087,12 +1087,6 @@
+     return set_capability_setting (screen, value,
+                                    GTK_SHELL1_CAPABILITY_DESKTOP_ICONS);
+ 
+-  if (strcmp (name, "gtk-dialogs-use-header") == 0)
+-    {
+-      g_value_set_boolean (value, TRUE);
+-      return TRUE;
+-    }
+-
+   if (strcmp (name, "gtk-fontconfig-timestamp") == 0)
+     {
+       g_value_set_uint (value, wayland_screen->dbus_settings.fontconfig_timestamp);
