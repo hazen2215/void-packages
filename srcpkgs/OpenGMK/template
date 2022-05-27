@@ -1,0 +1,38 @@
+# Template file for 'OpenGMK'
+pkgname=OpenGMK
+version=0.2.0.20230624
+revision=1
+_commit=ebaa4d125758f6f65ff0deebbd4ab3fd5e817314
+_cimgui_commit=ccdae842e40f35ebf40167918175deb9af8c2a16
+_imgui_commit=256594575d95d56dda616c544c509740e74906b4
+create_wrksrc=yes
+build_wrksrc="OpenGMK-${_commit}"
+build_style=cargo
+hostmakedepends="cmake git pkg-config"
+makedepends="alsa-lib-devel pulseaudio-devel jack-devel glu-devel"
+short_desc="Rewrite of the GameMaker Classic engine runners with additional tooling"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/OpenGMK/OpenGMK"
+distfiles="https://github.com/OpenGMK/OpenGMK/archive/${_commit}.tar.gz
+ https://github.com/cimgui/cimgui/archive/${_cimgui_commit}.tar.gz
+ https://github.com/ocornut/imgui/archive/${_imgui_commit}.tar.gz"
+checksum="80918cf6dd9d57cad169d8b283627d62ce1fa6e522788fa35bcfd8e255c1235b
+ 9938a119d962582ff107b0dacad24dea893c9a261a99e068c8ce6984bc12cd08
+ 6be3a9bab625802c872a22e66bee697ef9481aacb7b44c3807e5fd862879dd18"
+patch_args="-Np1 -d ${build_wrksrc}"
+
+post_extract() {
+	rmdir ${build_wrksrc}/gm8emulator/ffi/cimgui
+	mv cimgui-${_cimgui_commit} ${build_wrksrc}/gm8emulator/ffi/cimgui
+	rmdir ${build_wrksrc}/gm8emulator/ffi/cimgui/imgui
+	mv imgui-${_imgui_commit} ${build_wrksrc}/gm8emulator/ffi/cimgui/imgui
+}
+post_patch() {
+	vsed -i -e '/^strip = true/d' Cargo.toml
+}
+
+do_install() {
+	vbin target/${XBPS_CROSS_TRIPLET:-$XBPS_TRIPLET}/release/gm8decompiler
+	vbin target/${XBPS_CROSS_TRIPLET:-$XBPS_TRIPLET}/release/gm8emulator
+}
