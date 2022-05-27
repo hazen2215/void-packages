@@ -1,0 +1,19 @@
+# Template file for 'injector'
+pkgname=injector
+version=0.0.20230227
+revision=1
+_commit=3c11bf2bb93b2bd4df187c77b54d0191e9acf79a
+build_style=gnu-makefile
+make_use_env=yes
+short_desc="Library for injecting a shared library into a Linux or Windows process"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause, GPL-2.0-only, LGPL-2.1-only"
+homepage="https://github.com/kubo/injector"
+distfiles="https://github.com/kubo/injector/archive/${_commit}.tar.gz"
+checksum=cc677845af314bd54453fee7e305601eb91ea5228635ebab86b6be6969f3e3db
+
+do_install() {
+	vbin cmd/injector
+	sed -n '/Copyright/,/OF SUCH DAMAGE/p' util/ya_getopt.c >LICENSE.2BSD
+	vlicense LICENSE.2BSD
+}
