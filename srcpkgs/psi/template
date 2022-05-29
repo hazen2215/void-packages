@@ -1,0 +1,50 @@
+# Template file for 'psi'
+pkgname=psi
+version=1.5.20220517
+revision=1
+_githash=38ce6d067b15e0f9c9f23e47c6b98368e16a0bfd
+_http_parser_githash=7af127d3ac497bb036d3ecb4fb24bb5ee7ff4b5b
+_qhttp_githash=c385139abc1d51b0eae6a974641664df1995c8ac
+_qite_githash=ba7ba661863a64566194b4ce3e87ac9c68ced88c
+_iris_githash=a2fc18ae15e8553ec0f1ff079b6cc653800a45a1
+_libpsi_githash=3891becc625aa82eca90fdc71bbbd073dcc9c577
+create_wrksrc=yes
+build_wrksrc="psi-${_githash}"
+build_style=cmake
+configure_args="-DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
+ -DBUNDLED_USRSCTP=ENABLE -DBUNDLED_QCA=ENABLE -DPSI_PLUS=ON
+ -DCHAT_TYPE=WEBENGINE"
+hostmakedepends="git"
+makedepends="http-parser-devel hunspell-devel libXScrnSaver-devel libidn-devel
+ qca-qt5-devel qt5-declarative-devel qt5-devel qt5-location-devel
+ qt5-multimedia-devel qt5-plugin-mysql qt5-plugin-odbc qt5-plugin-pgsql
+ qt5-plugin-sqlite qt5-plugin-tds qt5-svg-devel qt5-webchannel-devel
+ qt5-webengine-devel qt5-x11extras-devel qtkeychain-qt5-devel"
+short_desc="XMPP client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/psi-im/psi"
+distfiles="https://github.com/psi-im/psi/archive/${_githash}.tar.gz
+ https://github.com/nodejs/http-parser/archive/${_http_parser_githash}.tar.gz
+ https://github.com/psi-im/qhttp/archive/${_qhttp_githash}.tar.gz
+ https://github.com/Ri0n/qite/archive/${_qite_githash}.tar.gz
+ https://github.com/psi-im/iris/archive/${_iris_githash}.tar.gz
+ https://github.com/psi-im/libpsi/archive/${_libpsi_githash}.tar.gz"
+checksum="335c6bd6971d73ab39747adda318b051488d36296e7f073a5bce88e59e6e9007
+ bc9461b256f19c0dce577a0f0cc7e793305551a84b4138dc63a4b9ca80e547e5
+ 6d30dae5d17126550cb602cdd88b126f9f0d4046911007b90f5520586c2f02e4
+ 2b007f4fdd52e0c89608b96cf6a12ab7c90f437204bb5d1e14f1c2f7b8127a31
+ 4159da2638ffe2529e7a55ab46d52609e9fc6499f37195f94841cac3b10b3ccd
+ 589637bdf3c071308b7cf887be3841dd92dbc1573a10818a6f7c67b32980e499"
+
+post_extract() {
+	for f in 3rdparty/http-parser 3rdparty/qhttp 3rdparty/qite iris src/libpsi; do
+		rmdir psi-${_githash}/${f}
+	done
+
+	mv http-parser-${_http_parser_githash} psi-${_githash}/3rdparty/http-parser
+	mv qhttp-${_qhttp_githash} psi-${_githash}/3rdparty/qhttp
+	mv qite-${_qite_githash} psi-${_githash}/3rdparty/qite
+	mv iris-${_iris_githash} psi-${_githash}/iris
+	mv libpsi-${_libpsi_githash} psi-${_githash}/src/libpsi
+}
