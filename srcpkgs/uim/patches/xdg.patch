@@ -1,0 +1,24 @@
+diff --git a/uim/uim-custom.c b/uim/uim-custom.c
+index 1f087937..0d431b44 100644
+--- a/uim/uim-posix.c
++++ b/uim/uim-posix.c
+@@ -183,6 +183,11 @@ uim_get_config_path_internal(char *path, int len, int is_getenv, int need_prepar
+   if (len <= 0)
+     return UIM_FALSE;
+ 
++  char *datadir = getenv("XDG_DATA_HOME");
++
++  if (datadir && snprintf(path, len, "%s/uim.d", datadir) >= 0)
++    goto path_found;
++
+   if (!uim_get_home_directory(home, sizeof(home), getuid()) && is_getenv) {
+     char *home_env = getenv("HOME");
+ 
+@@ -202,6 +207,7 @@ uim_get_config_path_internal(char *path, int len, int is_getenv, int need_prepar
+     return UIM_FALSE;
+   }
+ 
++ path_found:
+   if (!uim_check_dir_internal(path, need_prepare)) {
+     return UIM_FALSE;
+   }
