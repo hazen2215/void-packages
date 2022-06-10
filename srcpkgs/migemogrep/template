@@ -1,0 +1,18 @@
+# Template file for 'migemogrep'
+pkgname=migemogrep
+version=0.1.0.20181112
+revision=1
+_githash=0c826822fc8b38d54c3f6bdc7e09ba97d45a592d
+build_style=go
+go_import_path="github.com/peco/migemogrep"
+hostmakedepends="git"
+short_desc="Search/grep against Japanese text using latin-1 text"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/peco/migemogrep"
+distfiles="https://github.com/peco/migemogrep/archive/${_githash}.tar.gz"
+checksum=5078b9cff5bd6dc97139c4b158d74c0ee0ebf3a2264563067c9eca5439619c19
+
+post_install() {
+	vlicense LICENSE
+}
