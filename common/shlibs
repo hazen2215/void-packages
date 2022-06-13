@@ -3089,6 +3089,7 @@ libMyGUIEngine.so.3.4.2 libmygui-3.4.2_1
 libproj.so.25 proj-9.1.1_1
 libnlopt.so.0 nlopt-2.4.2_1
 libeb.so.16 libeb-4.3.3_1
+libebu.so.17 libebu-4.5+20220425_1
 libchipcard.so.6 libchipcard-5.0.4_1
 libraqm.so.0 libraqm-0.2.0_1
 liboggz.so.2 liboggz-1.1.1_1

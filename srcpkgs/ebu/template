@@ -1,0 +1,36 @@
+# Template file for 'ebu'
+pkgname=ebu
+version=4.5+20220425
+revision=1
+wrksrc="ebu-${version/+/-}"
+build_style=gnu-configure
+hostmakedepends="perl"
+makedepends="zlib-devel"
+short_desc="EB library (EPWING) with JIS X 4081 UTF-8 support"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause"
+homepage="http://green.ribbon.to/~ikazuhiro/dic/ebu.html"
+distfiles="http://green.ribbon.to/~ikazuhiro/dic/files/ebu-${version/+/-}.tar.gz"
+checksum=972d8d4e1571eb8f29bba1cd157e6a782e22908c6568361595b7f73491719b5d
+
+post_install() {
+	vlicense COPYING
+}
+
+libebu-devel_package() {
+	depends="libebu>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/share/aclocal
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+	}
+}
+
+libebu_package() {
+	short_desc+=" - Library"
+	pkg_install() {
+		vmove usr/lib
+	}
+}
