@@ -34,6 +34,10 @@ pre_build() {
 	if [ "$build_option_readline" ]; then
 		vsed -i -e 's|#\{0,1\}\(CONFIG_READLINE\)=\(.*\)|\1=y|' .config
 	fi
+
+	if [ "$build_option_wolfssl" ]; then
+		vsed -i -e 's|#\{0,1\}\(CONFIG_TLS\)=\(.*\)|\1=wolfssl|' .config
+	fi
 }
 
 post_install() {
@@ -57,3 +61,13 @@ post_install() {
 	vlicense README
 	vsv wpa_supplicant
 }
+
+
+build_options+=" static wolfssl"
+build_options_default="static wolfssl"
+
+makedepends="${makedepends/openssl-devel/} $(vopt_if wolfssl wolfssl-devel openssl-devel)"
+if [ "$build_option_static" ]; then
+	makedepends="${makedepends/libnl3-devel/libnl3-static}"
+	LDFLAGS+=" -static"
+fi
