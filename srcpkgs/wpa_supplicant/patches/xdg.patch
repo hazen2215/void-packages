@@ -1,0 +1,13 @@
+diff --git a/wpa_supplicant/wpa_cli.c b/wpa_supplicant/wpa_cli.c
+index 033589f..50906bd 100644
+--- a/wpa_supplicant/wpa_cli.c
++++ b/wpa_supplicant/wpa_cli.c
+@@ -4595,7 +4595,7 @@ static void start_edit(void)
+ #ifdef CONFIG_WPA_CLI_HISTORY_DIR
+ 	home = CONFIG_WPA_CLI_HISTORY_DIR;
+ #else /* CONFIG_WPA_CLI_HISTORY_DIR */
+-	home = getenv("HOME");
++	home = getenv("XDG_STATE_HOME");
+ #endif /* CONFIG_WPA_CLI_HISTORY_DIR */
+ 	if (home) {
+ 		const char *fname = ".wpa_cli_history";
