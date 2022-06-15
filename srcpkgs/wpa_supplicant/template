@@ -30,6 +30,23 @@ pre_build() {
 	if [ "$build_option_readline" ]; then
 		vsed -i -e 's|#\{0,1\}\(CONFIG_READLINE\)=\(.*\)|\1=y|' .config
 	fi
+
+	if [ "$build_option_wolfssl" ]; then
+		vsed -i -e 's|#\{0,1\}\(CONFIG_TLS\)=\(.*\)|\1=wolfssl|' .config
+	fi
+
+	if [ "$build_option_static" ]; then
+		echo CONFIG_LIBNL_TINY=y >>.config
+		vsed -i .config \
+			-e '/CONFIG_LIBNL20=/d' \
+			-e '/CONFIG_LIBNL32=/d' \
+			-e '/CONFIG_DRIVER_MACSEC_LINUX=/d' \
+			-e '/CONFIG_EAP_FAST=/d' \
+			-e '/CONFIG_MACSEC=/d' \
+			-e '/CONFIG_DPP=/d' \
+			-e '/CONFIG_DPP2=/d'
+	fi
+
 }
 do_build() {
 	export CFLAGS+=" $(pkg-config --cflags libnl-3.0) $CPPFLAGS"
@@ -58,3 +75,15 @@ do_install() {
 	vlicense README
 	vsv wpa_supplicant
 }
+
+
+build_options+=" static wolfssl"
+build_options_default="static wolfssl"
+
+makedepends="${makedepends/libnl3-devel/}"
+makedepends="${makedepends/openssl-devel/} $(vopt_if wolfssl wolfssl-devel)"
+if [ "build_option_static" ]; then
+	makedepends+=" libnl-tiny"
+	CFLAGS+=" -I${XBPS_CROSS_BASE}/usr/include/libnl-tiny -DLIBNL1_COMPAT -D_GNU_SOURCE"
+	LDFLAGS+=" -static"
+fi
