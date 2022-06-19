@@ -1,0 +1,30 @@
+From b2c731df31a6c4357c3c2b8b17d3545d763fa8bf Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Thu, 30 Sep 2021 21:28:10 +0300
+Subject: [PATCH] utils: include sys/stat.h
+
+This fixes "make undo":
+
+  $ make undo
+  gcc -O2 -std=c99 -Wall -W -c voidnsundo.c -I. -o voidnsundo.o
+  In file included from voidnsundo.c:17:
+  utils.h:24:1: error: unknown type name 'mode_t'
+     24 | mode_t getmode(const char *s);
+        | ^~~~~~
+  make: *** [Makefile:41: voidnsundo.o] Error 1
+---
+ utils.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/utils.h b/utils.h
+index e25c4a4..1405a8c 100644
+--- a/utils.h
++++ b/utils.h
+@@ -2,6 +2,7 @@
+ #define VOIDNSRUN_UTILS_H
+ 
+ #include <stdbool.h>
++#include <sys/stat.h>
+ #include "config.h"
+ 
+ struct strarray {

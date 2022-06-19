@@ -1,0 +1,23 @@
+# Template file for 'voidnsrun'
+pkgname=voidnsrun
+version=0.0.20210730
+revision=1
+_githash=7d79c86285de5da04d22827c149c6a46886159ee
+build_style=gnu-makefile
+make_build_target="run undo"
+make_install_args="PREFIX=\${DESTDIR}/usr"
+make_install_target="install-run install-undo"
+short_desc="Run glibc binaries in musl libc Void Linux environment"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause"
+homepage="https://github.com/gch1p/voidnsrun"
+distfiles="https://github.com/gch1p/voidnsrun/archive/${_githash}.tar.gz"
+checksum=f459fa37df301f80717483c329735f15fb7cffd0730634dcdbffa4c0c832e760
+
+pre_install() {
+	vmkdir usr/bin
+}
+
+post_install() {
+	vlicense LICENSE
+}
