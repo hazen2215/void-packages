@@ -1,0 +1,21 @@
+# Template file for 'open_jtalk'
+pkgname=open_jtalk
+version=1.11
+revision=1
+build_style=gnu-configure
+configure_args="--with-hts-engine-header-path=/usr/include
+ --with-hts-engine-library-path=/usr/lib"
+makedepends="hts_engine_API-devel"
+short_desc="Japanese text-to-speech synthesis system"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause"
+homepage="https://sourceforge.net/projects/open-jtalk/"
+distfiles="${SOURCEFORGE_SITE}/project/open-jtalk/Open%20JTalk/open_jtalk-${version}/open_jtalk-${version}.tar.gz"
+checksum=20fdc6aeb6c757866034abc175820573db43e4284707c866fcd02c8ec18de71f
+
+post_install() {
+	vmkdir usr/share/open_jtalk
+	mv ${DESTDIR}/usr/dic ${DESTDIR}/usr/share/open_jtalk/dic
+	vlicense COPYING
+	vlicense mecab-naist-jdic/COPYING COPYING-dic
+}
