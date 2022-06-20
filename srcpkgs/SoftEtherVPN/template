@@ -1,0 +1,14 @@
+# Template file for 'SoftEtherVPN'
+pkgname=SoftEtherVPN
+version=5.02.5180
+revision=1
+build_style=cmake
+hostmakedepends="pkg-config"
+makedepends="openssl-devel libsodium-devel ncurses-devel readline-devel
+ zlib-devel"
+short_desc="Cross-platform multi-protocol VPN software"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Apache-2.0"
+homepage="https://www.softether.org/"
+distfiles="https://github.com/SoftEtherVPN/SoftEtherVPN/releases/download/${version}/SoftEtherVPN-${version}.tar.xz"
+checksum=b5649a8ea3cc6477325e09e2248ef708d434ee3b2251eb8764bcfc15fb1de456
