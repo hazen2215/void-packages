@@ -1,0 +1,20 @@
+diff --git a/nclttr.c b/nclttr.c
+index 60566b1..4a584c5 100644
+--- a/nclttr.c
++++ b/nclttr.c
+@@ -102,6 +102,7 @@ main(int argc, char *argv[])
+ 				hidden = 1;
+ 				x = y = 0;
+ 				XFixesHideCursor(dpy, root);
++				system("nclttr-script hide &");
+ 				continue;
+ 			}
+ 			if (FD_ISSET(selfpipe[0], &readset))
+@@ -128,6 +129,7 @@ main(int argc, char *argv[])
+ 			}
+ 			XFreeEventData(dpy, cookie);
+ 		}
++		system("nclttr-script show &");
+ 		XFixesShowCursor(dpy, root);
+ 		hidden = 0;
+ 	}

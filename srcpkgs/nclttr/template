@@ -3,7 +3,6 @@ pkgname=nclttr
 version=0.0.20210701
 revision=1
 _githash=3a6880a7e5b257b4c0dec422b73a0bffac3640a0
-wrksrc="nclttr-${_githash}"
 build_style=gnu-makefile
 makedepends="libXfixes-devel libXi-devel"
 short_desc="Hide idle cursor"
