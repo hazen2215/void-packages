@@ -1,8 +1,9 @@
 # Template file for 'palemoon'
 pkgname=palemoon
-version=29.4.6
+version=31.1.0
 revision=1
-wrksrc="palemoon-source"
+create_wrksrc=yes
+build_wrksrc="pale-moon"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
  which"
 makedepends="libXt-devel $(vopt_if alsa alsa-lib-devel)
@@ -13,15 +14,23 @@ short_desc="Open source web browser based on Firefox focusing on efficiency"
 maintainer="hazen2215 <haz@disroot.org>"
 license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
-distfiles="https://archive.palemoon.org/source/palemoon-${version}.source.tar.xz"
-checksum=34ba2b78b640f8ff1eb8137bb87a24ab5452eddc0b42fa908e4d5a1a898cfdac
+distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
+ https://repo.palemoon.org/MoonchildProductions/UXP/archive/RB_20220607_2.tar.gz"
+checksum="8a17a8bbdd90b6dbcbe001144d45734d6a6be0541c298aa479bfc3f20eb139a4
+ bd2a3585210589af136b926cf290bd01a736df99bcbe0bb78e79c3996dca7aa7"
+patch_args="-Np1 --directory=${build_wrksrc}"
 
-build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3"
+build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
 build_options_default="alsa"
 
 if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
 	makedepends+=" libatomic-devel"
 fi
+
+post_extract() {
+	rmdir pale-moon/platform
+	mv uxp pale-moon/platform
+}
 
 post_patch() {
 	if [ "$build_option_gtk3" ]; then
@@ -33,7 +42,7 @@ post_patch() {
 }
 
 do_build() {
-	cp "${FILESDIR}/mozconfig" "${wrksrc}/.mozconfig"
+	cp "${FILESDIR}/mozconfig" ".mozconfig"
 
 	case "$XBPS_TARGET_MACHINE" in
 	*-musl)
@@ -86,7 +95,7 @@ do_build() {
 
 	export MOZ_MAKE_FLAGS="${makejobs}"
 	export MOZ_NOSPAM=1
-	export MOZBUILD_STATE_PATH="${wrksrc}/mozbuild"
+	export MOZBUILD_STATE_PATH="mozbuild"
 
 	cat <<! >>.mozconfig
 ac_add_options --enable-default-toolkit=cairo-gtk$(vopt_if gtk3 '3' '2')
@@ -95,6 +104,7 @@ ac_add_options $(vopt_enable jack)
 ac_add_options $(vopt_enable sndio)
 ac_add_options $(vopt_enable dbus)
 ac_add_options $(vopt_enable pulseaudio)
+ac_add_options $(vopt_enable webrtc)
 export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
 !
 
@@ -103,14 +113,14 @@ export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
 }
 
 do_install() {
-	export MOZBUILD_STATE_PATH="${wrksrc}/mozbuild"
+	export MOZBUILD_STATE_PATH="mozbuild"
 	DESTDIR="$DESTDIR" ./mach install
 
-	vinstall ${wrksrc}/palemoon/branding/official/palemoon.desktop 644 \
+	vinstall palemoon/branding/official/palemoon.desktop 644 \
 		usr/share/applications
 
 	for i in 16 22 24 32 48 256; do
-		vinstall ${wrksrc}/palemoon/branding/official/default$i.png 644 \
+		vinstall palemoon/branding/official/default$i.png 644 \
 			usr/share/icons/hicolor/${i}x${i}/apps palemoon.png
 	done
 

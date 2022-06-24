@@ -13,7 +13,6 @@ mk_add_options AUTOCLOBBER=1
 
 # Disable stuff
 ac_add_options --disable-eme
-ac_add_options --disable-webrtc
 ac_add_options --disable-gamepad
 ac_add_options --disable-tests
 ac_add_options --disable-debug
