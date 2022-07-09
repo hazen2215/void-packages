@@ -1,0 +1,13 @@
+# Template file for 'eblook'
+pkgname=eblook
+version=1.6.1+media+20220426
+revision=1
+wrksrc=eblook-"${version/media+/media-}"
+build_style=gnu-configure
+makedepends="ebu libebu-devel zlib-devel"
+short_desc="CLI electronic dictionary search (with media patch)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://green.ribbon.to/~ikazuhiro/lookup/lookup.html"
+distfiles="http://green.ribbon.to/~ikazuhiro/lookup/files/eblook-${version/media+/media-}.tar.gz"
+checksum=e83c9521239ee046d37efa7b4cca356c1a3eac4e35a3153c90d6dd24c1cb0c0f
