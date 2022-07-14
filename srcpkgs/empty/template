@@ -1,0 +1,18 @@
+# Template file for 'empty'
+pkgname=empty
+version=0.6.23c
+revision=1
+build_style=gnu-makefile
+make_install_args="PREFIX=\${DESTDIR}/usr
+ MANDIR=\${DESTDIR}/usr/share/man/man1"
+short_desc="Run applications under pseudo-terminal sessions"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause"
+homepage="http://empty.sourceforge.net/"
+changelog="https://sourceforge.net/projects/empty/files/empty/empty-${version}/README.txt/view"
+distfiles="${SOURCEFORGE_SITE}/empty/empty/empty-${version}/empty-${version}.tgz"
+checksum=8a7ca8c7099dc6d6743ac7eafc0be3b1f8991d2c8f20cf66ce900c7f08e010bd
+
+post_install() {
+	vlicense COPYRIGHT
+}
