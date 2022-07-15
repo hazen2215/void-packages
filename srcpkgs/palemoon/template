@@ -1,6 +1,6 @@
 # Template file for 'palemoon'
 pkgname=palemoon
-version=31.1.0
+version=31.1.1
 revision=1
 create_wrksrc=yes
 build_wrksrc="pale-moon"
@@ -15,9 +15,9 @@ maintainer="hazen2215 <haz@disroot.org>"
 license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
- https://repo.palemoon.org/MoonchildProductions/UXP/archive/RB_20220607_2.tar.gz"
-checksum="8a17a8bbdd90b6dbcbe001144d45734d6a6be0541c298aa479bfc3f20eb139a4
- bd2a3585210589af136b926cf290bd01a736df99bcbe0bb78e79c3996dca7aa7"
+ https://repo.palemoon.org/MoonchildProductions/UXP/archive/RB20220707.tar.gz"
+checksum="b0503d32338bc9f9e14b32c4acec7f3e09802b3990b979ab75e2077b1e9bd6be
+ dc7292e7e6f50063c3fcbbbd8cdb23e6eedf5b9bf290ac8aeca7c72e7060d3e5"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
@@ -34,7 +34,7 @@ post_extract() {
 
 post_patch() {
 	if [ "$build_option_gtk3" ]; then
-		patch -Np1 -i "${FILESDIR}/no-gtk2.patch"
+		patch -Np1 --directory=${build_wrksrc} -i "${FILESDIR}/no-gtk2.patch"
 	fi
 
 	# actually mach is bash script
