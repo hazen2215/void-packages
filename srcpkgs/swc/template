@@ -1,0 +1,37 @@
+# Template file for 'swc'
+pkgname=swc
+version=0.0.20230701
+revision=1
+_commit=19893a5ca3239082b904a04fdb9ac7c3a1fb62e2
+build_style=gnu-makefile
+make_build_args="ENABLE_XWAYLAND=$(vopt_if xwayland 1 0)"
+make_install_args="${make_build_args}"
+hostmakedepends="pkg-config wayland-devel"
+makedepends="pixman-devel fontconfig-devel libdrm-devel wayland-devel
+ wld-devel xcb-util-wm-devel libxkbcommon-devel libinput-devel
+ wayland-protocols $(vopt_if xwayland xcb-util-wm-devel)"
+short_desc="Library for making a simple Wayland compositor"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/michaelforney/swc"
+distfiles="https://github.com/michaelforney/swc/archive/${_commit}.tar.gz"
+checksum=d359df126b40296f6f90d680987f7757c6f50ddd1e7b94f7f5fb21a85a73815d
+
+build_options="xwayland"
+build_options_default="xwayland"
+desc_option_xwayland="Enable Xwayland support"
+
+post_install() {
+	vlicense LICENSE
+}
+
+swc-devel_package() {
+	depends="swc>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+	}
+}

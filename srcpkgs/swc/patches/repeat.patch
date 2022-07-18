@@ -1,0 +1,13 @@
+diff --git a/libswc/keyboard.c b/libswc/keyboard.c
+index 92889eb..fd1de74 100644
+--- a/libswc/keyboard.c
++++ b/libswc/keyboard.c
+@@ -41,7 +41,7 @@
+ #include <unistd.h>
+ #include <xkbcommon/xkbcommon.h>
+ 
+-static const int repeat_delay = 500, repeat_rate = 40;
++static const int repeat_delay = 300, repeat_rate = 50;
+ 
+ static void
+ enter(struct input_focus_handler *handler, struct wl_list *resources, struct compositor_view *view)
