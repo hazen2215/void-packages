@@ -1,0 +1,37 @@
+# Template file for 'wld'
+pkgname=wld
+version=0.0.20221021
+revision=1
+_commit=3fe15e769cf81784215c003b18438184083af8ce
+build_style=gnu-makefile
+hostmakedepends="pkg-config wayland-devel"
+makedepends="pixman-devel fontconfig-devel libdrm-devel wayland-devel"
+short_desc="Primitive drawing library targeted at Wayland"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/michaelforney/wld"
+distfiles="https://github.com/michaelforney/wld/archive/${_commit}.tar.gz"
+checksum=e0c1ec03dd8e840ae3fb28b3e904dba2dd76e76808fe094e9ad1bf041f110f4e
+
+case "$XBPS_TARGET_MACHINE" in
+	arm*) _drm_drivers="nouveau";;
+	i686*|x86_64*) _drm_drivers="intel nouveau";;
+esac
+
+make_build_args="DRM_DRIVERS=\"\${_drm_drivers}\""
+make_install_args="${make_build_args}"
+
+post_install() {
+	vlicense COPYING
+}
+
+wld-devel_package() {
+	depends="wld>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+	}
+}
