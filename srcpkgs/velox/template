@@ -1,0 +1,21 @@
+# Template file for 'velox'
+pkgname=velox
+version=0.0.3.20220211
+revision=1
+_githash=fcc041265539befd907a64ee3a536cb2489ffb99
+build_style=gnu-makefile
+make_use_env=yes
+hostmakedepends="pkg-config wayland-devel"
+makedepends="pixman-devel fontconfig-devel libdrm-devel wayland-devel wld-devel
+ swc-devel libinput-devel libxkbcommon-devel wayland-protocols"
+short_desc="Simple xcb window manager inspired by awesome, xmonad, and dwm"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/michaelforney/velox"
+distfiles="https://github.com/michaelforney/velox/archive/${_githash}.tar.gz"
+checksum=ab1400693473ebae727690898b4a19e88cb447f4516e5ec6ed9ce05e63dd31aa
+
+post_install() {
+	vsconf velox.conf.sample
+	vlicense LICENSE
+}
