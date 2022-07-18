@@ -1,0 +1,20 @@
+# Template file for 'sfm'
+pkgname=sfm
+version=0.4
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+short_desc="Simple file manager"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://git.afify.dev/sfm"
+distfiles="https://git.afify.dev/sfm/releases/sfm-v${version}.tar.gz"
+checksum=ae0f610c29246aeb6ca1e1bc40868820b2fc59ee7d27c57fe03f97f4cd316344
+
+pre_bulid() {
+	[ -e ${FILESDIR}/config.h ] && cp ${FILESDIR}/config.h config.h || :
+}
+
+post_install() {
+	vlicense LICENSE
+}
