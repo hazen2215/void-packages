@@ -1,0 +1,55 @@
+# Template file for 'cmigemo'
+pkgname=cmigemo
+version=1.3.20220623
+revision=1
+_githash=e0f6145f61e0b7058c3006f344e58571d9fdd83a
+_skk_githash=985950b510aecf55842671ea0f24df2e2dd5cb53
+build_style=configure
+configure_args="--prefix=\${DESTDIR}/usr"
+make_build_target="gcc-all"
+make_install_target="gcc-install"
+hostmakedepends="which gzip ctags nkf perl"
+short_desc="Migemo library implementation in C"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="http://www.kaoriya.net/software/cmigemo/"
+distfiles="https://github.com/koron/cmigemo/archive/${_githash}.tar.gz
+ https://github.com/skk-dev/dict/raw/${_skk_githash}/SKK-JISYO.L"
+checksum="beef9e7d362713f54879f22191408ee5c80ec4b9bf6bbc215f7d4316a545bc85
+ c61f89ec74dced2378046f3802296d7909c06642f1e6c58ba18502fc5fd9d1ff"
+skip_extraction="SKK-JISYO.L"
+
+post_extract() {
+	cp ${XBPS_SRCDISTDIR}/cmigemo-${version}/SKK-JISYO.L dict
+	vsed -i configure -e 's/^if CHECK_COMMAND curl/if CHECK_COMMAND true/'
+}
+
+post_configure() {
+	if [ "$XBPS_LIBC" = "musl" ]; then
+		vsed -i config.mk -e 's/cp932/shift-jis/'
+	fi
+	vsed -i config.mk -e 's/^HTTP = curl -O/HTTP = true/'
+}
+
+post_install() {
+	mv ${DESTDIR}/usr/doc ${DESTDIR}/usr/share
+	mv ${DESTDIR}/usr/share/migemo ${DESTDIR}/usr/share/cmigemo
+	vlicense doc/LICENSE_MIT.txt
+	vlicense doc/LICENSE_j.txt
+}
+
+libmigemo_package() {
+	short_desc+=" - library"
+	pkg_install() {
+		vmove "usr/lib/*.so.*"
+	}
+}
+
+libmigemo-devel_package() {
+	short_desc+=" - development files"
+	depends="libmigemo>=${version}_${revision}"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.so"
+	}
+}
