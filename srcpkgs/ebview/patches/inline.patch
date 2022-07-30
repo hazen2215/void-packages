@@ -1,0 +1,14 @@
+diff --git a/src/hook.c b/src/hook.c
+index 1bf185e..7e57643 100644
+--- a/src/hook.c
++++ b/src/hook.c
+@@ -86,6 +86,9 @@ static EB_Hook text_hooks[] = {
+   {EB_HOOK_BEGIN_COLOR_BMP,        hook_color},
+   {EB_HOOK_BEGIN_COLOR_JPEG,       hook_color},
+   {EB_HOOK_END_COLOR_GRAPHIC,      hook_color},
++  {EB_HOOK_BEGIN_IN_COLOR_BMP,     hook_color},
++  {EB_HOOK_BEGIN_IN_COLOR_JPEG,    hook_color},
++  {EB_HOOK_END_IN_COLOR_GRAPHIC,   hook_color},
+   {EB_HOOK_BEGIN_MONO_GRAPHIC,     hook_mono},
+   {EB_HOOK_END_MONO_GRAPHIC,       hook_mono},
+   {EB_HOOK_BEGIN_GRAY_GRAPHIC,     hook_gray},

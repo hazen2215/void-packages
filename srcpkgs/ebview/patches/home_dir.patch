@@ -1,0 +1,63 @@
+diff --git a/src/preference.c b/src/preference.c
+index f5eb71b..9f1805b 100644
+--- a/src/preference.c
++++ b/src/preference.c
+@@ -283,6 +283,7 @@ void initialize_preference(){
+ 	cache_dir = g_strdup_printf("%s%scache", user_dir, DIR_DELIMITER);
+ 
+ #else
++	if(!(home_dir = getenv("XDG_DATA_HOME")))
+ 	home_dir = getenv("HOME");
+ 	package_dir = PACKAGEDIR;
+ 
+@@ -396,7 +397,7 @@ static gboolean ok_pref(GtkWidget *widget,gpointer *data){
+ 
+ 
+ void  calculate_font_size(){
+-		
++
+ 	PangoFontDescription* desc;
+ 	PangoLanguage* lang;
+ 	PangoFontMap* fontmap;
+@@ -479,12 +480,12 @@ static gboolean delete_event( GtkWidget *widget,
+ 	gboolean ret;
+ 
+ 	LOG(LOG_DEBUG, "IN : delete_event()");
+-	
++
+ 	ret = ok_pref(NULL, NULL);
+ 
+ 	LOG(LOG_DEBUG, "OUT : delete_event()");
+ 	return(ret);
+-	
++
+ }
+ 
+ enum
+@@ -612,7 +613,7 @@ void show_preference()
+ 
+ 		label = gtk_label_new(prefs[i].title);
+ 		frame = gtk_frame_new(NULL);
+-		gtk_notebook_append_page(GTK_NOTEBOOK(note_pref), 
++		gtk_notebook_append_page(GTK_NOTEBOOK(note_pref),
+ 					 frame,
+ 					 label);
+ 
+@@ -627,7 +628,7 @@ void show_preference()
+ 			widget = prefs[i].start_func();
+ 
+ 		if(widget != NULL)
+-			gtk_box_pack_start(GTK_BOX(hbox), widget, 
++			gtk_box_pack_start(GTK_BOX(hbox), widget,
+ 					   TRUE, TRUE, 0);
+ 	}
+ 
+@@ -635,7 +636,7 @@ void show_preference()
+ 	GTK_WIDGET_SET_FLAGS (button, GTK_CAN_DEFAULT);
+ 	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (pref_dlg)->action_area), button,
+ 			    TRUE, TRUE, 0);
+-	
++
+ 	g_signal_connect(G_OBJECT (button), "clicked",
+ 			 G_CALLBACK(ok_pref), (gpointer)pref_dlg);
+ 	gtk_widget_grab_default (button);
