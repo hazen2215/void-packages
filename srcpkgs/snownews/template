@@ -1,0 +1,13 @@
+# Template file for 'snownews'
+pkgname=snownews
+version=1.9
+revision=1
+build_style=gnu-configure
+makedepends="ncurses-devel libcurl-devel libxml2-devel openssl-devel
+ gettext-devel"
+short_desc="Text-mode RSS feed reader"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/msharov/snownews"
+distfiles="https://github.com/msharov/snownews/archive/v${version}.tar.gz"
+checksum=d8ef0c7ef779771e2c8322231bdfa7246d495ba8f24c3c210c96f3b6bd3776a7
