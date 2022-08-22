@@ -1,7 +1,7 @@
 # Template file for 'palemoon'
 pkgname=palemoon
 version=31.1.1
-revision=1
+revision=2
 create_wrksrc=yes
 build_wrksrc="pale-moon"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
@@ -20,7 +20,7 @@ checksum="b0503d32338bc9f9e14b32c4acec7f3e09802b3990b979ab75e2077b1e9bd6be
  dc7292e7e6f50063c3fcbbbd8cdb23e6eedf5b9bf290ac8aeca7c72e7060d3e5"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
-build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
+build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3"
 build_options_default="alsa"
 
 if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
@@ -47,6 +47,7 @@ do_build() {
 	case "$XBPS_TARGET_MACHINE" in
 	*-musl)
 		echo "ac_add_options --disable-jemalloc" >>.mozconfig
+		echo "ac_add_options --disable-gold" >>.mozconfig
 		;;
 	esac
 
@@ -63,8 +64,6 @@ do_build() {
 	if [ "$CROSS_BUILD" ]; then
 		export HOST_CFLAGS="${XBPS_CFLAGS}"
 		export HOST_CXXFLAGS="${XBPS_CXXFLAGS}"
-		export CFLAGS+=" -I${XBPS_CROSS_BASE}/usr/include/alsa \
-			-I${XBPS_CROSS_BASE}/usr/include/pulse"
 		export CXXFLAGS+=" ${CFLAGS}"
 		export LDFLAGS+=" -L${XBPS_CROSS_BASE}/usr/lib"
 
@@ -104,7 +103,6 @@ ac_add_options $(vopt_enable jack)
 ac_add_options $(vopt_enable sndio)
 ac_add_options $(vopt_enable dbus)
 ac_add_options $(vopt_enable pulseaudio)
-ac_add_options $(vopt_enable webrtc)
 export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
 !
 
