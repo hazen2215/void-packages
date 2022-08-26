@@ -1,0 +1,28 @@
+# Template file for 'st-wl'
+pkgname=st-wl
+version=0.0.20190618
+revision=1
+_githash=a0629747acc7c57cc827c539659c28084402f3a5
+build_style=gnu-makefile
+make_use_env=yes
+hostmakedepends="pkg-config wayland-devel"
+makedepends="pixman-devel fontconfig-devel libdrm-devel wayland-devel
+ wayland-protocols libxkbcommon-devel wld-devel"
+depends="ncurses st-terminfo"
+short_desc="Simple terminal implementation for Wayland using wld"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/ianbeyst/st-wl"
+distfiles="https://github.com/ianbeyst/st-wl/archive/${_githash}.tar.gz"
+checksum=cbf6678b2367a5ee3c17fe46336efe248a9f9eeddb2a7f5634083ca44e9e7afe
+
+pre_build() {
+	sed -i 's|Liberation Mono|Monospace|g' config.def.h
+	[ -e ${FILESDIR}/config.h ] && cp ${FILESDIR}/config.h config.h
+	vsed -i Makefile -e '/tic/d'
+}
+
+post_install() {
+	vdoc README
+	vlicense LICENSE
+}

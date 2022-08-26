@@ -1,0 +1,18 @@
+diff --git a/wl.c b/wl.c
+index e1d4840..3313a86 100644
+--- a/wl.c
++++ b/wl.c
+@@ -1384,13 +1384,6 @@ wldraws(char *s, Glyph base, int x, int y, int charlen, int bytelen)
+     }
+ 
+     if (base.mode & ATTR_BOLD) {
+-        /*
+-         * change basic system colors [0-7]
+-         * to bright system colors [8-15]
+-         */
+-        if (BETWEEN(base.fg, 0, 7) && !(base.mode & ATTR_FAINT))
+-            fg = dc.col[base.fg + 8];
+-
+         if (base.mode & ATTR_ITALIC) {
+             font = &dc.ibfont;
+             frcflags = FRC_ITALICBOLD;
