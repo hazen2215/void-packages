@@ -50,6 +50,7 @@ do_install() {
 
 	cd ${wrksrc}/lua53
 	vinstall lpeg.so 755 usr/lib/lua/5.3/
+	vinstall lpeg.a 644 /usr/lib/lua/5.3/ liblpeg.a
 	vinstall re.lua 644 usr/share/lua/5.3/
 
 	cd ${wrksrc}/lua54
@@ -77,6 +78,28 @@ lua52-lpeg_package() {
 		vmove usr/share/lua/5.2
 		vlicense ${wrksrc}/lua52/lpeg.html
 	}
+}
+
+lua53-lpeg-static_package() {
+	depends="lua53"
+	short_desc="${_desc} (5.3.x)"
+	pkg_install() {
+		vmove usr/lib/lua/5.3/liblpeg.a
+	}
+}
+
+post_patch() {
+	sed -i lua53/makefile -e '/^linux:$/a\
+	$(MAKE) lpeg.a'
+
+	cat <<'!' >>lua53/makefile
+AR = ar
+RANLIB = ranlib
+lpeg.a: $(FILES)
+	env $(AR) rc lpeg.a $(FILES)
+	env $(RANLIB) lpeg.a
+!
+
 }
 
 lua53-lpeg_package() {
