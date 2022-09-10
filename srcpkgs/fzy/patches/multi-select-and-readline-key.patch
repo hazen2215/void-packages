@@ -1,0 +1,391 @@
+diff --git a/fzy.1 b/fzy.1
+index acfb62d..0dc29ec 100644
+--- a/fzy.1
++++ b/fzy.1
+@@ -52,7 +52,7 @@ Usage help.
+ .
+ .TP
+ .BR "ENTER"
+-Print the selected item to stdout and exit
++Print the selected item (or all multi-selected items) to stdout and exit
+ .TP
+ .BR "Ctrl+c, Esc"
+ Exit with status 1, without making a selection.
+@@ -63,7 +63,7 @@ Select the previous item
+ .BR "Down Arrow, Ctrl+n"
+ Select the next item
+ .TP
+-Tab
++.BR Tab
+ Replace the current search string with the selected item
+ .TP
+ .BR "Backspace, Ctrl+h"
+@@ -74,6 +74,10 @@ Delete the word before the cursor
+ .TP
+ .BR Ctrl+u
+ Delete the entire line
++.TP
++.BR Ctrl+t
++Multi-select the current item. Each multi-selected item will be printed on
++its own line.
+ .
+ .SH USAGE EXAMPLES
+ .
+diff --git a/src/choices.c b/src/choices.c
+index a8c24b6..01248e6 100644
+--- a/src/choices.c
++++ b/src/choices.c
+@@ -15,6 +15,9 @@
+ /* Initial size of choices array */
+ #define INITIAL_CHOICE_CAPACITY 128
+ 
++/* Initial size of multi-selection buffer */
++#define INITIAL_SELECTIONS_CAPACITY 8
++
+ static int cmpchoice(const void *_idx1, const void *_idx2) {
+ 	const struct scored_result *a = _idx1;
+ 	const struct scored_result *b = _idx2;
+@@ -91,15 +94,22 @@ static void choices_resize(choices_t *c, size_t new_capacity) {
+ 	c->capacity = new_capacity;
+ }
+ 
++static void choices_resize_selections(choices_t *c, size_t new_capacity) {
++	c->selections.strings = safe_realloc(c->selections.strings, new_capacity * sizeof(const char *));
++	c->selections.capacity = new_capacity;
++}
++
+ static void choices_reset_search(choices_t *c) {
+ 	free(c->results);
+-	c->selection = c->available = 0;
+ 	c->results = NULL;
++	c->selection = c->available = 0;
+ }
+ 
+ void choices_init(choices_t *c, options_t *options) {
+ 	c->strings = NULL;
+ 	c->results = NULL;
++	c->selections.strings = NULL;
++	c->selections.capacity = c->selections.size = 0;
+ 
+ 	c->buffer_size = 0;
+ 	c->buffer = NULL;
+@@ -128,6 +138,10 @@ void choices_destroy(choices_t *c) {
+ 	free(c->results);
+ 	c->results = NULL;
+ 	c->available = c->selection = 0;
++
++	free(c->selections.strings);
++	c->selections.strings = NULL;
++	c->selections.capacity = c->selections.size = 0;
+ }
+ 
+ void choices_add(choices_t *c, const char *choice) {
+@@ -140,6 +154,44 @@ void choices_add(choices_t *c, const char *choice) {
+ 	c->strings[c->size++] = choice;
+ }
+ 
++void choices_select(choices_t *c, const char *choice) {
++	if (c->selections.size == c->selections.capacity) {
++		if (c->selections.capacity == 0) {
++			choices_resize_selections(c, INITIAL_SELECTIONS_CAPACITY);
++		} else {
++			choices_resize_selections(c, c->selections.capacity * 2);
++		}
++	}
++
++	if (!choices_selected(c, choice)) {
++		c->selections.strings[c->selections.size++] = choice;
++	}
++}
++
++void choices_deselect(choices_t *c, const char *choice) {
++	size_t index = c->selections.size;
++	for (size_t i = 0; i < c->selections.size; i++) {
++		if (c->selections.strings[i] == choice) {
++			c->selections.size--;
++			index = i;
++			break;
++		}
++	}
++
++	for (size_t i = index; i < c->selections.size; i++) {
++		c->selections.strings[i] = c->selections.strings[i+1];
++	}
++}
++
++bool choices_selected(choices_t *c, const char *choice) {
++	for (size_t i = 0; i < c->selections.size; i++) {
++		if (c->selections.strings[i] == choice) {
++			return true;
++		}
++	}
++	return false;
++}
++
+ size_t choices_available(choices_t *c) {
+ 	return c->available;
+ }
+diff --git a/src/choices.h b/src/choices.h
+index e8a598b..d4bf175 100644
+--- a/src/choices.h
++++ b/src/choices.h
+@@ -1,6 +1,7 @@
+ #ifndef CHOICES_H
+ #define CHOICES_H CHOICES_H
+ 
++#include <stdbool.h>
+ #include <stdio.h>
+ 
+ #include "match.h"
+@@ -24,6 +25,13 @@ typedef struct {
+ 	size_t available;
+ 	size_t selection;
+ 
++	struct {
++		const char **strings;
++
++		size_t capacity;
++		size_t size;
++	} selections;
++
+ 	unsigned int worker_count;
+ } choices_t;
+ 
+@@ -31,6 +39,9 @@ void choices_init(choices_t *c, options_t *options);
+ void choices_fread(choices_t *c, FILE *file);
+ void choices_destroy(choices_t *c);
+ void choices_add(choices_t *c, const char *choice);
++void choices_select(choices_t *c, const char *choice);
++void choices_deselect(choices_t *c, const char *choice);
++bool choices_selected(choices_t *c, const char *choice);
+ size_t choices_available(choices_t *c);
+ void choices_search(choices_t *c, const char *search);
+ const char *choices_get(choices_t *c, size_t n);
+diff --git a/src/tty.c b/src/tty.c
+index f8de9f5..9abe9d7 100644
+--- a/src/tty.c
++++ b/src/tty.c
+@@ -148,9 +148,13 @@ void tty_setunderline(tty_t *tty) {
+ 	tty_sgr(tty, 4);
+ }
+ 
++void tty_setbold(tty_t *tty) {
++	tty_sgr(tty, 1);
++}
++
+ void tty_setnormal(tty_t *tty) {
+ 	tty_sgr(tty, 0);
+-	tty->fgcolor = 9;
++	tty->fgcolor = TTY_COLOR_NORMAL;
+ }
+ 
+ void tty_setnowrap(tty_t *tty) {
+diff --git a/src/tty.h b/src/tty.h
+index 6c73a6e..2b86bcf 100644
+--- a/src/tty.h
++++ b/src/tty.h
+@@ -22,6 +22,7 @@ int tty_input_ready(tty_t *tty, long int timeout, int return_on_signal);
+ void tty_setfg(tty_t *tty, int fg);
+ void tty_setinvert(tty_t *tty);
+ void tty_setunderline(tty_t *tty);
++void tty_setbold(tty_t *tty);
+ void tty_setnormal(tty_t *tty);
+ void tty_setnowrap(tty_t *tty);
+ void tty_setwrap(tty_t *tty);
+diff --git a/src/tty_interface.c b/src/tty_interface.c
+index f366a23..87c24d9 100644
+--- a/src/tty_interface.c
++++ b/src/tty_interface.c
+@@ -50,6 +50,10 @@ static void draw_match(tty_interface_t *state, const char *choice, int selected)
+ 		}
+ 	}
+ 
++	if (choices_selected(state->choices, choice)) {
++		tty_setbold(tty);
++	}
++
+ 	if (selected)
+ #ifdef TTY_SELECTION_UNDERLINE
+ 		tty_setunderline(tty);
+@@ -120,6 +124,20 @@ static void update_state(tty_interface_t *state) {
+ 	}
+ }
+ 
++static void action_select(tty_interface_t *state) {
++	update_state(state);
++
++	const char *selection = choices_get(state->choices, state->choices->selection);
++	if (selection) {
++		if (choices_selected(state->choices, selection)) {
++			choices_deselect(state->choices, selection);
++		} else {
++			choices_select(state->choices, selection);
++		}
++		choices_next(state->choices);
++	}
++}
++
+ static void action_emit(tty_interface_t *state) {
+ 	update_state(state);
+ 
+@@ -129,13 +147,21 @@ static void action_emit(tty_interface_t *state) {
+ 	/* ttyout should be flushed before outputting on stdout */
+ 	tty_close(state->tty);
+ 
+-	const char *selection = choices_get(state->choices, state->choices->selection);
+-	if (selection) {
+-		/* output the selected result */
+-		printf("%s\n", selection);
++	/* If no choices were selected with multi-select, use the choice under
++	 * the cursor */
++	if (!state->choices->selections.size) {
++		const char *selection = choices_get(state->choices, state->choices->selection);
++		if (selection) {
++			/* output the result */
++			printf("%s\n", selection);
++		} else {
++			/* No match, output the query instead */
++			printf("%s\n", state->search);
++		}
+ 	} else {
+-		/* No match, output the query instead */
+-		printf("%s\n", state->search);
++		for (size_t i = 0; i < state->choices->selections.size; i++) {
++			printf("%s\n", state->choices->selections.strings[i]);
++		}
+ 	}
+ 
+ 	state->exit = EXIT_SUCCESS;
+@@ -155,6 +181,15 @@ static void action_del_char(tty_interface_t *state) {
+ 	memmove(&state->search[state->cursor], &state->search[original_cursor], length - original_cursor + 1);
+ }
+ 
++static void action_del_right(tty_interface_t *state) {
++	size_t length = strlen(state->search);
++	if (state->cursor == length) {
++		return;
++	}
++
++	memmove(&state->search[state->cursor], &state->search[state->cursor + 1], length - state->cursor + 1);
++}
++
+ static void action_del_word(tty_interface_t *state) {
+ 	size_t original_cursor = state->cursor;
+ 	size_t cursor = state->cursor;
+@@ -174,6 +209,11 @@ static void action_del_all(tty_interface_t *state) {
+ 	state->cursor = 0;
+ }
+ 
++static void action_del_end(tty_interface_t *state) {
++	size_t length = strlen(state->search);
++	memmove(&state->search[state->cursor], &state->search[length], length - state->cursor + 1);
++}
++
+ static void action_prev(tty_interface_t *state) {
+ 	update_state(state);
+ 	choices_prev(state->choices);
+@@ -254,6 +294,7 @@ static void append_search(tty_interface_t *state, char ch) {
+ void tty_interface_init(tty_interface_t *state, tty_t *tty, choices_t *choices, options_t *options) {
+ 	state->tty = tty;
+ 	state->choices = choices;
++
+ 	state->options = options;
+ 	state->ambiguous_key_pending = 0;
+ 
+@@ -284,14 +325,18 @@ static const keybinding_t keybindings[] = {{"\x1b", action_exit},       /* ESC *
+ 					   {KEY_CTRL('H'), action_del_char}, /* Backspace (C-H) */
+ 					   {KEY_CTRL('W'), action_del_word}, /* C-W */
+ 					   {KEY_CTRL('U'), action_del_all},  /* C-U */
++					   {KEY_CTRL('K'), action_del_end},  /* C-K */
+ 					   {KEY_CTRL('I'), action_autocomplete}, /* TAB (C-I ) */
+ 					   {KEY_CTRL('C'), action_exit},	 /* C-C */
+-					   {KEY_CTRL('D'), action_exit},	 /* C-D */
++					   {KEY_CTRL('D'), action_del_right},	 /* C-D */
++					   {KEY_CTRL('G'), action_exit},	 /* C-G */
+ 					   {KEY_CTRL('M'), action_emit},	 /* CR */
++					   {KEY_CTRL('J'), action_emit},	 /* CR */
++					   {KEY_CTRL('T'), action_select},	 /* C-T */
+ 					   {KEY_CTRL('P'), action_prev},	 /* C-P */
+ 					   {KEY_CTRL('N'), action_next},	 /* C-N */
+-					   {KEY_CTRL('K'), action_prev},	 /* C-K */
+-					   {KEY_CTRL('J'), action_next},	 /* C-J */
++					   {KEY_CTRL('B'), action_left},	 /* C-B */
++					   {KEY_CTRL('F'), action_right},	 /* C-F */
+ 					   {KEY_CTRL('A'), action_beginning},    /* C-A */
+ 					   {KEY_CTRL('E'), action_end},		 /* C-E */
+ 
+diff --git a/test/test_choices.c b/test/test_choices.c
+index 3ad7d6a..107568d 100644
+--- a/test/test_choices.c
++++ b/test/test_choices.c
+@@ -9,26 +9,28 @@
+ #include "greatest/greatest.h"
+ 
+ #define ASSERT_SIZE_T_EQ(a,b) ASSERT_EQ_FMT((size_t)(a), (b), "%zu")
++#define ASSERT_TRUE(cond) ASSERT_FALSE(!cond)
+ 
+ static options_t default_options;
+ static choices_t choices;
+ 
+ static void setup(void *udata) {
+-    (void)udata;
++	(void)udata;
+ 
+-    options_init(&default_options);
+-    choices_init(&choices, &default_options);
++	options_init(&default_options);
++	choices_init(&choices, &default_options);
+ }
+ 
+ static void teardown(void *udata) {
+-    (void)udata;
+-    choices_destroy(&choices);
++	(void)udata;
++	choices_destroy(&choices);
+ }
+ 
+ TEST test_choices_empty() {
+ 	ASSERT_SIZE_T_EQ(0, choices.size);
+ 	ASSERT_SIZE_T_EQ(0, choices.available);
+ 	ASSERT_SIZE_T_EQ(0, choices.selection);
++	ASSERT_SIZE_T_EQ(0, choices.selections.size);
+ 
+ 	choices_prev(&choices);
+ 	ASSERT_SIZE_T_EQ(0, choices.selection);
+@@ -157,6 +159,30 @@ TEST test_choices_large_input() {
+ 	PASS();
+ }
+ 
++TEST test_choices_multi_select() {
++	choices_add(&choices, "tags");
++	choices_add(&choices, "test");
++	choices_search(&choices, "");
++
++	const char *first_choice = choices_get(&choices, 0);
++	ASSERT_FALSE(choices_selected(&choices, first_choice));
++	choices_select(&choices, first_choice);
++	ASSERT_TRUE(choices_selected(&choices, first_choice));
++	ASSERT_SIZE_T_EQ(1, choices.selections.size);
++
++	const char *second_choice = choices_get(&choices, 1);
++	ASSERT_FALSE(choices_selected(&choices, second_choice));
++	choices_select(&choices, second_choice);
++	ASSERT_TRUE(choices_selected(&choices, second_choice));
++	ASSERT_SIZE_T_EQ(2, choices.selections.size);
++
++	choices_deselect(&choices, second_choice);
++	ASSERT_FALSE(choices_selected(&choices, second_choice));
++	ASSERT_SIZE_T_EQ(1, choices.selections.size);
++
++	PASS();
++}
++
+ SUITE(choices_suite) {
+ 	SET_SETUP(setup, NULL);
+ 	SET_TEARDOWN(teardown, NULL);
+@@ -167,4 +193,5 @@ SUITE(choices_suite) {
+ 	RUN_TEST(test_choices_without_search);
+ 	RUN_TEST(test_choices_unicode);
+ 	RUN_TEST(test_choices_large_input);
++	RUN_TEST(test_choices_multi_select);
+ }
