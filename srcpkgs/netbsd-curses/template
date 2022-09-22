@@ -1,0 +1,50 @@
+# Template file for 'netbsd-curses'
+pkgname=netbsd-curses
+version=0.3.2
+revision=1
+build_style=gnu-makefile
+make_install_args="SO_SUFFIX=.so.6"
+short_desc="Portable libcurses implementation from NetBSD"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause, BSD-2-Clause"
+homepage="https://github.com/sabotage-linux/netbsd-curses"
+distfiles="https://github.com/sabotage-linux/netbsd-curses/archive/v${version}.tar.gz"
+checksum=9d3ebd651e5f70b87b1327b01cbd7e0c01a0f036b4c1371f653b7704b11daf23
+conflicts="ncurses-libs ncurses-devel"
+shlib_provides="libncursesw.so.6 libncurses.so.6 libformw.so.6 libmenuw.so.6
+ libpanelw.so.6"
+CFLAGS="-fPIC"
+LDFLAGS="-static"
+
+post_install() {
+	# fix so names
+	for f in ${DESTDIR}/usr/lib/*.sow.so.6; do
+		mv ${f} ${f%.sow.so.6}w.so.6
+	done
+}
+
+netbsd-curses-devel_package() {
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/share/man/man3
+		# fix attr-devel conflict
+		rm $PKGDESTDIR/usr/share/man/man3/attr_{set,get}.3
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.a"
+	}
+}
+
+netbsd-curses-progs_package() {
+	short_desc+=" - executables"
+	conflicts="ncurses"
+	provides="ncurses-0_1"
+	pkg_install() {
+		vmove usr/bin
+		vmove usr/share/man/man1
+
+		# for f in ${PKGDESTDIR}/usr/bin/* ${PKGDESTDIR}/usr/share/man/man1/*; do
+			# mv ${f} $(dirname ${f})/netbsd-$(basename ${f})
+		# done
+	}
+}
