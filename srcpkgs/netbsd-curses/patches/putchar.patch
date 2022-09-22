@@ -1,0 +1,26 @@
+diff --git a/libcurses/putchar.c b/libcurses/putchar.c
+index 941ee0e..66fbecc 100644
+--- a/libcurses/putchar.c
++++ b/libcurses/putchar.c
+@@ -83,14 +83,18 @@ int
+ __cputwchar_args(wchar_t wch, void *args)
+ {
+ 	FILE *outfd = (FILE *)args;
+-	int status;
++	mbstate_t mb = {0};
++	char s[MB_LEN_MAX];
++	size_t n;
+ 
+ #ifdef DEBUG
+ 	__CTRACE(__CTRACE_OUTPUT, "__cputwchar_args: 0x%x on fd %d\n",
+ 	    wch, outfd->_file);
+ #endif
+-	status = putwc(wch, outfd);
++	n = wcrtomb(s, wch, &mb);
++	if (n == (size_t)-1 || fwrite(s, 1, n, outfd) != n)
++		return WEOF;
+ 	fflush(outfd);
+-	return status;
++	return wch;
+ }
+ #endif /* HAVE_WCHAR */
