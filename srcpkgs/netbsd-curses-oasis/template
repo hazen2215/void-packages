@@ -1,0 +1,47 @@
+# Template file for 'netbsd-curses-oasis'
+pkgname=netbsd-curses-oasis
+version=0.0.20211216
+revision=1
+_githash=a2d23d0c94c34537f0358238529e1e3b949026fe
+build_style=gnu-makefile
+make_use_env=yes
+# checkdepends="flex kyua"
+short_desc="Portable libcurses implementation from NetBSD"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause, BSD-2-Clause"
+homepage="https://github.com/oasislinux/netbsd-curses"
+distfiles="https://github.com/oasislinux/netbsd-curses/archive/${_githash}.tar.gz"
+checksum=f9d8d77890cc862faff41ec8a41ee16e59a8ee9f10ddce8f1ff7b73d1c06ba60
+conflicts="ncurses-devel"
+make_check=no
+
+post_install() {
+	ln -s curses.h ${DESTDIR}/usr/include/ncurses.h
+	for f in ${DESTDIR}/usr/lib/*.a; do
+		ln -s ${f##*/} ${f%.a}w.a
+	done
+	cp -r ${FILESDIR}/pkgconfig ${DESTDIR}/usr/lib
+}
+
+netbsd-curses-oasis-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/share/man/man3
+		vmove usr/include
+		vmove usr/lib
+		# vmove "usr/lib/*.a"
+	}
+}
+
+netbsd-curses-oasis-progs_package() {
+	short_desc+=" - executables"
+	pkg_install() {
+		vmove usr/bin
+		vmove usr/share/man/man1
+
+		for f in ${PKGDESTDIR}/usr/bin/* ${PKGDESTDIR}/usr/share/man/man1/*; do
+			mv ${f} $(dirname ${f})/netbsd-$(basename ${f})
+		done
+	}
+}
