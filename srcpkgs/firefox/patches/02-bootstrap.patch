@@ -1,0 +1,30 @@
+diff --git a/python/mozversioncontrol/mozversioncontrol/__init__.py b/python/mozversioncontrol/mozversioncontrol/__init__.py
+--- a/python/mozversioncontrol/mozversioncontrol/__init__.py
++++ b/python/mozversioncontrol/mozversioncontrol/__init__.py
+@@ -959,10 +959,10 @@ class SrcRepository(Repository):
+         pass
+ 
+     def get_changed_files(self, diff_filter="ADM", mode="unstaged", rev=None):
+-        pass
++        return []
+ 
+     def get_outgoing_files(self, diff_filter="ADM", upstream=None):
+-        pass
++        return []
+ 
+     def add_remove_files(self, *paths: Union[str, Path]):
+         pass
+@@ -993,9 +993,11 @@ class SrcRepository(Repository):
+         """
+         res = []
+         # move away the .git or .hg folder from path to more easily test in a hg/git repo
+-        for root, dirs, files in os.walk("."):
++        for root, dirs, files in os.walk(path):
+             for name in files:
+-                res.append(os.path.join(root, name))
++                res.append(
++                    os.path.relpath(os.path.join(root, name), path).replace("\\", "/")
++                )
+         return res
+ 
+     def get_tracked_files_finder(self, path):
