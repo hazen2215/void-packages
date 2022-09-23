@@ -1,0 +1,17 @@
+# Template file for 'librewolf-settings'
+pkgname=librewolf-settings
+version=7.3
+revision=1
+short_desc="LibreWolf settings"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0"
+homepage="https://librewolf.net"
+distfiles="https://gitlab.com/librewolf-community/settings/-/archive/${version}/${version}.tar.gz"
+checksum=4a2c5049a089d8dc8a4a9cddd35b5209b2ec263b5403ff99431b46d9c7a9a7e5
+conflicts="mobile-config-firefox"
+
+do_install() {
+	vinstall defaults/pref/local-settings.js 0644 usr/lib/firefox/defaults/pref
+	vinstall distribution/policies.json 0644 usr/lib/firefox/distribution
+	vinstall librewolf.cfg 0644 usr/lib/firefox
+}
