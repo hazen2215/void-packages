@@ -195,6 +195,7 @@ do_build() {
 	ac_add_options $(vopt_enable dbus)
 	ac_add_options $(vopt_enable dbus necko-wifi)
 	ac_add_options --disable-audio-backends
+	$(vopt_if oss 'ac_add_options --enable-audio-backends=oss')
 	ac_add_options $(vopt_enable alsa)
 	ac_add_options $(vopt_enable jack)
 	ac_add_options $(vopt_enable pulseaudio)
@@ -245,3 +246,7 @@ do_install() {
 
 	vbin ${FILESDIR}/firefox-wayland
 }
+
+makedepends+=" $(vopt_if oss 'alsa-lib-devel oss-devel')"
+build_options+=" oss"
+build_options_default+=" oss"
