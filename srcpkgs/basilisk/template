@@ -1,0 +1,135 @@
+# Template file for 'basilisk'
+pkgname=basilisk
+version=2022.08.06
+revision=1
+_UXP_githash=7a2f786e0cb89f1fa4a042dcde5dc92dce35bef7
+build_wrksrc="basilisk"
+create_wrksrc=yes
+hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
+ which"
+makedepends="libXt-devel libXcomposite-devel libXdamage-devel
+ alsa-lib-devel $(vopt_if oss oss-devel)
+ $(vopt_if dbus dbus-glib-devel) $(vopt_if pulseaudio pulseaudio-devel)
+ $(vopt_if xscreensaver libXScrnSaver-devel) $(vopt_if sndio sndio-devel)
+ $(vopt_if jack jack-devel) $(vopt_if gtk3 gtk+3-devel gtk+-devel)"
+short_desc="XUL-based web-browser demonstrating the Unified XUL Platform (UXP)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
+homepage="https://www.basilisk-browser.org/"
+changelog="https://www.basilisk-browser.org/releasenotes.shtml"
+distfiles="https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v${version}.tar.gz
+ https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_githash}.tar.gz"
+checksum="b9fe7869740a24f1a39d0381828106ca724d795cf419a650207d4a1f1ba63009
+ 104b47bb688d8ff288a3f2cbabf2efe2a57eeeb9ecf7a2f62d5489fa7cb90e40"
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+build_options="alsa oss jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
+build_options_default="alsa oss"
+
+if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+	makedepends+=" libatomic-devel"
+fi
+
+post_extract() {
+	rmdir basilisk/platform
+	mv uxp basilisk/platform
+}
+
+post_patch() {
+	if [ "$build_option_gtk3" ]; then
+		patch -Np1 --directory=${build_wrksrc} -i "${FILESDIR}/no-gtk2.patch"
+	fi
+}
+
+do_build() {
+	cp "${FILESDIR}/mozconfig" ".mozconfig"
+
+	case "$XBPS_TARGET_MACHINE" in
+	*-musl)
+		echo "ac_add_options --disable-jemalloc" >>.mozconfig
+		echo "ac_add_options --disable-gold" >>.mozconfig
+		;;
+	esac
+
+	case "$XBPS_TARGET_MACHINE" in
+	x86_64*|i686*|arm*|aarch64*)
+		echo "ac_add_options --disable-elf-hack" >>.mozconfig
+		;;
+	esac
+
+	if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+		export LDFLAGS+=" -latomic"
+	fi
+
+	if [ "$CROSS_BUILD" ]; then
+		export HOST_CFLAGS="${XBPS_CFLAGS}"
+		export HOST_CXXFLAGS="${XBPS_CXXFLAGS}"
+		export CFLAGS+=" -I${XBPS_CROSS_BASE}/usr/include/alsa \
+			-I${XBPS_CROSS_BASE}/usr/include/pulse"
+		export CXXFLAGS+=" ${CFLAGS}"
+		export LDFLAGS+=" -L${XBPS_CROSS_BASE}/usr/lib"
+
+		export ac_cv_sqlite_secure_delete=yes \
+			ac_cv_sqlite_threadsafe=yes \
+			ac_cv_sqlite_enable_fts3=yes \
+			ac_cv_sqlite_dbstat_vtab=yes \
+			ac_cv_sqlite_enable_unlock_notify=yes \
+			ac_cv_prog_hostcxx_works=1
+
+		echo "ac_add_options --target=$XBPS_CROSS_TRIPLET" >>.mozconfig
+		echo "ac_add_options --host=$XBPS_TRIPLET" >>.mozconfig
+	else
+		echo "ac_add_options --target=$XBPS_TRIPLET" >>.mozconfig
+		echo "ac_add_options --host=$XBPS_TRIPLET" >>.mozconfig
+	fi
+
+	# work around large debug symbols on 32-bit hosts
+	if [ "$XBPS_WORDSIZE" = "32" ]; then
+		echo "ac_add_options --disable-debug-symbols" >>.mozconfig
+		export LDFLAGS+=" -Wl,--no-keep-memory"
+	fi
+
+	export LDFLAGS+=" -Wl,-rpath=/usr/lib/basilisk"
+
+	# increase default stack size as basilisk uses a recursive js parser
+	export LDFLAGS+=" -Wl,-z,stack-size=524288"
+
+	export MOZ_MAKE_FLAGS="${makejobs}"
+	export MOZ_NOSPAM=1
+	export MOZBUILD_STATE_PATH="mozbuild"
+
+	cat <<! >>.mozconfig
+ac_add_options --enable-default-toolkit=cairo-gtk$(vopt_if gtk3 '3' '2')
+ac_add_options $(vopt_enable alsa)
+ac_add_options $(vopt_enable jack)
+ac_add_options $(vopt_enable sndio)
+ac_add_options $(vopt_enable dbus)
+ac_add_options $(vopt_enable pulseaudio)
+ac_add_options $(vopt_enable oss)
+ac_add_options $(vopt_enable webrtc)
+export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
+!
+
+	rm -f old-configure
+	./mach build
+}
+
+do_install() {
+	export MOZBUILD_STATE_PATH="mozbuild"
+	DESTDIR="$DESTDIR" ./mach install
+
+	# vinstall basilisk/branding/official/basilisk.desktop 644 \
+		# usr/share/applications
+
+	for i in 16 22 24 32 48 256; do
+		vinstall basilisk/branding/official/default$i.png 644 \
+			usr/share/icons/hicolor/${i}x${i}/apps basilisk.png
+	done
+
+	# We don't want the development stuff
+	rm -rf ${DESTDIR}/usr/{include,lib/basilisk-devel,share}
+
+	# https://bugzilla.mozilla.org/show_bug.cgi?id=658850
+	ln -sf basilisk ${DESTDIR}/usr/lib/basilisk/basilisk-bin
+}
+

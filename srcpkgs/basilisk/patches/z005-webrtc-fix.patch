@@ -1,0 +1,106 @@
+From d0acadd727468ccaa4e3cbe3673e29890c2551ca Mon Sep 17 00:00:00 2001
+From: Moonchild <moonchild@palemoon.org>
+Date: Sun, 31 Oct 2021 21:01:27 +0000
+Subject: [PATCH] Issue #1806 - Follow-up: Fix WebRTC issues with cubeb update.
+
+---
+ dom/media/webrtc/MediaEngineWebRTC.cpp | 28 +++++++++++++-------------
+ dom/media/webrtc/MediaEngineWebRTC.h   |  7 ++++---
+ 2 files changed, 18 insertions(+), 17 deletions(-)
+
+diff --git a/dom/media/webrtc/MediaEngineWebRTC.cpp b/dom/media/webrtc/MediaEngineWebRTC.cpp
+index 3e978571f6..5d0cfd6bf9 100644
+--- a/platform/dom/media/webrtc/MediaEngineWebRTC.cpp
++++ b/platform/dom/media/webrtc/MediaEngineWebRTC.cpp
+@@ -48,7 +48,7 @@ void AudioInputCubeb::UpdateDeviceList()
+     return;
+   }
+ 
+-  cubeb_device_collection *devices = nullptr;
++  cubeb_device_collection devices = { nullptr, 0 };
+ 
+   if (CUBEB_OK != cubeb_enumerate_devices(cubebContext,
+                                           CUBEB_DEVICE_TYPE_INPUT,
+@@ -67,27 +67,27 @@ void AudioInputCubeb::UpdateDeviceList()
+   // For some reason the "fake" device for automation is marked as DISABLED,
+   // so white-list it.
+   mDefaultDevice = -1;
+-  for (uint32_t i = 0; i < devices->count; i++) {
++  for (uint32_t i = 0; i < devices.count; i++) {
+     LOG(("Cubeb device %u: type 0x%x, state 0x%x, name %s, id %p",
+-         i, devices->device[i]->type, devices->device[i]->state,
+-         devices->device[i]->friendly_name, devices->device[i]->device_id));
+-    if (devices->device[i]->type == CUBEB_DEVICE_TYPE_INPUT && // paranoia
+-        (devices->device[i]->state == CUBEB_DEVICE_STATE_ENABLED ||
+-         (devices->device[i]->state == CUBEB_DEVICE_STATE_DISABLED &&
+-          devices->device[i]->friendly_name &&
+-          strcmp(devices->device[i]->friendly_name, "Sine source at 440 Hz") == 0)))
++         i, devices.device[i].type, devices.device[i].state,
++         devices.device[i].friendly_name, devices.device[i].device_id));
++    if (devices.device[i].type == CUBEB_DEVICE_TYPE_INPUT && // paranoia
++        (devices.device[i].state == CUBEB_DEVICE_STATE_ENABLED ||
++         (devices.device[i].state == CUBEB_DEVICE_STATE_DISABLED &&
++          devices.device[i].friendly_name &&
++          strcmp(devices.device[i].friendly_name, "Sine source at 440 Hz") == 0)))
+     {
+-      auto j = mDeviceNames->IndexOf(devices->device[i]->device_id);
++      auto j = mDeviceNames->IndexOf(devices.device[i].device_id);
+       if (j != nsTArray<nsCString>::NoIndex) {
+         // match! update the mapping
+         (*mDeviceIndexes)[j] = i;
+       } else {
+         // new device, add to the array
+         mDeviceIndexes->AppendElement(i);
+-        mDeviceNames->AppendElement(devices->device[i]->device_id);
++        mDeviceNames->AppendElement(devices.device[i].device_id);
+         j = mDeviceIndexes->Length()-1;
+       }
+-      if (devices->device[i]->preferred & CUBEB_DEVICE_PREF_VOICE) {
++      if (devices.device[i].preferred & CUBEB_DEVICE_PREF_VOICE) {
+         // There can be only one... we hope
+         NS_ASSERTION(mDefaultDevice == -1, "multiple default cubeb input devices!");
+         mDefaultDevice = j;
+@@ -98,9 +98,9 @@ void AudioInputCubeb::UpdateDeviceList()
+   StaticMutexAutoLock lock(sMutex);
+   // swap state
+   if (mDevices) {
+-    cubeb_device_collection_destroy(mDevices);
++    cubeb_device_collection_destroy(cubebContext, mDevices);
+   }
+-  mDevices = devices;
++  mDevices = &devices;
+ }
+ 
+ MediaEngineWebRTC::MediaEngineWebRTC(MediaEnginePrefs &aPrefs)
+diff --git a/dom/media/webrtc/MediaEngineWebRTC.h b/dom/media/webrtc/MediaEngineWebRTC.h
+index 1834f3bd39..2773d7d1cf 100644
+--- a/dom/media/webrtc/MediaEngineWebRTC.h
++++ b/dom/media/webrtc/MediaEngineWebRTC.h
+@@ -180,7 +180,8 @@ public:
+   {
+     if (mDevices) {
+       // This doesn't require anything more than support for free()
+-      cubeb_device_collection_destroy(mDevices);
++      cubeb* context = CubebUtils::GetCubebContext();
++      cubeb_device_collection_destroy(context, mDevices);
+       mDevices = nullptr;
+     }
+     delete mDeviceIndexes;
+@@ -224,7 +225,7 @@ public:
+     sMutex.AssertCurrentThreadOwns();
+     int dev_index = DeviceIndex(aDeviceIndex);
+     if (dev_index != -1) {
+-      aID = mDevices->device[dev_index]->devid;
++      aID = mDevices->device[dev_index].devid;
+       return true;
+     }
+     return false;
+@@ -238,7 +239,7 @@ public:
+       return 1;
+     }
+     PR_snprintf(aStrNameUTF8, 128, "%s%s", aIndex == -1 ? "default: " : "",
+-                mDevices->device[devindex]->friendly_name);
++                mDevices->device[devindex].friendly_name);
+     aStrGuidUTF8[0] = '\0';
+     return 0;
+   }
