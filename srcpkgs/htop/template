@@ -8,6 +8,20 @@ makedepends="ncurses-devel libsensors-devel"
 short_desc="Interactive process viewer"
 maintainer="Leah Neukirchen <leah@vuxu.org>"
 license="GPL-2.0-only"
+build_options="netbsd_curses static sensors"
+build_options_default="netbsd_curses static"
+configure_args="${configure_args/--enable-unicode/}"
+configure_args="${configure_args/--enable-sensors/}
+ $(vopt_enable sensors) $(vopt_enable static)"
+makedepends="${makedepends/ncurses-devel/}"
+makedepends="${makedepends/libsensor-devel/} $(vopt_if sensors libsensors-devel)"
+if [ "$build_option_netbsd_curses" ]; then
+	configure_args+=" --disable-unicode"
+	makedepends+=" netbsd-curses-devel"
+else
+	configure_args+=" --enable-unicode"
+	makedepends+=" ncurses-devel"
+fi
 homepage="https://htop.dev/"
 changelog="https://raw.githubusercontent.com/htop-dev/htop/main/ChangeLog"
 distfiles="https://github.com/htop-dev/htop/releases/download/${version}/htop-${version}.tar.xz"
