@@ -1,0 +1,22 @@
+# Template file for 'chktex'
+pkgname=chktex
+version=1.7.6
+revision=1
+build_style=gnu-configure
+hostmakedepends="perl groff pcre-devel"
+depends="perl"
+short_desc="LaTeX semantic checker"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://www.ctan.org/pkg/chktex"
+changelog="https://www.ctan.org/ctan-ann/pkg/chktex"
+distfiles="http://download.savannah.gnu.org/releases/chktex/chktex-${version}.tar.gz"
+checksum=8ac0e5ca213b2012d44c28f9e4feb9783df44750eb0c30a237d81ff58ef34c8d
+make_check=no
+
+do_install() {
+	for f in chktex chkweb deweb; do
+		vbin $f
+		vman $f.1
+	done
+}
