@@ -1,0 +1,20 @@
+# Template file for 'ssu'
+pkgname=ssu
+version=0.3.2
+revision=1
+build_style=gnu-makefile
+short_desc="Extremely simple su utility"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/illiliti/ssu"
+distfiles="https://github.com/illiliti/ssu/archive/${version}.tar.gz"
+checksum=949bcfc5bd1a9908d1c9ff754bd16d092c9dcfde36e4f5d8785eb47d5baf1cec
+build_options="static"
+
+if [ "$build_option_static" ]; then
+	LDFLAGS=-static
+fi
+
+post_extract() {
+	vsed -i -e '/chown/d' Makefile
+}
