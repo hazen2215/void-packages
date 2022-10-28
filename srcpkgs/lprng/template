@@ -1,0 +1,37 @@
+# Template file for 'lprng'
+pkgname=lprng
+version=3.9.0
+revision=1
+build_style=gnu-configure
+hostmakedepends="automake gettext-devel-tools"
+makedepends="openssl-devel pam-devel"
+configure_args="--with-userid=_lprng --with-groupid=_lprng"
+short_desc="Enhanced Printer Spooler"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="http://lprng.sourceforge.net/"
+distfiles="http://jointlab.upol.cz/~michale/projects/lprng-ipp/LPRng-git-2021-12-14-ipp.tar.gz"
+checksum=6ee4e91e4e9c8f3c3cefd76e139d2e5ccb3ca604ed360477b5ad2698ef69225b
+system_accounts="_lprng"
+# conflicts="cups>=0"
+conf_files="/etc/lpd/* /etc/printcap"
+
+CFLAGS="-fcommon"
+
+export CLEAR=no
+
+pre_configure() {
+	autoreconf -fi
+}
+
+post_install() {
+	mv ${DESTDIR}/etc/printcap{.sample,}
+	mv ${DESTDIR}/etc/lpd/lpd.conf{.sample,}
+	mv ${DESTDIR}/etc/lpd/lpd.perms{.sample,}
+
+	for f in cancel lp lpc lpq lpr lprm lpstat; do
+		mv ${DESTDIR}/usr/bin/{,lprng-}$f
+	done
+
+	vsv lprng
+}
