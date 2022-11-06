@@ -1,0 +1,65 @@
+# Template file for 'librsvg-og'
+pkgname=librsvg-og
+version=2.55.20220723
+revision=1
+_commit=0f3eef9e6924130c74d7a7b16aac3e7f5bef9b4c
+build_style=gnu-configure
+configure_args="--disable-static $(vopt_enable gir introspection) $(vopt_enable vala)"
+hostmakedepends="automake libtool pkg-config intltool python glib-devel
+ gdk-pixbuf-devel gobject-introspection $(vopt_if vala vala-devel) gtk-doc"
+makedepends="libcroco-devel pango-devel gdk-pixbuf-devel"
+short_desc="SVG library for GNOME (old generation)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later, LGPL-2.0-or-later"
+homepage="https://github.com/andreasbaumann/librsvg-og"
+distfiles="https://github.com/andreasbaumann/librsvg-og/archive/${_commit}.tar.gz"
+checksum=7af93c47797a1114b0fb118382df2c8e905036f26ab6d93fd4f91edbd044f5e2
+make_check=no
+
+conflicts="librsvg"
+provides="librsvg-2.26.0_1"
+
+CFLAGS=-Wno-incompatible-pointer-types
+
+# Package build options
+build_options="gir vala"
+
+# Disable gir for cross builds.
+if [ -z "$CROSS_BUILD" ]; then
+	build_options_default="vala gir"
+fi
+
+pre_configure() {
+	autoreconf -fi
+}
+
+pre_check() {
+	# This test is know to fail
+	rm -f tests/fixtures/reftests/bugs/777834-*
+}
+
+librsvg-og-devel_package() {
+	conflicts="librsvg-devel"
+	depends="gdk-pixbuf-devel cairo-devel libcroco-devel ${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.so"
+		if [ "$build_option_gir" ]; then
+			vmove usr/share/gir-1.0
+		fi
+		if [ "$build_option_vala" ]; then
+			vmove usr/share/vala
+		fi
+	}
+}
+
+librsvg-og-utils_package() {
+	conflicts="librsvg-utils"
+	short_desc+=" - utilities"
+	pkg_install() {
+		vmove usr/bin/rsvg-convert
+		vmove usr/share/man/man1/rsvg-convert.1
+	}
+}
