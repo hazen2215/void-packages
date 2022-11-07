@@ -74,8 +74,8 @@ index 3e978571f6..5d0cfd6bf9 100644
  MediaEngineWebRTC::MediaEngineWebRTC(MediaEnginePrefs &aPrefs)
 diff --git a/dom/media/webrtc/MediaEngineWebRTC.h b/dom/media/webrtc/MediaEngineWebRTC.h
 index 1834f3bd39..2773d7d1cf 100644
---- a/dom/media/webrtc/MediaEngineWebRTC.h
-+++ b/dom/media/webrtc/MediaEngineWebRTC.h
+--- a/platform/dom/media/webrtc/MediaEngineWebRTC.h
++++ b/platform/dom/media/webrtc/MediaEngineWebRTC.h
 @@ -180,7 +180,8 @@ public:
    {
      if (mDevices) {

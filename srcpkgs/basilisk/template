@@ -1,10 +1,10 @@
 # Template file for 'basilisk'
 pkgname=basilisk
-version=2022.08.06
+version=2022.11.04
 revision=1
-_UXP_githash=7a2f786e0cb89f1fa4a042dcde5dc92dce35bef7
-build_wrksrc="basilisk"
+_UXP_githash=42d1d20efd5c6167900bf5c67531a0d4b4498183
 create_wrksrc=yes
+build_wrksrc="basilisk"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
  which"
 makedepends="libXt-devel libXcomposite-devel libXdamage-devel
@@ -19,8 +19,8 @@ homepage="https://www.basilisk-browser.org/"
 changelog="https://www.basilisk-browser.org/releasenotes.shtml"
 distfiles="https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v${version}.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_githash}.tar.gz"
-checksum="b9fe7869740a24f1a39d0381828106ca724d795cf419a650207d4a1f1ba63009
- 104b47bb688d8ff288a3f2cbabf2efe2a57eeeb9ecf7a2f62d5489fa7cb90e40"
+checksum="3fcffb4b2563eed2000df2df97d1806af25546407bb0d48fd34404aef101d05f
+ 00e0fca7450dd19a24b838ff4d6090f664c25a93220bb31614df751650e9004f"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 build_options="alsa oss jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
@@ -132,4 +132,3 @@ do_install() {
 	# https://bugzilla.mozilla.org/show_bug.cgi?id=658850
 	ln -sf basilisk ${DESTDIR}/usr/lib/basilisk/basilisk-bin
 }
-
