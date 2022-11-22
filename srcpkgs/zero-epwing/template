@@ -1,0 +1,32 @@
+# Template file for 'zero-epwing'
+pkgname=zero-epwing
+version=21.12.14.0
+revision=1
+_eb_githash=c9d1015f9ec4fdc3936f8d3905ccb7b1145eb1cf
+_jansson_githash=e23f5580072cb64ce3ab27de2b5110d7ac252424
+create_wrksrc=yes
+build_wrksrc="zero-epwing-${version}"
+build_style=cmake
+hostmakedepends="perl"
+makedepends="zlib-devel"
+short_desc="Export JSON formatted UTF-8 data from EPWING format"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://foosoft.net/projects/zero-epwing/"
+distfiles="https://github.com/FooSoft/zero-epwing/archive/${version}.tar.gz
+ https://github.com/FooSoft/eb/archive/${_eb_githash}.tar.gz
+ https://github.com/akheron/jansson/archive/${_jansson_githash}.tar.gz"
+checksum="7e3e063769df30e4c336badea293dd6575f196b8050cb501a8d9f97a5fc49ad0
+ 01e4c15fa1ee4074653b6765869ca9b42bb59eea21377020785dde9b14ae2824
+ bd9a422eaa64be6178d9a316732541752661c7746e0c5146324d203ee324a723"
+
+post_extract() {
+	rmdir ${build_wrksrc}/eb ${build_wrksrc}/jansson
+	mv eb-${_eb_githash} ${build_wrksrc}/eb
+	mv jansson-${_jansson_githash} ${build_wrksrc}/jansson
+}
+
+do_install() {
+	vbin build/zero-epwing
+	vlicense LICENSE
+}
