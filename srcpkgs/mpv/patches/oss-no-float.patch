@@ -1,0 +1,29 @@
+From 1c411ce90897798bb9e447e2a8759556430e59ab Mon Sep 17 00:00:00 2001
+From: Rick V <35446253+despair86@users.noreply.github.com>
+Date: Sun, 6 Jun 2021 17:34:24 -0500
+Subject: [PATCH 1/2] no float or MPEG output on sun
+
+---
+ audio/out/ao_oss.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/audio/out/ao_oss.c b/audio/out/ao_oss.c
+index 11b182e52d9..aa9e9e0d252 100644
+--- a/audio/out/ao_oss.c
++++ b/audio/out/ao_oss.c
+@@ -79,10 +79,13 @@ static const int format_table[][2] = {
+ #ifdef AFMT_S32_NE
+     {AFMT_S32_NE,       AF_FORMAT_S32},
+ #endif
+-#ifdef AFMT_FLOAT
++/* Not supported on Solaris 11 (see /usr/include/sys/audio/audio_oss.h) or
++ * (https://github.com/illumos/illumos-gate/blob/master/usr/src/uts/common/sys/audio/audio_oss.h#L763)
++ */
++#if defined(AFMT_FLOAT) && !defined(__sun) && !defined(__linux)
+     {AFMT_FLOAT,        AF_FORMAT_FLOAT},
+ #endif
+-#ifdef AFMT_MPEG
++#if defined(AFMT_MPEG) && !defined(__sun)
+     {AFMT_MPEG,         AF_FORMAT_S_MP3},
+ #endif
+     {-1, -1}

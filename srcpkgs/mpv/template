@@ -53,6 +53,16 @@ desc_option_lcms="Enable support for LittleCMS 2 engine"
 desc_option_openal="Enable support for OpenAL audio output"
 vopt_conflict sdl2 wayland
 
+build_options+=" oss"
+build_options_default+=" oss"
+configure_args+=" $(vopt_feature oss oss-audio)"
+makedepends+=" $(vopt_if oss oss-devel)"
+
+build_options+=" luajit"
+configure_args+=" $(vopt_feature luajit lua)"
+makedepends+=" $(vopt_if luajit LuaJIT-devel)"
+vopt_conflict lua luajit
+
 post_install() {
 	vbin TOOLS/umpv
 }
