@@ -1,0 +1,19 @@
+commit 32b060898b6417286b7d074f554339a39e735646
+Author: hazen2215 <haz@disroot.org>
+Date:   Sat Aug 12 05:14:23 2023 +0900
+
+    ao_oss: free_samples must not be negative (OSS bug?)
+
+diff --git a/audio/out/ao_oss.c b/audio/out/ao_oss.c
+index 65b1e1613b..0872845174 100644
+--- a/audio/out/ao_oss.c
++++ b/audio/out/ao_oss.c
+@@ -375,7 +375,7 @@ static void get_state(struct ao *ao, struct mp_pcm_state *state)
+         state->delay = 0.0;
+         return;
+     }
+-    state->free_samples = (info.bytes / ao->sstride);
++    state->free_samples = info.bytes < 0 ? 0 : (info.bytes / ao->sstride);
+     state->queued_samples = (ao->device_buffer - state->free_samples);
+     state->delay = (odelay / p->bps);
+     state->playing = (state->queued_samples != 0);
