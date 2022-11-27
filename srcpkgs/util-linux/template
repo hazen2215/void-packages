@@ -6,11 +6,13 @@ revision=5
 build_style=gnu-configure
 configure_args="--exec-prefix=\${prefix} --enable-libuuid --disable-makeinstall-chown
  --enable-libblkid --enable-fsck --disable-rpath --enable-fs-paths-extra=/usr/sbin:/usr/bin
- --enable-vipw --enable-newgrp --enable-chfn-chsh --with-systemdsystemunitdir=no
- --with-udev --without-python --enable-write"
+ --enable-vipw --enable-newgrp --disable-chfn-chsh --with-systemdsystemunitdir=no
+ --without-udev --without-python --enable-write"
+for f in col colrm column hexdump kill look mesg renice rev ul wall; do
+	configure_args+=" --disable-$f"
+done
 hostmakedepends="gettext pkg-config"
-makedepends="libcap-ng-devel pam-devel readline-devel zlib-devel
- eudev-libudev-devel"
+makedepends="libcap-ng-devel readline-devel zlib-devel"
 depends="libfdisk>=${version}_1<=${version}_9999
  libblkid>=${version}_1<=${version}_9999
  libmount>=${version}_1<=${version}_9999
@@ -38,6 +40,12 @@ replaces="rfkill>=0"
 # XXX musl needs this for switch_root(8).
 CFLAGS="-D_DIRENT_HAVE_D_TYPE"
 
+build_options="static"
+if [ "$build_option_static" ]; then
+	LDFLAGS="--static"
+	unset depends
+fi
+
 alternatives="
  logger:logger:/usr/bin/${pkgname}-logger
  logger:logger.1:/usr/share/man/man1/${pkgname}-logger.1
@@ -52,11 +60,15 @@ post_extract() {
 	fi
 }
 
+post_configure() {
+	if [ "$build_option_static" ]; then
+		vsed -i -e 's/prefer_static_libs=no/prefer_static_libs=yes/' \
+			-e 's/build_libtool_libs=yes/build_libtool_libs=no/' libtool
+	fi
+}
+
 do_install() {
 	make usrsbin_execdir=/usr/bin DESTDIR=${DESTDIR} install
-
-	# Correct perms for newgrp, chfn, chsh, wall and write.
-	chmod u+s $DESTDIR/usr/bin/{newgrp,chsh,chfn}
 
 	mv ${DESTDIR}/usr/bin/{logger,${pkgname}-logger}
 	mv ${DESTDIR}/usr/share/man/man1/{logger,${pkgname}-logger}.1
