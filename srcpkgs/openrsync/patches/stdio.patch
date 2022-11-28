@@ -1,0 +1,12 @@
+diff --git a/socket.c b/socket.c
+index 352c8f3..c25520b 100644
+--- a/socket.c
++++ b/socket.c
+@@ -28,6 +28,7 @@
+ #include <netdb.h>
+ #include <poll.h>
+ #include <resolv.h>
++#include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>

@@ -1,0 +1,20 @@
+# Template file for 'openrsync'
+pkgname=openrsync
+version=0.0.20220508
+revision=1
+_commit=f50d0f8204ea18306a0c29c6ae850292ea826995
+build_style=configure
+configure_args="PREFIX=/usr MANDIR=/usr/share/man
+ LDFLAGS=$(vopt_if static -static)"
+short_desc="BSD-licensed implementation of rsync"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/kristapsdz/openrsync"
+distfiles="https://github.com/kristapsdz/openrsync/archive/${_commit}.tar.gz"
+checksum=1ced03d8d527e532b85204da1b19961e8545b9603aebfdd44ad3e354653d2b6d
+
+build_options="static"
+
+post_install() {
+	vlicense LICENSE.md
+}
