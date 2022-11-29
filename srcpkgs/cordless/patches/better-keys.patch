@@ -1,0 +1,49 @@
+diff --git a/shortcuts/shortcuts.go b/shortcuts/shortcuts.go
+index 023438c..635c45c 100644
+--- a/shortcuts/shortcuts.go
++++ b/shortcuts/shortcuts.go
+@@ -243,17 +243,17 @@ var (
+ 
+ 	FocusChannelContainer = addShortcut("focus_channel_container", "Focus channel container",
+ 		globalScope, tcell.NewEventKey(tcell.KeyRune, 'c', tcell.ModAlt),
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'c', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'c', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 'c', tcell.ModNone)),
+ 	)
+ 
+ 	FocusUserContainer = addShortcut("focus_user_container", "Focus user container",
+ 		globalScope, tcell.NewEventKey(tcell.KeyRune, 'u', tcell.ModAlt),
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'u', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'u', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 'u', tcell.ModNone)),
+ 	)
+ 
+ 	FocusGuildContainer = addShortcut("focus_guild_container", "Focus guild container",
+ 		globalScope, tcell.NewEventKey(tcell.KeyRune, 's', tcell.ModAlt),
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 's', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 's', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 's', tcell.ModNone)),
+ 	)
+ 
+ 	FocusPrivateChatPage = addShortcut("focus_private_chat_page", "Focus private chat page",
+@@ -270,12 +270,12 @@ var (
+ 	FocusMessageInput = addShortcut("focus_message_input", "Focus message input",
+ 		globalScope, tcell.NewEventKey(tcell.KeyRune, 'm', tcell.ModAlt),
+ 		// Toggle insert mode
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'I', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'I', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 'I', tcell.ModNone)),
+ 	)
+ 
+ 	FocusMessageContainer = addShortcut("focus_message_container", "Focus message container",
+ 		globalScope, tcell.NewEventKey(tcell.KeyRune, 't', tcell.ModAlt),
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 't', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 't', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 't', tcell.ModNone)),
+ 	)
+ 
+ 	FocusCommandInput = addShortcut("focus_command_input", "Focus command input",
+@@ -313,6 +313,6 @@ var (
+ 
+ 	VimInsertMode = addShortcut("vim_insert_mode", "Change to Vim insert mode",
+ 		globalScope, nil,
+-		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'i', tcell.ModNone), NullVimEvent, NullVimEvent),
++		addVimEvent(tcell.NewEventKey(tcell.KeyRune, 'i', tcell.ModNone), NullVimEvent, tcell.NewEventKey(tcell.KeyRune, 'i', tcell.ModNone)),
+ 	)
+ 
+ 	VimVisualMode = addShortcut("vim_visual_mode", "Change to Vim visual mode",
