@@ -1,0 +1,17 @@
+# Template file for 'qtchan'
+pkgname=qtchan
+version=1.0.1
+revision=1
+build_style=qmake
+makedepends="qt5-devel"
+short_desc="4chan browser in qt5"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/siavash119/qtchan"
+distfiles="https://github.com/siavash119/qtchan/archive/v${version}.tar.gz"
+checksum=29ff90e1720469cd83732e2cad5ed4ec39510bbb768f4250130636c668d53971
+
+do_install() {
+	vbin qtchan
+	vlicense LICENSE
+}
