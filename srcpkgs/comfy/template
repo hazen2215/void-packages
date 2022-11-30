@@ -1,0 +1,19 @@
+# Template file for 'comfy'
+pkgname=comfy
+version=1.0.3
+revision=1
+_commit=d85cbcdbbd3ab686f5626292adf51ab1a33b1cce
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="libX11-devel imlib2-devel libcurl-devel"
+short_desc="Console application for browsing imageboards"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://wolfish.neocities.org/soft/comfy/"
+changelog="https://gitgud.io/wolfish/comfy/-/raw/master/CHANGELOG.md"
+distfiles="https://gitgud.io/wolfish/comfy/-/archive/${_commit}/comfy-${_commit}.tar.gz"
+checksum=ad07091947bfd34517cd8b87f99bd73dbaf83753c7031823a6812a4d39442c32
+
+do_install() {
+	vbin comfy
+}
