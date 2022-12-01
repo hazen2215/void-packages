@@ -7,6 +7,17 @@ hostmakedepends="gettext-devel-tools pkg-config"
 makedepends="pcre2-devel"
 checkdepends="perl"
 short_desc="GNU grep utility"
+configure_args="--program-prefix=g"
+build_options="static"
+LDFLAGS="$(vopt_if static -static)"
+alternatives="
+ grep:grep:/usr/bin/ggrep
+ grep:grep.1:/usr/share/man/man1/ggrep.1
+ grep:egrep:/usr/bin/gegrep
+ grep:egrep.1:/usr/share/man/man1/gegrep.1
+ grep:fgrep:/usr/bin/gfgrep
+ grep:fgrep.1:/usr/share/man/man1/gfgrep.1
+"
 maintainer="Enno Boland <gottox@voidlinux.org>"
 license="GPL-3.0-or-later"
 homepage="https://www.gnu.org/software/grep/"
