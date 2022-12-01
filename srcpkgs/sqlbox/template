@@ -1,0 +1,23 @@
+# Template file for 'sqlbox'
+pkgname=sqlbox
+version=0.1.12
+revision=1
+build_style=configure
+configure_args="PREFIX=/usr MANDIR=/usr/share/man SBINDIR=/usr/bin"
+make_cmd="bmake"
+make_check_target="regress"
+hostmakedepends="bmake"
+makedepends="pkg-config sqlite-devel"
+short_desc="Secure database access library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC, BSD-3-Clause"
+homepage="https://kristaps.bsd.lv/sqlbox/"
+distfiles="https://kristaps.bsd.lv/sqlbox/snapshots/sqlbox-${version}.tar.gz"
+checksum=4bf3aca36754306f2a5dcdf90a8299273edecbfec9fe13e0d1358759fe7faab0
+
+post_install() {
+	sed -n '/Copyright/,/OR IN CONNECTION/p' main.c >LICENSE.ISC
+	sed -n '/Copyright/,/SUCH DAMAGE/p' compats.c >LICENSE.BSD3
+	vlicense LICENSE.ISC
+	vlicense LICENSE.BSD3
+}
