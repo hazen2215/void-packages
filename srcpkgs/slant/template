@@ -1,0 +1,29 @@
+# Template file for 'slant'
+pkgname=slant
+version=0.0.24
+revision=1
+build_style=configure
+configure_args="PREFIX=/usr MANDIR=/usr/share/man SBINDIR=/usr/bin"
+make_cmd="bmake"
+hostmakedepends="bmake openradtool"
+makedepends="ksql kcgi libtls-devel ncurses-devel openradtool sqlbox zlib-devel"
+short_desc="Minimal open source system monitor for remote UNIX machines"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://kristaps.bsd.lv/slant/"
+distfiles="https://kristaps.bsd.lv/slant/snapshots/slant-${version}.tar.gz"
+checksum=824d6ec5fe4a89f2aeee28b7472ced766435d627bfcc86d740c4ab69b59dce19
+make_check=no # no tests available
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	makedepends+=" musl-legacy-compat"
+fi
+
+pre_install() {
+	vmkdir usr/share/man/man8
+}
+
+post_install() {
+	sed -n '/Copyright (c)/,/OR IN CONNECTION/p' slant.c >LICENSE
+	vlicense LICENSE
+}
