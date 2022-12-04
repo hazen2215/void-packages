@@ -1,0 +1,13 @@
+# Template file for 'lex'
+pkgname=lex
+version=2.15
+revision=1
+build_style=gnu-makefile
+hostmakedepends="byacc"
+short_desc="Posix compatible lex utility"
+maintainer="hazen2215 <haz@disroot.org>"
+license="CDDL-1.0"
+homepage="https://github.com/sabotage-linux/lex"
+distfiles="https://github.com/sabotage-linux/lex/archive/v${version}.tar.gz"
+checksum=9e5e2aeea3094bb83613cd22f1a679405b1506ea6567458b907372c15774c3b8
+conflicts="flex"
