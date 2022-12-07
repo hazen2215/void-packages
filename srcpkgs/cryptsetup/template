@@ -67,3 +67,25 @@ cryptsetup-devel_package() {
 		esac
 	}
 }
+
+build_options+=" nettle static"
+build_options_default="nettle static"
+
+configure_args="${configure_args/--with-crypto_backend=openssl/}
+ --with-crypto_backend=$(vopt_if nettle nettle openssl)"
+makedepends="${makedepends/openssl-devel/}
+ $(vopt_if nettle nettle-devel openssl-devel)"
+
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-ssh-token --enable-static-cryptsetup"
+	makedepends="${makedepends/libssh-devel/}"
+	subpackages="${subpackages/cryptsetup-static/}"
+fi
+
+post_install() {
+	if [ "$build_option_static" ]; then
+		for f in ${DESTDIR}/usr/bin/*.static; do
+			mv -f ${f} ${f%.static}
+		done
+	fi
+}
