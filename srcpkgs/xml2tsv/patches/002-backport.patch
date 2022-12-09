@@ -1,0 +1,21 @@
+commit e45f9c38cbcc4c544f0107d1abc79f4e1e039413
+Author: KatolaZ <katolaz@freaknet.org>
+Date:   Wed Dec 8 22:24:31 2021 +0000
+
+    fix the condition to emit SEP in xmldata
+
+diff --git a/xml2tsv.c b/xml2tsv.c
+index 27984bc..aea5751 100644
+--- a/xml2tsv.c
++++ b/xml2tsv.c
+@@ -176,8 +176,8 @@ xmlcdata(XMLParser *x, const char *d, size_t dl)
+ void
+ xmldata(XMLParser *x, const char *d, size_t dl)
+ {
+-	if (stack_peek(&st) || (strcspn(d, " \t\n") && emitsep)){
+-		putchar(SEP);
++	if ((strcspn(d, " \t\n") || (strspn(d, " \t\n")<strlen(d) && !stack_peek(&st)->ref)) && emitsep){
++ 		putchar(SEP);
+ 		emitsep = FALSE;
+ 	}
+ 	quote_print(d);

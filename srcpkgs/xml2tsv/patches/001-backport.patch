@@ -1,0 +1,107 @@
+commit df38d2270241927e5436a0bc36ffb99044a8f4fb
+Author: KatolaZ <katolaz@freaknet.org>
+Date:   Wed Dec 8 21:44:11 2021 +0000
+
+    count tag childrend to fix lack of SEP emission on data with leading whitespaces
+
+diff --git a/xml2tsv.c b/xml2tsv.c
+index 342d900..27984bc 100644
+--- a/xml2tsv.c
++++ b/xml2tsv.c
+@@ -25,9 +25,16 @@
+ 
+ /* tag stack */
+ 
++typedef struct {
++	char s[STR_MAX];
++	int ref;
++} taginfo_t;
++
++
++
+ typedef struct {
+ 	int top;
+-	char st[DEPTH_MAX][STR_MAX];
++	taginfo_t st[DEPTH_MAX];
+ } tstack_t;
+ 
+ int stack_empty(tstack_t *t){
+@@ -37,22 +44,27 @@ int stack_empty(tstack_t *t){
+ int stack_push(tstack_t *t, const char *c){
+ 	if (t->top < DEPTH_MAX){
+ 		t->top ++;
+-		strncpy(t->st[t->top], c, STR_MAX - 1);
+-		t->st[t->top][STR_MAX - 1] = '\0';
++		strncpy(t->st[t->top].s, c, STR_MAX - 1);
++		t->st[t->top].s[STR_MAX - 1] = '\0';
++		t->st[t->top].ref = 0;
++		if (t->top){
++			/* Increment the ref counter of the parent tag*/
++			t->st[t->top-1].ref += 1;
++		}
+ 		return 0;
+ 	}
+ 	return -1;
+ }
+ 
+-char* stack_pop(tstack_t *t){
++taginfo_t* stack_pop(tstack_t *t){
+ 	if (!stack_empty(t))
+-		return t->st[t->top--];
++		return t->st + t->top--;
+ 	return NULL;
+ }
+ 
+-char* stack_peek(tstack_t *t){
++taginfo_t* stack_peek(tstack_t *t){
+ 	if (!stack_empty(t))
+-		return t->st[t->top];
++		return t->st + t->top;
+ 	return NULL;
+ }
+ 
+@@ -102,7 +114,7 @@ void print_cur_str(tstack_t *t){
+ 	int i;
+ 	for (i=0; i<=t->top; i++){
+ 		putchar('/');
+-		fputs(t->st[i], stdout);
++		fputs(t->st[i].s, stdout);
+ 	}
+ }
+ 
+@@ -110,7 +122,7 @@ void print_cur_str_fp(FILE *f, tstack_t *t){
+ 	int i;
+ 	for (i=0; i<=t->top; i++){
+ 		fputc('/', f);
+-		fputs(t->st[i], f);
++		fputs(t->st[i].s, f);
+ 	}
+ }
+ 
+@@ -164,7 +176,7 @@ xmlcdata(XMLParser *x, const char *d, size_t dl)
+ void
+ xmldata(XMLParser *x, const char *d, size_t dl)
+ {
+-	if (strcspn(d, " \t\n") && emitsep){
++	if (stack_peek(&st) || (strcspn(d, " \t\n") && emitsep)){
+ 		putchar(SEP);
+ 		emitsep = FALSE;
+ 	}
+@@ -202,7 +214,7 @@ xmltagend(XMLParser *x, const char *t, size_t tl, int isshort)
+ 	if (stack_empty(&st)){
+ 		fprintf(stderr, "Error: tag-end '%s' before any open tag\n", t);
+ 	}
+-	tag = stack_pop(&st);
++	tag = stack_pop(&st)->s;
+ 	if (strcmp(t, tag)){
+ 		fprintf(stderr, "Error: tag-end '%s' closes tag '%s'\n", t, tag);
+ 	}
+@@ -212,7 +224,7 @@ void
+ xmltagstart(XMLParser *x, const char *t, size_t tl)
+ {
+ 	if (stack_push(&st, t)){
+-		fprintf(stderr, "Error: stack full. Ignoring tag '%s' (parent tag: '%s')\n", t, stack_peek(&st));
++		fprintf(stderr, "Error: stack full. Ignoring tag '%s' (parent tag: '%s')\n", t, stack_peek(&st)->s);
+ 		return;
+ 	}
+ 	putchar('\n');

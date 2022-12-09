@@ -1,0 +1,15 @@
+# Template file for 'xml2tsv'
+pkgname=xml2tsv
+version=0.1
+revision=1
+build_style=gnu-makefile
+short_desc="Simple xml-to-tsv converter, based on xmlparser"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="gopher://bitreich.org/1/scm/xml2tsv"
+distfiles="ftp://bitreich.org/releases/xml2tsv/xml2tsv-${version}.tar.gz"
+checksum=695dfd2b1a0e1cf9a2a9ad55b3e43d6dbcc8a869d6793e09635846b6e82412f0
+
+post_install() {
+	vlicense LICENSE
+}
