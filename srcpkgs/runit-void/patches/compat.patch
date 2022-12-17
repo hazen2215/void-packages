@@ -1,0 +1,24 @@
+diff --git a/core-services/01-static-devnodes.sh b/core-services/01-static-devnodes.sh
+index 1f24ccf..39d11b0 100644
+--- a/core-services/01-static-devnodes.sh
++++ b/core-services/01-static-devnodes.sh
+@@ -1,6 +1,6 @@
+ # Some kernel modules must be loaded before starting udev(7).
+ # Load them by looking at the output of `kmod static-nodes`.
+ 
+-for f in $(kmod static-nodes -f devname 2>/dev/null|cut -d' ' -f1); do
++for f in $(awk '!/^#/{print $1}' /lib/modules/$(uname -r)/modules.devname); do
+ 	modprobe -bq $f 2>/dev/null
+ done
+diff --git a/shutdown.d/70-pkill.sh b/shutdown.d/70-pkill.sh
+index e396cb0..e7c7dd1 100644
+--- a/shutdown.d/70-pkill.sh
++++ b/shutdown.d/70-pkill.sh
+@@ -1,5 +1,5 @@
+ msg "Sending TERM signal to processes..."
+-pkill --inverse -s0,1 -TERM
++pgrep -v -s0,1 | xargs kill -TERM
+ sleep 1
+ msg "Sending KILL signal to processes..."
+-pkill --inverse -s0,1 -KILL
++pgrep -v -s0,1 | xargs kill -KILL
