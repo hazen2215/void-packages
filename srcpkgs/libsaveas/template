@@ -1,0 +1,14 @@
+# Template file for 'libsaveas'
+pkgname=libsaveas
+version=0.0.20221219
+revision=1
+_commit=0aec939ef3cdacea8e2a441e0dfb100865124790
+build_style=gnu-makefile
+makedepends="libxkbcommon-devel libxcb-devel xcb-util-cursor-devel
+ xcb-util-image-devel xcb-util-keysyms-devel xcb-util-wm-devel"
+short_desc="Little library to create a save as popup window for X"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://github.com/alpheratz0/libsaveas"
+distfiles="https://github.com/alpheratz0/libsaveas/archive/${_commit}.tar.gz"
+checksum=d6a00e7a53c72ba3b64c39604265362308b208a672f749f60dd6890fc7721c4d
