@@ -1,0 +1,17 @@
+# Template file for 'apint'
+pkgname=apint
+version=0.3.6
+revision=1
+_commit=d71729a67f8bb1105deffb2eb1ddaca4c3a32f08
+build_style=gnu-makefile
+make_use_env=yes
+makedepends="libsaveas libpng-devel libxkbcommon-devel libxcb-devel
+ xcb-util-cursor-devel xcb-util-image-devel xcb-util-keysyms-devel
+ xcb-util-wm-devel"
+short_desc="Primitive paint application for X"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://github.com/alpheratz0/apint"
+distfiles="https://github.com/alpheratz0/apint/archive/${_commit}.tar.gz"
+checksum=cb7f98571bd2f093b47f98bfef1308b65f12a00126ad471c7dd7e5c09ee5966a
+CFLAGS="-DVERSION=\\\"$version\\\""
