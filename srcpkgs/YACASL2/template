@@ -1,0 +1,19 @@
+# Template file for 'YACASL2'
+pkgname=YACASL2
+version=0.5p23
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+make_install_args="prefix=\${DESTDIR}/usr"
+hostmakedepends="texinfo"
+short_desc="Open source CASL2 processing system"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://www.j8takagi.net/yacasl2/"
+changelog="https://www.j8takagi.net/yacasl2/changelog.txt"
+distfiles="https://www.j8takagi.net/cgi-bin/gitweb.cgi/YACASL2.git/snapshot/v${version}.tar.gz"
+checksum=708ba8ff1db8e5e39487193ac3aea109a93285a6ede25ec31cb18fee9053c71b
+
+post_install() {
+	vlicense LICENSE
+}
