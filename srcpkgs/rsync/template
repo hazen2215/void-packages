@@ -23,6 +23,15 @@ if [ "$CROSS_BUILD" ]; then
 	configure_args+=" --disable-simd"
 fi
 
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-openssl --disable-xxhash --disable-zstd
+	 --disable-lz4"
+	makedepends="zlib-devel"
+	CFLAGS+=" -static"
+fi
+
 pre_check() {
 	# chgrp tests fail inside chroot
 	rm -f testsuite/chgrp.test
