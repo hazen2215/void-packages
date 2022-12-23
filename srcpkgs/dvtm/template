@@ -16,3 +16,9 @@ checksum=8f2015c05e2ad82f12ae4cf12b363d34f527a4bbc8c369667f239e4542e1e510
 post_install() {
 	vlicense LICENSE
 }
+
+build_options="netbsd_curses static"
+build_options_default="netbsd_curses static"
+hostmakedepends="$(vopt_if netbsd_curses netbsd-curses-progs ncurses)"
+makedepends="$(vopt_if netbsd_curses netbsd-curses-devel ncurses-devel)"
+LDFLAGS="$(vopt_if static -static)"
