@@ -53,6 +53,7 @@ pre_check() {
 }
 
 post_install() {
+	if false; then
 	if [ "$CROSS_BUILD" ]; then
 		# Copy hostmakedepends' version
 		vcompletion /usr/share/zsh/site-functions/_curl zsh
@@ -61,6 +62,7 @@ post_install() {
 		make -C scripts
 		vcompletion scripts/_curl zsh
 		vcompletion scripts/curl.fish fish
+	fi
 	fi
 
 	# Fix linker search paths when necessary
@@ -92,4 +94,21 @@ libcurl-devel_package() {
 		vmove "usr/lib/*.so"
 		vmove usr/lib/pkgconfig
 	}
+}
+
+build_options+=" bearssl static ipv6"
+build_options_default="bearssl static"
+configure_args="${configure_args/--enable-ipv6/} $(vopt_enable ipv6)"
+if [ "build_option_bearssl" ]; then
+	configure_args="${configure_args/--without-ssl/} --with-bearssl"
+	makedepends+=" bearssl-devel"
+fi
+if [ "build_option_static" ]; then
+	makedepends="${makedepends/nghttp2-devel/}"
+	make_check=no
+fi
+post_patch() {
+	if [ "build_option_static" ]; then
+		vsed -i src/Makefile.in -e 's/\(curl_LDADD =\)/\1 -all-static/'
+	fi
 }
