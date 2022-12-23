@@ -41,3 +41,16 @@ bash-devel_package() {
 		vmove usr/lib/pkgconfig
 	}
 }
+
+hostmakedepends="byacc"
+build_options="static netbsd_curses"
+build_options_default="static netbsd_curses"
+if [ "$build_option_netbsd_curses" ]; then
+	configure_args="--without-bash-malloc --without-installed-readline"
+	makedepends="netbsd-curses-devel"
+fi
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-nls --enable-static-link"
+	make_build_args=" "
+	subpackages=" "
+fi
