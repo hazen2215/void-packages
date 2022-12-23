@@ -55,6 +55,7 @@ pre_check() {
 }
 
 post_install() {
+	if false; then
 	if [ "$CROSS_BUILD" ]; then
 		# Copy hostmakedepends' version
 		vcompletion /usr/share/zsh/site-functions/_curl zsh
@@ -63,6 +64,7 @@ post_install() {
 		make -C scripts
 		vcompletion scripts/_curl zsh
 		vcompletion scripts/curl.fish fish
+	fi
 	fi
 
 	# Fix linker search paths when necessary
@@ -95,3 +97,16 @@ libcurl-devel_package() {
 		vmove usr/lib/pkgconfig
 	}
 }
+
+build_options+=" wolfssl static ipv6"
+build_options_default="wolfssl static"
+configure_args="${configure_args/--enable-ipv6/} $(vopt_enable ipv6)"
+if [ "$build_option_wolfssl" ]; then
+	configure_args="${configure_args/--without-ssl/} --with-wolfssl"
+	makedepends+=" wolfssl-devel"
+fi
+if [ "$build_option_static" ]; then
+	makedepends="${makedepends/nghttp2-devel/}"
+	make_check=no
+	make_build_args="curl_LDFLAGS=-all-static"
+fi
