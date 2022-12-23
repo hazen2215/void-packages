@@ -32,6 +32,14 @@ fi
 
 post_install() {
 	vlicense COPYING
+	if [ "$build_option_static" ]; then
+		rm -r ${DESTDIR}/usr/include
+		rm -r ${DESTDIR}/usr/lib
+		rm -r ${DESTDIR}/usr/share/man/man3
+		rm -r ${DESTDIR}/usr/share/man/man4
+		rm -r ${DESTDIR}/usr/share/misc
+	fi
+
 }
 
 libmagic_package() {
@@ -54,3 +62,11 @@ file-devel_package() {
 		vmove usr/share/man/man3
 	}
 }
+
+build_options+=" static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	LDFLAGS="--static"
+	configure_args+=" --disable-shared"
+	subpackages=" "
+fi
