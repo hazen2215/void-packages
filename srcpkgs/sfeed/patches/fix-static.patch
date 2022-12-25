@@ -1,0 +1,20 @@
+diff --git a/util.c b/util.c
+index bb28d2a..0917e60 100644
+--- a/util.c
++++ b/util.c
+@@ -9,6 +9,7 @@
+ 
+ /* print to stderr, print error message of errno and exit().
+  * Unlike BSD err() it does not prefix __progname */
++#if defined(__GLIBC__) || !defined(__linux__)
+ __dead void
+ err(int exitstatus, const char *fmt, ...)
+ {
+@@ -44,6 +45,7 @@ errx(int exitstatus, const char *fmt, ...)
+ 
+ 	exit(exitstatus);
+ }
++#endif
+ 
+ /* Handle read or write errors for a FILE * stream */
+ void
