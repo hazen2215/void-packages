@@ -1,0 +1,33 @@
+# Template file for 'wolfssl'
+pkgname=wolfssl
+version=5.6.3
+revision=1
+build_style=gnu-configure
+configure_args="--enable-shared --enable-static
+ --enable-aescbc-length-checks --enable-curve25519 --enable-ed25519
+ --enable-ed25519-stream --disable-oldtls --enable-base64encode --enable-tlsx
+ --enable-scrypt --disable-examples --enable-wpas --enable-wpas-dpp
+ --enable-openvpn --enable-bind"
+hostmakedepends="autoconf automake libtool"
+short_desc="Small, fast, portable implementation of TLS/SSL"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://www.wolfssl.com/"
+distfiles="https://github.com/wolfSSL/wolfssl/archive/v${version}-stable.tar.gz"
+checksum=2e74a397fa797c2902d7467d500de904907666afb4ff80f6464f6efd5afb114a
+
+pre_configure() {
+	./autogen.sh
+}
+
+wolfssl-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/share/doc
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+	}
+}
