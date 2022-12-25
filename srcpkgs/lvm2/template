@@ -33,6 +33,13 @@ pre_configure() {
 	sed -i 's|@BLKID_LIBS@|-lblkid -luuid|g' make.tmpl.in
 }
 
+build_options="udev static"
+build_options_default="static"
+configure_args="${configure_args/--enable-udev_sync/} $(vopt_enable udev udev_sync)"
+configure_args="${configure_args/--enable-udev_rules/} $(vopt_enable udev udev_rules)"
+configure_args+=" $(vopt_enable static static_link)"
+makedepends="${makedepends/eudev-libudev-devel/} $(vopt_if udev eudev-libudev-devel)"
+
 do_check() {
 	# requires opening /dev/kmsg which requires root
 	:
@@ -42,6 +49,11 @@ post_install() {
 	vmkdir usr/bin
 	mv -f ${DESTDIR}/usr/sbin/* ${DESTDIR}/usr/bin/ || true
 	vlicense COPYING.BSD
+	if [ "$build_option_static" ]; then
+		ln -sf lvm.static ${DESTDIR}/usr/bin/lvm
+		ln -sf dmsetup.static ${DESTDIR}/usr/bin/dmsetup
+		ln -sf dmeventd.static ${DESTDIR}/usr/bin/dmeventd
+	fi
 }
 
 device-mapper-devel_package() {
@@ -72,9 +84,11 @@ device-mapper_package() {
 		vmove "usr/share/man/man8/dm*"
 		vmove usr/lib/libdevmapper-event-lvm2?*.so
 		vmove usr/lib/device-mapper
+		if [ "$build_option_udev" ]; then
 		for f in 10-dm 13-dm-disk 95-dm-notify; do
 			vmove usr/lib/udev/rules.d/${f}.rules
 		done
+		fi
 		vsv dmeventd
 	}
 }
