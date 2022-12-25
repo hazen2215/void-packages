@@ -4579,3 +4579,4 @@ libkwin-x11.so.6 kwin-x11-6.4.3_1
 libdatovka.so.8 libdatovka-0.7.0_1
 libhyprutils.so.6 hyprutils-0.7.1_1
 libblake3.so.0 libblake3-1.8.2_1
+libwolfssl.so.43 wolfssl-5.7.0_1
