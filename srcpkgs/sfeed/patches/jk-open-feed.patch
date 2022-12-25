@@ -1,0 +1,21 @@
+diff --git a/sfeed_curses.c b/sfeed_curses.c
+index 0d878f7..03a0918 100644
+--- a/sfeed_curses.c
++++ b/sfeed_curses.c
+@@ -2139,10 +2139,16 @@ main(int argc, char *argv[])
+ keyup:
+ 		case 'k':
+ 			pane_scrolln(&panes[selpane], -1);
++			if (selpane == PaneItems)
++				break;
++			feed_open_selected(&panes[PaneFeeds]);
+ 			break;
+ keydown:
+ 		case 'j':
+ 			pane_scrolln(&panes[selpane], +1);
++			if (selpane == PaneItems)
++				break;
++			feed_open_selected(&panes[PaneFeeds]);
+ 			break;
+ keyleft:
+ 		case 'h':

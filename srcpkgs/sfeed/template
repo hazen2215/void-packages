@@ -23,3 +23,8 @@ sfeed_curses_package() {
 	metapackage=yes
 	short_desc+=" (transitional dummy package)"
 }
+
+build_options="netbsd_curses static"
+build_options_default="netbsd_curses static"
+makedepends="$(vopt_if netbsd_curses netbsd-curses-devel ncurses-devel)"
+LDFLAGS="$(vopt_if static -static)"
