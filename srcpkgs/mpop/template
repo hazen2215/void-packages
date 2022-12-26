@@ -7,6 +7,20 @@ hostmakedepends="pkg-config"
 makedepends="gnutls-devel libidn2-devel"
 short_desc="POP3 client"
 maintainer="Leah Neukirchen <leah@vuxu.org>"
+build_options="bearssl static"
+build_options_default="bearssl static"
+if [ "$build_option_bearssl" ]; then
+	configure_args+=" --with-tls=libtls"
+	makedepends="${makedepends/gnutls-devel/} bearssl-devel
+	 libtls-bearssl-devel"
+	LIBS+=" -lbearssl"
+fi
+if [ "$build_option_static" ]; then
+	LDFLAGS="-static"
+	makedepends+=" libunistring-devel"
+	LIBS+=" -lunistring"
+fi
+export LIBS
 license="GPL-3.0-or-later"
 homepage="https://marlam.de/mpop/"
 distfiles="https://marlam.de/mpop/releases/mpop-${version}.tar.xz"
