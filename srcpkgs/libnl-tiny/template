@@ -1,0 +1,12 @@
+# Template file for 'libnl-tiny'
+pkgname=libnl-tiny
+version=1.0.1.20220916
+revision=1
+_commit=39ec78bb012edc2739c3d3d0058e4076411068b1
+build_style=gnu-makefile
+short_desc="Tiny Netlink Core Library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.1-only"
+homepage="https://github.com/sabotage-linux/libnl-tiny"
+distfiles="https://github.com/sabotage-linux/libnl-tiny/archive/${_commit}.tar.gz"
+checksum=a80020e61e68285d4e285ecaef22d87915ad550053b18be5694ed7a7b93ffe30
