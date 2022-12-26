@@ -28,3 +28,18 @@ post_install() {
 	vsconf doc/msmtprc-system.example
 	vsconf doc/msmtprc-user.example
 }
+
+build_options+=" bearssl static"
+build_options_default="idn msmtpd bearssl static"
+if [ "$build_option_bearssl" ]; then
+	configure_args+=" --with-tls=libtls"
+	makedepends="${makedepends/gnutls-devel/} bearssl-devel
+	 libtls-bearssl-devel"
+	LIBS+=" -lbearssl"
+fi
+if [ "$build_option_static" ]; then
+	LDFLAGS="-static"
+	makedepends+=" libunistring-devel"
+	LIBS+=" -lunistring"
+fi
+export LIBS
