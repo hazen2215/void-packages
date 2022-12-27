@@ -13,6 +13,20 @@ changelog="https://github.com/tukaani-project/xz/raw/master/NEWS"
 distfiles="https://github.com/tukaani-project/xz/releases/download/v${version}/xz-${version}.tar.gz"
 checksum=507825b599356c10dca1cd720c9d0d0c9d5400b9de300af00e4d1ea150795543
 
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-shared --disable-nls"
+	LDFLAGS="--static"
+	subpackages=" "
+fi
+post_install() {
+	if [ "$build_option_static" ]; then
+		rm -r ${DESTDIR}/usr/lib
+		rm -r ${DESTDIR}/usr/include
+	fi
+}
+
 liblzma_package() {
 	short_desc="XZ-format compression library"
 	pkg_install() {
