@@ -18,3 +18,13 @@ make_check=no # has no tests
 post_install() {
 	vconf doc/axelrc.example axelrc
 }
+
+build_options="wolfssl static"
+build_options_default="wolfssl static"
+if [ "$build_option_bearssl" ]; then
+	configure_args+=" --with-ssl=wolfssl"
+	makedepends="${makedepends/openssl-devel/} wolfssl-devel"
+fi
+if [ "$build_option_static" ]; then
+	LDFLAGS="-static"
+fi
