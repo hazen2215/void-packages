@@ -61,8 +61,10 @@ do_build() {
 	make ${makejobs} -C contrib/contacts all git-contacts.1
 	make ${makejobs} -C contrib/diff-highlight all
 	make ${makejobs} -C contrib/subtree all man
+	if [ ! "$build_option_static" ]; then
 	make ${makejobs} -C contrib/credential/libsecret
 	make ${makejobs} -C contrib/credential/netrc
+	fi
 }
 
 do_check() {
@@ -87,9 +89,11 @@ do_install() {
 	vinstall contrib/git-jump/git-jump 755 usr/libexec/git-core
 	vdoc contrib/git-jump/README git-jump
 	make -C contrib/subtree DESTDIR=${DESTDIR} install install-man
+	if [ ! "$build_option_static" ]; then
 	vinstall contrib/credential/libsecret/git-credential-libsecret 755 \
 		usr/libexec/git-core
 	make -C contrib/credential/netrc DESTDIR=${DESTDIR} install
+	fi
 }
 
 git-scalar_package() {
@@ -121,7 +125,9 @@ git-svn_package() {
 	depends="${sourcepkg}>=${version}_${revision} subversion-perl perl-Term-ReadKey"
 	short_desc+=" - Subversion support"
 	pkg_install() {
+		if [ ! "$build_option_static" ]; then
 		vmove "usr/share/perl5/vendor_perl/Git/SVN*"
+		fi
 		vmove usr/libexec/git-core/git-svn
 		vmove usr/share/man/man1/git-svn.1
 	}
@@ -173,4 +179,33 @@ git-netrc_package() {
 	pkg_install() {
 		vmove usr/libexec/git-core/git-credential-netrc
 	}
+}
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	hostmakedepends="${hostmakedepends/tk}"
+	makedepends="libcurl-devel zlib-devel bearssl-devel"
+	subpackages="git-cvs git-svn git-all git-scalar"
+	LDFLAGS="-static"
+fi
+
+post_configure() {
+	if [ "$build_option_static" ]; then
+		vsed -i config.mak -e '/USE_LIBPCRE2=Yes/d'
+		cat <<-! >>config.mak
+			CURL_LDFLAGS=-lcurl -lbearssl
+			NO_GETTEXT=Yes
+			NO_SVN_TESTS=Yes
+			NO_TCLTK=Yes
+			NO_EXPAT=Yes
+			NO_NSEC=Yes
+			NO_PYTHON=Yes
+			# NO_PERL=Yes
+			NO_SYS_POLL_H=1
+			NO_CROSS_DIRECTORY_HARDLINKS=1
+			NO_INSTALL_HARDLINKS=1
+			NO_OPENSSL=Yes
+		!
+	fi
 }
