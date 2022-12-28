@@ -31,3 +31,15 @@ jq-devel_package() {
 		vmove usr/lib/pkgconfig
 	}
 }
+
+build_options="oniguruma static"
+build_options_default="static"
+hostmakedepends=" "
+pre_configure() { :; }
+if [ -z "$build_option_oniguruma" ]; then
+	makedepends="${makedepends/oniguruma-devel/}"
+	configure_args+=" --with-oniguruma=no"
+fi
+if [ "$build_option_static" ]; then
+	configure_args+=" --enable-all-static"
+fi
