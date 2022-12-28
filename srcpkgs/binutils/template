@@ -94,6 +94,9 @@ do_configure() {
 		*) conf+=" --enable-default-hash-style=gnu";;
 	esac
 
+	if [ "$build_option_static" ]; then
+		conf="${conf/--with-debuginfod --enable-shared/}"
+	fi
 	mkdir build && cd build
 	../configure --build=$(_get_triplet) \
 		--prefix=/usr \
@@ -121,6 +124,35 @@ do_build() {
 	cd ${wrksrc}/build && make ${makejobs} ${_makeinfo}
 }
 
+build_options="static"
+build_options_default="static"
+LDFLAGS="$(vopt_if static --static)"
+
+_alts="addr2line ar c++filt nm objcopy ranlib readelf size strings strip"
+
+for a in $_alts; do
+	alternatives+=" $a:$a:/usr/bin/bu-$a"
+	alternatives+=" $a:$a:/usr/share/man/man1/bu-$a.1"
+done
+
+if [ "$build_option_static" ]; then
+	subpackages=${subpackages/binutils-devel}
+	subpackages=${subpackages/binutils-libs}
+	subpackages=${subpackages/libiberty-devel}
+fi
+
+do_build() {
+	cd ${wrksrc}/build && make ${makejobs} LDFLAGS="$LDFLAGS"
+}
+
+post_install() {
+	if [ "$build_option_static" ]; then
+		rm -r ${DESTDIR}/usr/include
+		rm ${DESTDIR}/usr/lib/*.so
+		rm ${DESTDIR}/usr/lib/*.a
+	fi
+}
+
 # there is a testsuite now, but e.g. ifunc tests all fail on musl and
 # also there are other tests that fail on different targets for fairly
 # harmless reasons and it's just too much effort to fix it all
@@ -136,6 +168,10 @@ do_install() {
 	make DESTDIR=${DESTDIR} tooldir=/usr install ${_makeinfo}
 
 	cd ..
+	for f in $_alts; do
+		mv ${DESTDIR}/usr/bin/{,bu-}${f}
+		mv ${DESTDIR}/usr/share/man/man1/{,bu-}${f}.1
+	done
 
 	# Remove ld (hardlink) and make a symlink to ld.bfd.
 	rm -f ${DESTDIR}/usr/bin/ld
@@ -151,7 +187,9 @@ do_install() {
 			>${DESTDIR}/usr/lib/libopcodes.so
 
 		# Install PIC version of libiberty.a
+		if [ ! "$build_option_static" ]; then
 		vinstall build/libiberty/pic/libiberty.a 755 usr/lib
+		fi
 	fi
 
 	# Remove useless manpages.
