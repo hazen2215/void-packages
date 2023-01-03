@@ -1,0 +1,16 @@
+# Template file for 'dnssec-rr'
+pkgname=dnssec-rr
+version=0.1
+revision=1
+build_style=gnu-makefile
+makedepends="bearssl-devel"
+short_desc="Tools for working with DNSSEC"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://sr.ht/~mcf/dnssec-rr/"
+distfiles="https://git.sr.ht/~mcf/dnssec-rr/archive/${version}.tar.gz"
+checksum=03fc288a9dc236f6fac11b05fdf04b4e508acdc5f529aa71c0d4b96198d3fcbc
+
+post_install() {
+	vlicense LICENSE
+}
