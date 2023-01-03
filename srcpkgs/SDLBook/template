@@ -1,0 +1,20 @@
+# Template file for 'SDLBook'
+pkgname=SDLBook
+version=1.0.0.20201022
+revision=1
+_commit=f4b54ec8842826ab1d28fe56ca2f97ba966ef98c
+build_style=gnu-makefile
+makedepends="SDL-devel djvulibre-devel freetype-devel harfbuzz-devel
+ gumbo-parser-devel mupdf-devel"
+short_desc="Simple djvu/pdf ebook viewer based on djvulibre, libmupdf and SDL 1.2"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/rofl0r/SDLBook"
+distfiles="https://github.com/rofl0r/SDLBook/archive/${_commit}.tar.gz"
+checksum=badf53b4a92745db9ace8847497b06aa71fd7352a73768aff986410cc85754e3
+
+pre_build() {
+	vsed -i Makefile \
+		-e 's/-lmupdf/& -lmupdf-third -lmupdf-pkcs7 -lmupdf-threads -lgumbo -lfreetype -lharfbuzz -lz -ljbig2dec -ljpeg -lopenjp2/'
+
+}
