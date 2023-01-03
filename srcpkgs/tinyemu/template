@@ -1,0 +1,19 @@
+# Template file for 'tinyemu'
+pkgname=tinyemu
+version=2019.12.21
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+make_build_args="LDFLAGS=-lbearssl"
+make_install_args="bindir=/usr/bin"
+makedepends="bearssl-devel libcurl-devel SDL-devel"
+short_desc="System emulator for the RISC-V and x86 architectures"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://bellard.org/tinyemu/"
+distfiles="https://bellard.org/tinyemu/tinyemu-${version//./-}.tar.gz"
+checksum=be8351f2121819b3172fcedce5cb1826fa12c87da1b7ed98f269d3e802a05555
+
+pre_install() {
+	vmkdir usr/bin
+}
