@@ -1,0 +1,12 @@
+diff --git a/compress.h b/compress.h
+index 56910c3..82c5abe 100644
+--- a/compress.h
++++ b/compress.h
+@@ -28,6 +28,7 @@
+  */
+ 
+ #include <sys/stat.h>
++#include <sys/types.h>
+ 
+ struct z_info {
+ 	u_int32_t mtime;	/* timestamp */
