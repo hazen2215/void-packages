@@ -1,6 +1,7 @@
 #
 # This script fixes group owner in some files.
 #
+false &&
 case "${ACTION}" in
 post)
 	set +e
