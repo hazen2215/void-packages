@@ -62,6 +62,7 @@ post_extract() {
 do_install() {
 	make usrsbin_execdir=/usr/bin DESTDIR=${DESTDIR} install
 
+	if false; then
 	# Correct perms for newgrp, chfn, chsh, wall and write.
 	chmod u+s $DESTDIR/usr/bin/{newgrp,chsh,chfn}
 
@@ -75,10 +76,43 @@ do_install() {
 	vinstall $FILESDIR/common.pam 644 etc/pam.d chsh
 
 	vsv uuidd
+	fi
 
 	rm -rf "$DESTDIR/usr/include"
 	rm -rf "$DESTDIR/usr/lib"
 	rm -rf "$DESTDIR/usr/share/man/man3"
 	# Provided by util-linux-common
 	rm -rf "$DESTDIR/usr/share/locale"
+}
+
+configure_args="--exec-prefix=\${prefix} --disable-makeinstall-chown
+ --disable-rpath --enable-fs-paths-extra=/usr/sbin:/usr/bin
+ --with-systemdsystemunitdir=no --without-udev --without-python
+ --disable-all-programs --enable-mount
+ --enable-libblkid --enable-libuuid --enable-libmount --enable-fsck"
+hostmakedepends=" "
+makedepends="zlib-devel"
+
+system_accounts=" "
+_uuidd_homedir=" "
+conf_files=" "
+provides=" "
+replaces=" "
+
+alternatives=" "
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	LDFLAGS="--static"
+	unset depends
+	make_check=no
+fi
+
+post_configure() {
+	if [ "$build_option_static" ]; then
+		vsed -i libtool \
+			-e 's/prefer_static_libs=no/prefer_static_libs=yes/' \
+			-e 's/build_libtool_libs=yes/build_libtool_libs=no/'
+	fi
 }
