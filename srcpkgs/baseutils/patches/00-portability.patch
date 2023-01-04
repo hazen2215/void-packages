@@ -1,0 +1,262 @@
+diff --git a/find/extern.h b/find/extern.h
+index a8f2b07..ed90fda 100644
+--- a/find/extern.h
++++ b/find/extern.h
+@@ -60,7 +60,6 @@ PLAN	*c_exec(char *, char ***, int);
+ PLAN	*c_execdir(char *, char ***, int);
+ PLAN	*c_flags(char *, char ***, int);
+ PLAN	*c_follow(char *, char ***, int);
+-PLAN	*c_fstype(char *, char ***, int);
+ PLAN	*c_group(char *, char ***, int);
+ PLAN	*c_iname(char *, char ***, int);
+ PLAN	*c_inum(char *, char ***, int);
+diff --git a/find/find.1 b/find/find.1
+index 2b7d87a..d185c3e 100644
+--- a/find/find.1
++++ b/find/find.1
+@@ -287,19 +287,6 @@ The same as specifying the
+ .Fl L
+ option.
+ .Pp
+-.It Ic -fstype Ar type
+-True if the file is contained in a file system of type
+-.Ar type .
+-Two special file system types are recognized:
+-.Dq local
+-and
+-.Dq rdonly .
+-These do not describe actual file system types;
+-the former matches any file system physically mounted on the system where
+-.Nm
+-is being executed whereas the latter matches any file system which is
+-mounted read-only.
+-.Pp
+ .It Ic -group Ar gname
+ True if the file belongs to the group
+ .Ar gname .
+@@ -567,9 +554,9 @@ and owned by
+ .Pp
+ .Dl "$ find / \e! \e( -newer ttt -user wnj \e)"
+ .Pp
+-Print out a list of all core files on local file systems:
++Print out a list of all core files:
+ .Pp
+-.Dl "$ find / \e! -fstype local -prune -o -name '*.core'"
++.Dl "$ find / \e! -prune -o -name '*.core'"
+ .Pp
+ Find all files in
+ .Pa /usr/src
+@@ -615,7 +602,6 @@ primaries
+ .Ic -execdir ,
+ .Ic -flags ,
+ .Ic -follow ,
+-.Ic -fstype ,
+ .Ic -iname ,
+ .Ic -inum ,
+ .Ic -ls ,
+diff --git a/find/find.h b/find/find.h
+index 9be6a2b..b5994ab 100644
+--- a/find/find.h
++++ b/find/find.h
+@@ -38,7 +38,7 @@ enum ntype {
+ 	N_AND = 1, 				/* must start > 0 */
+ 	N_AMIN, N_ANEWER, N_ATIME, N_CLOSEPAREN, N_CMIN, N_CNEWER, N_CTIME,
+ 	N_DELETE, N_DEPTH, N_EMPTY, N_EXEC, N_EXECDIR, N_EXPR,
+-	N_FLAGS, N_FOLLOW, N_FSTYPE, N_GROUP, N_INAME, N_INUM, N_LINKS, N_LS,
++	N_FLAGS, N_FOLLOW, N_GROUP, N_INAME, N_INUM, N_LINKS, N_LS,
+ 	N_MMIN, N_MAXDEPTH,
+ 	N_MINDEPTH, N_MTIME, N_NAME, N_NEWER, N_NOGROUP, N_NOT, N_NOUSER,
+ 	N_OK, N_OPENPAREN, N_OR, N_PATH, N_PERM, N_PRINT, N_PRINT0, N_PRUNE,
+@@ -55,7 +55,6 @@ typedef struct _plandata {
+ #define	F_GREATER	3
+ #define	F_NEEDOK	1			/* exec ok */
+ #define F_PLUSSET	2			/* -exec ... {} + */
+-#define	F_MTFLAG	1			/* fstype */
+ #define	F_MTTYPE	2
+ #define	F_ATLEAST	1			/* perm */
+ 	int flags;				/* private flags */
+diff --git a/find/function.c b/find/function.c
+index 9715d25..b1b70f6 100644
+--- a/find/function.c
++++ b/find/function.c
+@@ -82,7 +82,6 @@ int	f_empty(PLAN *, FTSENT *);
+ int	f_exec(PLAN *, FTSENT *);
+ int	f_execdir(PLAN *, FTSENT *);
+ int	f_flags(PLAN *, FTSENT *);
+-int	f_fstype(PLAN *, FTSENT *);
+ int	f_group(PLAN *, FTSENT *);
+ int	f_inum(PLAN *, FTSENT *);
+ int	f_empty(PLAN *, FTSENT *);
+@@ -831,100 +830,6 @@ c_follow(char *ignore, char ***ignored, int unused)
+ 	return (palloc(N_FOLLOW, f_always_true));
+ }
+  
+-/*
+- * -fstype functions --
+- *
+- *	True if the file is of a certain type.
+- */
+-int
+-f_fstype(PLAN *plan, FTSENT *entry)
+-{
+-	static dev_t curdev;	/* need a guaranteed illegal dev value */
+-	static int first = 1;
+-	struct statfs sb;
+-	static short val;
+-	static char fstype[MFSNAMELEN];
+-	char *p, save[2];
+-
+-	/* Only check when we cross mount point. */
+-	if (first || curdev != entry->fts_statp->st_dev) {
+-		curdev = entry->fts_statp->st_dev;
+-
+-		/*
+-		 * Statfs follows symlinks; find wants the link's file system,
+-		 * not where it points.
+-		 */
+-		if (entry->fts_info == FTS_SL ||
+-		    entry->fts_info == FTS_SLNONE) {
+-			if ((p = strrchr(entry->fts_accpath, '/')))
+-				++p;
+-			else
+-				p = entry->fts_accpath;
+-			save[0] = p[0];
+-			p[0] = '.';
+-			save[1] = p[1];
+-			p[1] = '\0';
+-			
+-		} else 
+-			p = NULL;
+-
+-		if (statfs(entry->fts_accpath, &sb))
+-			err(1, "%s", entry->fts_accpath);
+-
+-		if (p) {
+-			p[0] = save[0];
+-			p[1] = save[1];
+-		}
+-
+-		first = 0;
+-
+-		/*
+-		 * Further tests may need both of these values, so
+-		 * always copy both of them.
+-		 */
+-		val = sb.f_flags;
+-		strncpy(fstype, sb.f_fstypename, MFSNAMELEN);
+-	}
+-	switch (plan->flags) {
+-	case F_MTFLAG:
+-		return (val & plan->mt_data);	
+-	case F_MTTYPE:
+-		return (strncmp(fstype, plan->c_data, MFSNAMELEN) == 0);
+-	default:
+-		abort();
+-	}
+-}
+- 
+-PLAN *
+-c_fstype(char *arg, char ***ignored, int unused)
+-{
+-	PLAN *new;
+-    
+-	ftsoptions &= ~FTS_NOSTAT;
+-    
+-	new = palloc(N_FSTYPE, f_fstype);
+-	switch (*arg) {
+-	case 'l':
+-		if (!strcmp(arg, "local")) {
+-			new->flags = F_MTFLAG;
+-			new->mt_data = MNT_LOCAL;
+-			return (new);
+-		}
+-		break;
+-	case 'r':
+-		if (!strcmp(arg, "rdonly")) {
+-			new->flags = F_MTFLAG;
+-			new->mt_data = MNT_RDONLY;
+-			return (new);
+-		}
+-		break;
+-	}
+-
+-	new->flags = F_MTTYPE;
+-	new->c_data = arg;
+-	return (new);
+-}
+- 
+ /*
+  * -group gname functions --
+  *
+diff --git a/find/main.c b/find/main.c
+index 4b6a7bf..1b0f609 100644
+--- a/find/main.c
++++ b/find/main.c
+@@ -70,7 +70,7 @@ main(int argc, char *argv[])
+ 
+ 	p = paths = ereallocarray(NULL, argc, sizeof(char *));
+ 
+-	sigaction(SIGINFO, &sa, NULL);
++	sigaction(SIGPWR, &sa, NULL);
+ 
+ 	ftsoptions = FTS_NOSTAT|FTS_PHYSICAL;
+ 	while ((ch = getopt(argc, argv, "Hdf:hLXx")) != -1)
+diff --git a/find/option.c b/find/option.c
+index f897bc7..8223ab5 100644
+--- a/find/option.c
++++ b/find/option.c
+@@ -66,7 +66,6 @@ static OPTION options[] = {
+ 	{ "-execdir",	N_EXECDIR,	c_execdir,	O_ARGVP },
+ 	{ "-flags",	N_FLAGS,	c_flags,	O_ARGV },
+ 	{ "-follow",	N_FOLLOW,	c_follow,	O_ZERO },
+-	{ "-fstype",	N_FSTYPE,	c_fstype,	O_ARGV },
+ 	{ "-group",	N_GROUP,	c_group,	O_ARGV },
+ 	{ "-iname",	N_INAME,	c_iname,	O_ARGV },
+ 	{ "-inum",	N_INUM,		c_inum,		O_ARGV },
+diff --git a/stty/gfmt.c b/stty/gfmt.c
+index 6682b1e..fc451f7 100644
+--- a/stty/gfmt.c
++++ b/stty/gfmt.c
+@@ -88,11 +88,6 @@ gread(struct termios *tp, char *s)
+ 			tp->c_iflag = tmp;
+ 			continue;
+ 		}
+-		if (CHK("ispeed")) {
+-			(void)sscanf(ep, "%ld", &tmp);
+-			tp->c_ispeed = tmp;
+-			continue;
+-		}
+ 		if (CHK("lflag")) {
+ 			tp->c_lflag = tmp;
+ 			continue;
+@@ -101,11 +96,6 @@ gread(struct termios *tp, char *s)
+ 			tp->c_oflag = tmp;
+ 			continue;
+ 		}
+-		if (CHK("ospeed")) {
+-			(void)sscanf(ep, "%ld", &tmp);
+-			tp->c_ospeed = tmp;
+-			continue;
+-		}
+ 		for (cp = cchars1; cp->name != NULL; ++cp)
+ 			if (CHK(cp->name)) {
+ 				tp->c_cc[cp->sub] = tmp;
+diff --git a/stty/key.c b/stty/key.c
+index 245e5db..92c33f9 100644
+--- a/stty/key.c
++++ b/stty/key.c
+@@ -44,6 +44,14 @@
+ #include "stty.h"
+ #include "extern.h"
+ 
++#ifdef   __cplusplus
++# define __BEGIN_DECLS  extern "C" {
++# define __END_DECLS }
++#else
++# define __BEGIN_DECLS
++# define __END_DECLS
++#endif
++
+ __BEGIN_DECLS
+ void	f_all(struct info *);
+ void	f_cbreak(struct info *);
