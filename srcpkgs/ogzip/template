@@ -1,0 +1,36 @@
+# Template file for 'ogzip'
+pkgname=ogzip
+version=0.0.20220316
+revision=1
+_commit=428a465380f463e9b1e7e7b9a8bf4842ad7810cc
+build_style=gnu-configure
+make_use_env=yes
+configure_args="$(vopt_enable static)"
+makedepends="zlib-devel"
+short_desc="Portable OpenBSD gzip utility"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/ibara/ogzip"
+distfiles="https://github.com/ibara/ogzip/archive/${_commit}.tar.gz"
+checksum=04cb9f4aee17670fa091eb9839656c773786d4e9bdb2407a5ceb5d158ba2398d
+
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	makedepends+=" musl-fts-devel musl-legacy-compat"
+fi
+
+build_options="static"
+build_options_default="static"
+
+conflicts="gzip"
+provides="gzip-0_1"
+
+pre_build() {
+	if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+		vsed -i Makefile -e 's/-lz$/& -lfts/'
+	fi
+}
+
+post_install() {
+	sed -n '/Copyright/,/SUCH DAMAGE/p' main.c >LICENSE
+	vlicense LICENSE
+}

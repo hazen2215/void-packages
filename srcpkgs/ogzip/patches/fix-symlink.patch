@@ -1,0 +1,28 @@
+diff --git a/configure b/configure
+index 1413b1c..dfa77c8 100755
+--- a/configure
++++ b/configure
+@@ -50,8 +50,8 @@ install:
+ 	install -d \${DESTDIR}\${BINDIR}
+ 	install -d \${DESTDIR}\${MANDIR}/man1
+ 	install -c $stripopt -m 755 \${PROG} \${DESTDIR}\${BINDIR}
+-	ln -s \${BINDIR}\${PROG} \${DESTDIR}\${BINDIR}/gunzip
+-	ln -s \${BINDIR}\${PROG} \${DESTDIR}\${BINDIR}/gzcat
++	ln -s \${BINDIR}/\${PROG} \${DESTDIR}\${BINDIR}/gunzip
++	ln -s \${BINDIR}/\${PROG} \${DESTDIR}\${BINDIR}/gzcat
+ 	install -c -m 755 zdiff \${DESTDIR}\${BINDIR}
+ 	ln -s \${BINDIR}/zdiff \${DESTDIR}\${BINDIR}/zcmp
+ 	install -c -m 755 zmore \${DESTDIR}\${BINDIR}
+@@ -62,9 +62,9 @@ EOF
+ 
+ if [ $compress -eq 1 ] ; then
+   cat << EOF >> Makefile
+-	ln -s \${BINDIR}\${PROG} \${DESTDIR}\${BINDIR}/compress
+-	ln -s \${BINDIR}\${PROG} \${DESTDIR}\${BINDIR}/uncompress
+-	ln -s \${BINDIR}\${PROG} \${DESTDIR}\${BINDIR}/zcat
++	ln -s \${BINDIR}/\${PROG} \${DESTDIR}\${BINDIR}/compress
++	ln -s \${BINDIR}/\${PROG} \${DESTDIR}\${BINDIR}/uncompress
++	ln -s \${BINDIR}/\${PROG} \${DESTDIR}\${BINDIR}/zcat
+ 	install -c -m 755 znew \${DESTDIR}\${BINDIR}
+ 	install -c -m 644 compress.1 \${DESTDIR}\${MANDIR}/man1
+ 	install -c -m 644 znew.1 \${DESTDIR}\${MANDIR}/man1
