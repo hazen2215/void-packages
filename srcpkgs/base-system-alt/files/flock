@@ -1,0 +1,13 @@
+#!/bin/sh
+
+test "$1" = "--help" && args=--help && shift
+
+while getopts sxunw: o; do
+	case $o in
+	s | x | u | n) args="$args -$o" ;;
+	esac
+done
+
+shift $((OPTIND - 1))
+
+exec toybox.static flock $args "$@"

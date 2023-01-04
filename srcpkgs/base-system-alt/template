@@ -1,0 +1,86 @@
+# Template file for 'base-system-alt'
+pkgname=base-system-alt
+version=20250703
+revision=1
+short_desc="Alternative base system meta package"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Public Domain"
+homepage="https://github.com/hazen2215/void-packages"
+
+depends="
+ base-files>=0.77 ncurses dash file nawk less man-pages mdocml>=1.14.3
+ e2fsprogs tzdata pciutils iana-etc kbd wpa_supplicant xbps
+ wifi-firmware kmod acpid runit-void removed-packages toybox-static
+ busybox-static baseutils ubase"
+
+case "$XBPS_TARGET_MACHINE" in
+	*-musl) depends+=" musl";;
+	*) depends+=" glibc-locales";;
+esac
+
+case "$XBPS_TARGET_MACHINE" in
+	i686*|x86_64*|ppc*) depends+=" linux";;
+esac
+
+conflicts="
+ ascii coreutils cpio dos2unix hexedit inetutils-dnsdomainname iotop procps-ng
+ psmisc pwgen sharutils tar time usbutils watchdog which xxd"
+
+provides="
+ ascii-0_1 cpio-0_1 dos2unix-0_1 findutils-0_1 grep-0_1 hexedit-0_1
+ inetutils-dnsdomainname-0_1 iotop-0_1 procps-ng-0_1 psmisc-0_1 pwgen-0_1
+ tar-0_1 usbutils-0_1 which-0_1 xxd-0_1"
+
+alternatives="
+ find:find:/usr/bin/toybox.static
+ find:find:/usr/bin/toybox.static
+ grep:egrep:/usr/bin/toybox.static
+ grep:fgrep:/usr/bin/toybox.static
+ grep:grep:/usr/bin/toybox.static
+ hostname:hostname:/usr/bin/toybox.static
+ ifconfig:ifconfig:/usr/bin/toybox.static
+ logger:logger:/usr/bin/toybox.static
+ mkpasswd:mkpasswd:/usr/bin/toybox.static
+ nc:nc:/usr/bin/toybox.static
+ ping6:ping6:/usr/bin/toybox.static
+ ping:ping:/usr/bin/toybox.static
+ tar:tar:/usr/bin/toybox.static
+ xargs:xargs:/usr/bin/toybox.static"
+
+_toybox="
+ [ acpi arch ascii base32 base64 basename blkdiscard blockdev cat
+ chgrp chmod chown chroot chrt cksum cmp comm cp cpio cut date devmem df
+ dirname dmesg dnsdomainname dos2unix du echo eject env expand factor
+ fallocate false free freeramdisk fsfreeze fstype fsync ftpget
+ ftpput gpiodetect gpiofind gpioget gpioinfo gpioset groups head help
+ hexedit id inotifyd install ionice iorenice iotop kill killall killall5
+ link linux32 ln login logname losetup ls lsusb makedevs mcookie md5sum
+ microcom mkdir mkfifo mknod mkswap mktemp mountpoint mv netcat nice
+ nohup nproc nsenter od oneit partprobe paste pgrep pidof pivot_root
+ pkill pmap printenv printf prlimit ps pwd pwdx pwgen readahead readlink
+ realpath renice rev rfkill rmdir rtcwake seq setfattr setsid
+ sha1sum sha224sum sha256sum sha384sum sha3sum sha512sum shred sleep sort
+ split stat su switch_root sync sysctl tac tail taskset tee test time
+ timeout top touch truncate tty tunctl uclampset ulimit uname unicode
+ uniq unix2dos unlink unshare uptime usleep uudecode uuencode uuidgen
+ vconfig vmstat w watch watchdog wc which who whoami xxd yes"
+
+_busybox="
+ hwclock
+ fuser
+ blkid fdisk fstrim"
+
+do_install() {
+	vmkdir usr/bin
+	vbin ${FILESDIR}/flock
+	for f in ${_toybox}; do
+		ln -s toybox.static ${DESTDIR}/usr/bin/${f}
+	done
+	for f in ${_busybox}; do
+		ln -s busybox.static ${DESTDIR}/usr/bin/${f}
+	done
+
+	vmkdir usr/share/xbps.d
+	echo "ignorepkg=coreutils" > \
+		${DESTDIR}/usr/share/xbps.d/base-system-alt.conf
+}
