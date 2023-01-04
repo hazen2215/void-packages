@@ -1,0 +1,94 @@
+# Template file for 'baseutils'
+pkgname=baseutils
+version=0.0.20191014
+revision=1
+_commit=c43e028b59f3d464fcd47a872e1102ee8601df6b
+build_style=gnu-makefile
+make_use_env=yes
+make_install_args='PREFIX=${DESTDIR}/usr MANDIR=${DESTDIR}/usr/share/man'
+short_desc="Portable OpenBSD userland utilities"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/ibara/baseutils"
+distfiles="https://github.com/ibara/baseutils/archive/${_commit}.tar.gz"
+checksum=7582585b7d2cd8c9d18961551ce8a7911ac9b3e3d0e7e4f81e75245ea6a7d5d7
+nocross=yes
+
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	makedepends+=" musl-fts-devel musl-legacy-compat"
+fi
+
+build_options="static"
+build_options_default="static"
+CFLAGS="-DGID_MAX=60000 -DUID_MAX=60000"
+LDFLAGS="$(vopt_if static -static)"
+
+conflicts="coreutils ctags diffutils ed patch"
+provides="diffutils-0_1 ctags-0_1 ed-0_1 findutils-0_1 patch-0_1"
+
+_files="
+ diff3 getopt look pr tr
+"
+
+_bins="
+ col colrm column csplit ctags dd diff ed find fmt grep join patch pax rm xargs
+ whois $_files
+"
+
+_alts="find grep pax whois xargs"
+
+for f in $_alts; do
+	alternatives+="
+	 ${f}:${f}:/usr/bin/bsd${f}
+	 ${f}:${f}.1:/usr/share/man/man1/bsd${f}.1
+	"
+done
+alternatives+="
+ grep:egrep:/usr/bin/bsdgrep
+ grep:egrep.1:/usr/share/man/man1/bsdgrep.1
+ grep:fgrep:/usr/bin/bsdgrep
+ grep:fgrep.1:/usr/share/man/man1/bsdgrep.1
+"
+
+post_patch() {
+	for f in $_files; do
+		[ -d $f ] && rm -r $f
+		cp -a $FILESDIR/$f .
+	done
+}
+
+do_build() {
+	make -C libopenbsd
+	make -C libz
+	for b in $_bins; do
+		make -C $b
+	done
+}
+
+do_install() {
+	vmkdir usr/bin
+	vmkdir usr/share/man/man1
+	for b in $_bins; do
+		make PREFIX=${DESTDIR}/usr MANDIR=${DESTDIR}/usr/share/man \
+			-C $b install
+	done
+}
+
+post_install() {
+	for f in $_alts; do
+		mv ${DESTDIR}/usr/bin/{,bsd}${f}
+		mv ${DESTDIR}/usr/share/man/man1/{,bsd}${f}.1
+	done
+	for f in egrep fgrep; do
+		rm -f ${DESTDIR}/usr/bin/${f}
+	done
+	for f in zgrep zegrep zfgrep; do
+		ln -sf bsdgrep ${DESTDIR}/usr/bin/${f}
+	done
+	for f in cpio tar; do
+		rm -f ${DESTDIR}/usr/bin/${f}
+		rm -f ${DESTDIR}/usr/share/man/man1/${f}.1
+	done
+	sed -n '/Copyright/,/OF THIS SOFTWARE/p' libopenbsd/basename.c >LICENSE
+	vlicense LICENSE
+}

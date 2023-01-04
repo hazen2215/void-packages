@@ -1,0 +1,13 @@
+diff --git a/whois/whois.c b/whois/whois.c
+index 13df7a7..2396051 100644
+--- a/whois/whois.c
++++ b/whois/whois.c
+@@ -61,7 +61,7 @@
+ #define	IANAHOST	"whois.iana.org"
+ #define	QNICHOST_TAIL	".whois-servers.net"
+ 
+-#define	WHOIS_PORT	"whois"
++#define	WHOIS_PORT	"nicname"
+ #define	WHOIS_SERVER_ID	"Registrar WHOIS Server:"
+ 
+ #define WHOIS_RECURSE		0x01
