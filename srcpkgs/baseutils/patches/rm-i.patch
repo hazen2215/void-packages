@@ -1,0 +1,13 @@
+diff --git a/rm/rm.c b/rm/rm.c
+index 5d0171c..372d14d 100644
+--- a/rm/rm.c
++++ b/rm/rm.c
+@@ -391,7 +391,7 @@ check(char *path, char *name, struct stat *sp)
+ 	first = ch = getchar();
+ 	while (ch != '\n' && ch != EOF)
+ 		ch = getchar();
+-	return (first == 'y' || first == 'Y');
++	return (first == 'y' || first == 'Y' || first == '\n');
+ }
+ 
+ /*
