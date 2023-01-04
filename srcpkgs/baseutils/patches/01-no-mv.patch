@@ -1,0 +1,30 @@
+diff --git a/lex/Makefile b/lex/Makefile
+index cca66a1..15c36af 100644
+--- a/lex/Makefile
++++ b/lex/Makefile
+@@ -20,8 +20,8 @@ all: ${OBJS}
+ 
+ parse.h parse.c: parse.y
+ 	../yacc/yacc -d parse.y
+-	../mv/mv y.tab.c parse.c
+-	../mv/mv y.tab.h parse.h
++	mv y.tab.c parse.c
++	mv y.tab.h parse.h
+ 
+ install:
+ 	install -d -m 755 ${PREFIX}/include
+diff --git a/m4/Makefile b/m4/Makefile
+index 0450b32..bd5bf3c 100644
+--- a/m4/Makefile
++++ b/m4/Makefile
+@@ -19,8 +19,8 @@ all: ${OBJS}
+ 
+ parser.h parser.c: parser.y
+ 	../yacc/yacc -d parser.y
+-	../mv/mv y.tab.c parser.c
+-	../mv/mv y.tab.h parser.h
++	mv y.tab.c parser.c
++	mv y.tab.h parser.h
+ 
+ install:
+ 	install -c -s -m 555 ${PROG} ${PREFIX}/bin/${PROG}
