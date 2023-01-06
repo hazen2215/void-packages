@@ -33,12 +33,18 @@ do_build() {
 		_crosscompile="CROSSCOMPILE=yes"
 	fi
 
+	if false; then
 	make ${makejobs} USE_SYSTEM_LIBS=yes CURL_LIBS='-lcurl -lpthread' build=release ${_crosscompile} all
 	make ${makejobs} CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" build=release ${_crosscompile} -C thirdparty/mujs
+	fi
+	make ${makejobs} USE_SYSTEM_LIBS=yes HAVE_CURL=no HAVE_GLUT=no shared=no build=release
 }
 
 do_install() {
+	if false; then
 	make USE_SYSTEM_LIBS=yes build=release prefix=${DESTDIR}/usr install
+	fi
+	make USE_SYSTEM_LIBS=yes HAVE_CURL=no HAVE_GLUT=no build=release prefix=${DESTDIR}/usr install
 	for f in build/release/libmupdf-*.a; do
 		vinstall $f 644 usr/lib
 	done
@@ -74,3 +80,8 @@ mupdf-tools_package() {
 		vmove usr/share/man/man1/mutool.1
 	}
 }
+
+hostmakedepends="pkgconf zlib-devel freetype-devel libjpeg-turbo-devel
+ jbig2dec-devel libXext-devel harfbuzz-devel libopenjpeg2-devel
+ gumbo-parser-devel"
+makedepends="$hostmakedepends"
