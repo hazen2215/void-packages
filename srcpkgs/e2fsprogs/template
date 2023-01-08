@@ -35,6 +35,19 @@ post_install() {
 	rm -f ${DESTDIR}/usr/lib/libuuid*
 	rm -rf ${DESTDIR}/usr/include/uuid
 	rm -f ${DESTDIR}/usr/lib/pkgconfig/uuid*
+	if [ "$build_option_static" ]; then
+		rm -rf ${DESTDIR}/usr/include
+		rm -rf ${DESTDIR}/usr/lib/pkgconfig
+		rm -rf ${DESTDIR}/usr/lib/*.a
+		rm -rf ${DESTDIR}/usr/bin/compile_et
+		rm -rf ${DESTDIR}/usr/bin/mk_cmds
+		rm -rf ${DESTDIR}/usr/share/man/man1/compile_et.1
+		rm -rf ${DESTDIR}/usr/share/man/man1/mk_cmds.1
+		rm -rf ${DESTDIR}/usr/share/et
+		rm -rf ${DESTDIR}/usr/share/ss
+		rm -rf ${DESTDIR}/usr/share/man/man3
+		rm -rf ${DESTDIR}/usr/share/info/libext2fs.info*
+	fi
 }
 
 e2fsprogs-devel_package() {
@@ -70,3 +83,11 @@ fuse2fs_package() {
 		vmove usr/share/man/man1/fuse2fs.1
 	}
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-elf-shlibs --disable-nls"
+	LDFLAGS="-static"
+	subpackages="fuse2fs"
+fi
