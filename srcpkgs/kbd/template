@@ -43,3 +43,12 @@ post_install() {
 		rm -rf ${DESTDIR}/usr/share/kbd/keymaps/${f}
 	done
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	hostmakedepends=" "
+	makedepends=" "
+	CFLAGS="--static"
+	configure_args+=" --disable-vlock --disable-tests"
+fi
