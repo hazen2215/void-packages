@@ -27,6 +27,15 @@ conf_files="
  /etc/iproute2/group
  /etc/iproute2/nl_protos"
 
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	hostmakedepends="flex"
+	makedepends=" "
+	subpackages=" "
+	LDFLAGS="-static"
+fi
+
 post_install() {
 	vmkdir etc
 	vcopy etc/iproute2 etc
