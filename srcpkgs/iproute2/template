@@ -41,3 +41,12 @@ iproute2-tc-ipt_package() {
 		vmove usr/lib/tc/m_xt.so
 	}
 }
+
+build_options="static"
+build_options_default="static"
+if [ "build_option_static" ]; then
+	hostmakedepends="flex"
+	makedepends=" "
+	subpackages=" "
+	LDFLAGS="-static"
+fi
