@@ -1,0 +1,71 @@
+# Template file for 'elftoolchain'
+pkgname=elftoolchain
+version=0.7.1+svn20220506
+revision=1
+_commit=f27fcce314b91b3dece6bee90949183f7a1e18b3
+build_style=gnu-makefile
+make_cmd=bmake
+make_build_args="WITH_ADDITIONAL_DOCUMENTATION=no WITH_TESTS=no MANTARGET=man
+ $(vopt_if static LDSTATIC=-static)"
+make_install_args="${make_build_args} LIBOWN= BINOWN= BINMODE=755
+ NONBINMODE=644 DIRMODE=755 MANTARGET=man MANDIR=/usr/share/man"
+make_check_target="run-tests"
+make_use_env=yes
+hostmakedepends="bmake byacc flex"
+makedepends="libarchive-devel"
+short_desc="Compilation tools and libraries for ELF"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause"
+homepage="https://sourceforge.net/projects/elftoolchain"
+distfiles="https://github.com/chimera-linux/elftoolchain/archive/${_commit}.tar.gz"
+# distfiles="https://downloads.sourceforge.net/sourceforge/elftoolchain/elftoolchain-${version}.tgz"
+checksum=f7017a5869c3dd7906010255ce199f3cdc0f220c10970cf23bf4c336fd724ed0
+
+conflicts="libdwarf pev"
+
+build_options="static"
+build_options_default="static"
+
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	makedepends+=" musl-legacy-compat"
+fi
+
+_alts="addr2line ar c++filt nm objcopy ranlib readelf size strings strip"
+for a in $_alts; do
+	alternatives+=" $a:$a:/usr/bin/et-$a"
+	alternatives+=" $a:$a:/usr/share/man/man1/et-$a"
+done
+
+post_install() {
+	vlicense LICENSE
+	chmod 755 ${DESTDIR}/usr/lib/*.so.*
+	# install a musl-compatible elfdefinitions.h
+	vinstall ${FILESDIR}/elfdefinitions.h 644 usr/include/sys
+
+	for f in $_alts; do
+		mv ${DESTDIR}/usr/bin/{,et-}${f}
+		mv ${DESTDIR}/usr/share/man/man1/{,et-}${f}.1
+	done
+}
+
+elftoolchain-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	conflicts="binutils-devel elfutils-devel libdwarf-devel"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+		vmove usr/share/man/man3
+		vmove usr/share/man/man5
+	}
+}
+
+elftoolchain-libelf_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - libelf"
+	conflicts="libelf"
+	pkg_install() {
+		vmove "usr/lib/libelf.so.*"
+	}
+}
