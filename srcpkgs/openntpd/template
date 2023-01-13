@@ -36,3 +36,19 @@ post_install() {
 	vsv $pkgname
 	vlicense COPYING
 }
+
+build_options="bearssl static"
+build_options_default="bearssl static"
+if [ "$build_option_bearssl" ]; then
+	makedepends="bearssl-devel libtls-bearssl-devel"
+	export LIBS="-lbearssl"
+fi
+if [ "$build_option_static" ]; then
+	LDFLAGS=--static
+	configure_args+=" ac_cv_libc_defines___progname=yes"
+fi
+post_configure() {
+	if [ "$build_option_bearssl" ]; then
+		vsed -i src/Makefile -e 's/-lbearssl -ltls/-lbearssl/'
+	fi
+}
