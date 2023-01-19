@@ -1,0 +1,21 @@
+# Template file for 'aMule'
+pkgname=aMule
+version=2.3.3
+revision=1
+build_style=gnu-configure
+configure_args="--enable-alc --enable-alcc --enable-amule-daemon
+ --enable-amule-gui --enable-amulecmd --enable-ccache --enable-geoip
+ --enable-optimize --enable-upnp --enable-webserver --enable-fileview
+ --with-boost"
+hostmakedepends="bison perl"
+makedepends="boost-devel crypto++-devel gd-devel geoip-devel libSM-devel
+ libupnp-devel wxWidgets-devel"
+short_desc="eMule-like client for the eD2k and Kademlia networks"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://www.amule.org/"
+distfiles="https://downloads.sourceforge.net/project/amule/aMule/${version}/aMule-${version}.tar.xz"
+checksum=a647309642331f3e033fdf0196e7232cdc67f46739d12a0294be06885f70c8bd
+
+CFLAGS="-flto=auto -DNDEBUG"
+CXXFLAGS="-flto=auto -DNDEBUG"
