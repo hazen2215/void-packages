@@ -1,0 +1,19 @@
+# Template file for 'gtk-gnutella'
+pkgname=gtk-gnutella
+version=1.2.2
+revision=1
+build_style=gnu-makefile
+make_install_args="INSTALL_PREFIX=\${DESTDIR}"
+hostmakedepends="pkg-config"
+makedepends="gtk+-devel glib-devel"
+short_desc="The Most Efficient Gnutella Client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://gtk-gnutella.sourceforge.net/"
+changelog="https://raw.githubusercontent.com/gtk-gnutella/gtk-gnutella/devel/ChangeLog"
+distfiles="https://github.com/gtk-gnutella/gtk-gnutella/archive/v${version}.tar.gz"
+checksum=e52484a28849a4d3eb064638e5116f64bac2ab3f224ab90baed7f69ea400d11d
+
+do_build() {
+	./build.sh --prefix=/usr --mandir=/usr/share/man
+}
