@@ -1,0 +1,14 @@
+# Template file for 'mutella'
+pkgname=mutella
+version=0.4.5
+revision=1
+build_style=gnu-configure
+makedepends="readline-devel zlib-devel"
+short_desc="Terminal-mode Gnutella client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://mutella.sourceforge.net/"
+changelog="https://mutella.sourceforge.net/history.php"
+distfiles="https://master.dl.sourceforge.net/project/mutella/mutella/mutella-${version}/mutella-${version}.tar.gz"
+checksum=db99dd1fa52fae87290e367862cb051ee1072c88249e73fe25a933ea73030cc4
+CXXFLAGS="-std=c++98"
