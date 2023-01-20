@@ -36,3 +36,7 @@ libtermkey-devel_package() {
 		vmove usr/share/man/man3
 	}
 }
+
+build_options="netbsd_curses"
+build_options_default=" "
+makedepends+=" $(vopt_if netbsd_curses netbsd-curses-devel)"
