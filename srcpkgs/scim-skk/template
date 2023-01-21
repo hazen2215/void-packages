@@ -1,0 +1,13 @@
+# Template file for 'scim-skk'
+pkgname=scim-skk
+version=0.5.2
+revision=1
+build_style=gnu-configure
+hostmakedepends="gettext-devel pkg-config"
+makedepends="scim-devel"
+short_desc="SKK Input Method Engine for SCIM"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://osdn.jp/projects/scim-imengine/"
+distfiles="http://osdn.dl.osdn.jp/scim-imengine/18121/scim-skk-${version}.tar.gz"
+checksum=17e755db22cd135a47381eae6f924f68f2c8d2991cec1a4b635ad294653d7b2d
