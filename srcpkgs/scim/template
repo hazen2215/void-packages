@@ -1,0 +1,31 @@
+# Template file for 'scim'
+pkgname=scim
+version=1.4.18
+revision=1
+build_style=gnu-configure
+configure_args="--with-gtk-version=2" # no gtk3 support in scim-anthy
+conf_files="/etc/scim/config /etc/scim/global"
+hostmakedepends="autoconf automake gettext-devel intltool libtool perl pkg-config"
+makedepends="gtk+-devel gtk+3-devel libltdl-devel"
+short_desc="Smart Common Input Method"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.1-or-later"
+homepage="https://github.com/scim-im/scim"
+changelog="https://raw.githubusercontent.com/scim-im/scim/master/ChangeLog"
+distfiles="https://github.com/scim-im/scim/archive/${version}.tar.gz"
+checksum=072d79dc3c7277b8e8fcb1caf1a83225c3bf113d590f314b85ae38024427a228
+
+pre_configure() {
+	./bootstrap
+}
+
+scim-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+	}
+}
