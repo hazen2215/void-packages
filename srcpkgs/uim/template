@@ -97,3 +97,23 @@ uim-devel_package() {
 		vmove "usr/lib/*.so"
 	}
 }
+
+build_options=fork
+if [ "$build_option_fork" ]; then
+configure_args="--enable-pref --enable-fep --without-gtk2 --without-gtk3
+ --with-libgcroots=installed
+ --without-qt5 --without-qt5-immodule --without-x --with-anthy-utf8 --with-skk"
+# hostmakedepends="pkg-config intltool qt5-host-tools qt5-qmake automake
+ # libtool gettext-devel"
+makedepends="anthy-devel libgcroots-devel netbsd-curses-devel"
+make_build_args="uim_fep_CFLAGS=-static"
+# makedepends="${makedepends/ncurses-devel/} netbsd-curses-devel"
+export uim_fep_CFLAGS=-static
+
+subpackages="uim-anthy uim-devel uim-skk uim"
+post_patch(){
+	# netbsd-curses
+	vsed -i fep/escseq.c -e 's/tparm/tiparm/g'
+	vsed -i fep/uim-fep.h -e 's/ifdef __CYGWIN32__/if 1/'
+}
+fi
