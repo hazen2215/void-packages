@@ -29,6 +29,7 @@ pkcs11-helper-devel_package() {
 	pkg_install() {
 		vmove usr/include
 		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
 		vmove usr/lib/pkgconfig
 		vmove usr/share/aclocal
 	}
@@ -41,3 +42,5 @@ pkcs11-helper-doc_package() {
 		vmove usr/share/doc
 	}
 }
+
+configure_args+=" --enable-static"
