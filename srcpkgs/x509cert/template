@@ -1,0 +1,22 @@
+# Template file for 'x509cert'
+pkgname=x509cert
+version=0.4
+revision=1
+build_style=gnu-makefile
+makedepends="bearssl-devel"
+short_desc="Tool and library for generating X.509 certificate"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://sr.ht/~mcf/x509cert"
+distfiles="https://git.sr.ht/~mcf/x509cert/archive/${version}.tar.gz"
+checksum=52f1cb5cbe39a7cd4d9ecc9ea3ed29e3803da09c83f9983e32d1ec548f2aaab3
+
+x509cert-devel_package() {
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.a"
+		vmove usr/share/man/man3
+	}
+}
