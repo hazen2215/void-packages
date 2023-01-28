@@ -1,0 +1,24 @@
+# Template file for 'sbase'
+pkgname=sbase
+version=0.1.20221126
+revision=1
+_commit=5e7afd0e9ea5b44f68ebf55555f03c41d8d21cdb
+build_style=gnu-makefile
+make_build_args="cal expr fold nl pathchk tftp true tsort unexpand"
+short_desc="Suckless collection of portable unix tools"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/michaelforney/sbase"
+distfiles="https://github.com/michaelforney/sbase/archive/${_commit}.tar.gz"
+checksum=47b8ef9c87bed45c12e5a348c173ccefd018f3f4143ae262e65299f9b7a66e00
+
+build_options="static"
+LDFLAGS="$(vopt_if static -static)"
+
+do_install() {
+	for f in ${make_build_args}; do
+		vbin ${f}
+		vman ${f}.1
+	done
+	vlicense LICENSE
+}
