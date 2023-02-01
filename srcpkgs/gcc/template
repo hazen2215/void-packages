@@ -97,6 +97,7 @@ if [ "$build_option_gnatboot" ]; then
 	esac
 fi
 
+[ -z "$build_option_static" ] &&
 if [ "$CHROOT_READY" ]; then
 	subpackages+=" gcc-fortran libgfortran-devel libgfortran"
 	subpackages+=" gcc-objc gcc-objc++ libobjc-devel libobjc"
@@ -107,6 +108,7 @@ else
 	_have_gccgo=no
 fi
 
+[ "$build_option_static" ] && _have_gccgo=no
 if [ "$_have_gccgo" = "yes" ]; then
 	subpackages+=" gcc-go gcc-go-tools libgo-devel libgo"
 	# we need this for gcc-go on musl
@@ -297,8 +299,10 @@ do_configure() {
 	_args+=" --disable-multilib"
 	_args+=" --with-system-zlib"
 	_args+=" --enable-shared"
+	if [ -z "$build_option_static" ]; then
 	_args+=" --enable-lto"
 	_args+=" --enable-plugins"
+	fi
 	_args+=" --enable-linker-build-id"
 	_args+=" --disable-werror"
 	_args+=" --disable-nls"
@@ -306,11 +310,28 @@ do_configure() {
 	_args+=" --enable-default-ssp"
 	_args+=" --enable-checking=release"
 	_args+=" --disable-libstdcxx-pch"
+	if [ -z "$build_option_static" ]; then
 	_args+=" --with-isl"
+	fi
 	_args+=" --with-linker-hash-style=$_hash"
 	_args+=" --disable-sjlj-exceptions"
 	_args+=" --disable-target-libiberty"
 	_args+=" --disable-libssp"
+
+	if [ "$build_option_static" ]; then
+		_args+=" --with-zstd=no"
+		_args+=" --without-isl"
+		_args+=" --disable-libgomp"
+		_args+=" --disable-libitm"
+		_args+=" --disable-libmpx"
+		_args+=" --disable-libquadmath"
+		_args+=" --disable-libmudflap"
+		_args+=" --disable-libsanitizer"
+		_args+=" --disable-lto"
+		_args+=" --disable-plugin"
+		_args+=" --disable-bootstrap"
+		_langs="c,c++"
+	fi
 
 	mkdir -p build
 	cd build
@@ -734,3 +755,18 @@ libstdc++_package() {
 		vlicense COPYING.RUNTIME RUNTIME.LIBRARY.EXCEPTION
 	}
 }
+
+build_options+=" static"
+if [ "$build_option_static" ]; then
+	LDFLAGS+=" --static"
+	subpackages="${subpackages/libgomp}"
+	subpackages="${subpackages/libgomp-devel}"
+	subpackages="${subpackages/libitm}"
+	subpackages="${subpackages/libitm-devel}"
+	subpackages="${subpackages/libquadmath}"
+	subpackages="${subpackages/libquadmath-devel}"
+	subpackages="${subpackages/libsanitizer}"
+	subpackages="${subpackages/libsanitizer-devel}"
+	# libssp libssp-devel
+	makedepends="zlib-devel"
+fi
