@@ -44,6 +44,7 @@ post_install() {
 
 	# Install our pam files not the ones supplied with shadow.
 	rm -f ${DESTDIR}/etc/pam.d/*
+	if [ ! "$build_option_static" ]; then
 	for f in chage passwd; do
 		install -m644 ${FILESDIR}/${f}.pam ${DESTDIR}/etc/pam.d/${f}
 	done
@@ -51,6 +52,7 @@ post_install() {
 		 groupmod newusers useradd userdel usermod; do
 		install -m644 $DESTDIR/etc/pam.d/chage $DESTDIR/etc/pam.d/${f}
 	done
+	fi
 	install -m644 ${FILESDIR}/login.defs ${DESTDIR}/etc
 
 	# Disable creating mailbox files by default.
@@ -89,3 +91,15 @@ post_install() {
 
 	vlicense $FILESDIR/LICENSE
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args="${configure_args/--with-libpam}"
+	configure_args="${configure_args/--with-acl}"
+	configure_args="${configure_args/--with-attr}"
+	makedepends=" "
+	depends=" "
+	conf_files="/etc/default/* /etc/login.defs"
+	LDFLAGS="--static"
+fi
