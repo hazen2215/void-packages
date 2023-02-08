@@ -1,0 +1,14 @@
+# Template file for 'gmni'
+pkgname=gmni
+version=1.0
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+hostmakedepends="scdoc"
+makedepends="bearssl-devel"
+short_desc="Gemini client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-only"
+homepage="https://git.sr.ht/~sircmpwn/gmni"
+distfiles="https://git.sr.ht/~sircmpwn/gmni/archive/${version}.tar.gz"
+checksum=cdd091f0330a38d65831bafd41f40cec283e67a6530fbf01284fe1bbc1ed20e4
