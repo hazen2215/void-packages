@@ -43,6 +43,12 @@ post_install() {
 	for f in ip{6,}tables{-save,-restore,}; do
 		rm -f "${DESTDIR}/usr/bin/${f}"
 	done
+	if [ "$build_option_static" ]; then
+		rm ${DESTDIR}/usr/lib/*.a
+		rm -r ${DESTDIR}/usr/include
+		rm -r ${DESTDIR}/usr/lib/pkgconfig
+		rm -r ${DESTDIR}/usr/share/man/man3
+	fi
 }
 
 iptables-devel_package() {
@@ -68,3 +74,13 @@ iptables-nft_package() {
 		iptables:iptables-restore:/usr/bin/xtables-nft-multi
 		iptables:iptables-save:/usr/bin/xtables-nft-multi"
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	makedepends=" "
+	subpackages="iptables-nft"
+	configure_args="${configure_args/--enable-bpf-compiler}"
+	configure_args+=" --disable-shared --disable-nftables"
+	make_build_args="LDFLAGS=-all-static"
+fi
