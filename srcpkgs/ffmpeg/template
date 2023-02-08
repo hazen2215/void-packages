@@ -113,6 +113,7 @@ do_configure() {
 		$(vopt_enable v4l2 libv4l2) \
 		$(vopt_enable aom libaom) $(vopt_enable vaapi) $(vopt_enable vdpau) \
 		--enable-libbs2b --enable-avresample --enable-libvidstab \
+		$(vopt_if static '--disable-gnutls --disable-libcdio --disable-libx264 --disable-libtheora --disable-libxcb --disable-libfreetype --disable-libmodplug --disable-libspeex --disable-libcelt --disable-libass --disable-librtmp --disable-libjack --disable-libbs2b --disable-libvidstab --disable-opencl --enable-nonfree --enable-libtls --pkg-config-flags=--static --extra-ldexeflags=-static') \
 		$(vopt_enable dav1d libdav1d) \
 		$(vopt_enable zimg libzimg) \
 		$(vopt_enable webp libwebp) \
@@ -237,3 +238,34 @@ ffplay_package() {
 	metapackage=yes
 	depends="ffplay6"
 }
+
+build_options+=" static"
+build_options_default+=" static"
+if [ "$build_option_static" ]; then
+	makedepends="${makedepends/zlib-devel}"
+	makedepends="${makedepends/bzip2-devel}"
+	makedepends="${makedepends/freetype-devel}"
+	makedepends="${makedepends/libXfixes-devel}"
+	makedepends="${makedepends/libXext-devel}"
+	makedepends="${makedepends/libXvMC-devel}"
+	makedepends="${makedepends/libxcb-devel}"
+	makedepends="${makedepends/libtheora-devel}"
+	makedepends="${makedepends/x264-devel}"
+	makedepends="${makedepends/jack-devel}"
+	makedepends="${makedepends/SDL2-devel}"
+	makedepends="${makedepends/libcdio-paranoia-devel}"
+	makedepends="${makedepends/librtmp-devel}"
+	makedepends="${makedepends/libmodplug-devel}"
+	makedepends="${makedepends/gnutls-devel}"
+	makedepends="${makedepends/speex-devel}"
+	makedepends="${makedepends/celt-devel}"
+	makedepends="${makedepends/harfbuzz-devel}"
+	makedepends="${makedepends/libass-devel}"
+	makedepends="${makedepends/ocl-icd-devel}"
+	makedepends="${makedepends/libbs2b-devel}"
+	makedepends="${makedepends/libvidstab-devel}"
+	makedepends+=" bearssl-devel libtls-bearssl-devel"
+
+	subpackages="${subpackages/ffplay}"
+	depends=" "
+fi
