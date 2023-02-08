@@ -43,3 +43,12 @@ post_install() {
 	vdoc doc/torrc_format.txt
 	vsv tor
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args+=" --disable-seccomp --disable-unittests"
+	makedepends="libevent-devel zlib-devel"
+	LDFLAGS="-static"
+fi
+depends="${depends/torsocks}"
