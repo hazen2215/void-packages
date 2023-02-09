@@ -23,6 +23,11 @@ post_install() {
 
 	# Suffix file that conflicts with pkg-config
 	mv ${DESTDIR}/usr/share/aclocal/pkg.m4{,.pkgconf}
+	if [ "$build_option_static" ]; then
+		rm -r ${DESTDIR}/usr/include
+		rm -r ${DESTDIR}/usr/lib/pkgconfig
+		rm ${DESTDIR}/usr/lib/*.a
+	fi
 }
 
 libpkgconf_package() {
@@ -42,3 +47,12 @@ pkgconf-devel_package() {
 		vmove "usr/lib/*.so"
 	}
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	subpackages="${subpackages/libpkgconf}"
+	subpackages="${subpackages/pkgconf-devel}"
+	make_build_args="LDFLAGS=-all-static"
+fi
+provides="pkg-config-0_1"
