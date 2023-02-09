@@ -27,7 +27,17 @@ lowdown-devel_package() {
 		vmove usr/include
 		vmove usr/lib/pkgconfig
 		vmove "usr/lib/*.a"
+		if false; then
 		vmove "usr/lib/*.so"
+		fi
 		vmove "usr/share/man/man3/*.3"
 	}
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	configure_args+=" LDFLAGS=-static"
+	make_build_target="bins lowdown.pc"
+	make_install_target="install install_static"
+fi
