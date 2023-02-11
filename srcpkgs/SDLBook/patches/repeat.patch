@@ -1,0 +1,13 @@
+diff --git a/sdlbook.c b/sdlbook.c
+index c3d0635..e3002a4 100644
+--- a/sdlbook.c
++++ b/sdlbook.c
+@@ -675,7 +675,7 @@ int main(int argc, char **argv) {
+ 	init_gfx();
+ 
+ 	SDL_ShowCursor(1);
+-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
++	SDL_EnableKeyRepeat(300, 50);
+ 	struct event event;
+ 
+ 	update_title();
