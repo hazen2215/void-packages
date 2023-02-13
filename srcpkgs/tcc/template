@@ -24,5 +24,12 @@ esac
 do_build() {
 	# Can't use (many of) our CFLAGS or LDFLAGS
 	# because TCC is bootstrapped with the same flags
+	if [ "$build_option_static" ]; then
+	make CFLAGS= LDFLAGS=-static ${makejobs}
+	else
 	make CFLAGS= LDFLAGS= ${makejobs}
+	fi
 }
+
+build_options="static"
+build_options_default="static"
