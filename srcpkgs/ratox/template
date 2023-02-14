@@ -1,0 +1,24 @@
+# Template file for 'ratox'
+pkgname=ratox
+version=0.4
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+hostmakedepends="curl jq"
+makedepends="toxcore-devel libsodium-devel opus-devel libvpx-devel"
+short_desc="FIFO based tox client "
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="http://git.2f30.org/ratox/"
+distfiles="http://dl.2f30.org/releases/ratox-${version}.tar.gz"
+checksum=4e216556cadfc2ebee3f04b08cf7b7e6d52bfaccaff76b1613f0c4928bd3a14c
+
+post_patch() {
+	sed -i config.mk \
+		-e 's|^CFLAGS *=|override CFLAGS +=|g' \
+		-e 's|^LDFLAGS *=|override LDFLAGS +=|g'
+}
+
+post_install() {
+	vlicense LICENSE
+}
