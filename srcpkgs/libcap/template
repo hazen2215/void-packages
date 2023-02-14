@@ -33,6 +33,10 @@ fi
 make_install_args="${make_build_args} SBINDIR=/usr/bin exec_prefix=/usr
  LIBDIR=/usr/lib PKGCONFIGDIR=/usr/lib/pkgconfig RAISE_SETFCAP=no"
 
+make_build_args+=" $(vopt_if static LDFLAGS_SUFFIX=--static)"
+build_options="static"
+build_options_default="static"
+
 post_install() {
 	vlicense License
 }
