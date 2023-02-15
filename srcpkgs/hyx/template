@@ -14,3 +14,9 @@ do_install() {
 	vbin hyx
 	vlicense license.txt LICENSE
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	CFLAGS="-static"
+fi
