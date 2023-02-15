@@ -45,3 +45,10 @@ libpcap-devel_package() {
 		vmove "usr/lib/*.so"
 	}
 }
+
+build_options+=" libnl"
+build_options_default=" "
+if [ ! "$build_option_libnl" ]; then
+	configure_args="${configure_args/--with-libnl}"
+	makedepends="${makedepends/libnl3-devel}"
+fi
