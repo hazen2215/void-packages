@@ -16,3 +16,10 @@ checksum=8c75856e00addeeadf70dad67c9ff3dd368536b2b8563abf6854d7c764cd3adb
 post_install() {
 	vlicense LICENSE
 }
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	makedepends="libpcap-devel"
+	LDFLAGS="-static"
+fi
