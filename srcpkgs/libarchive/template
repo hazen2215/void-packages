@@ -41,9 +41,12 @@ do_check() {
 
 post_install() {
 	vlicense COPYING
+	ln -s bsdunzip ${DESTDIR}/usr/bin/unzip
 }
 
 bsdtar_package() {
+	conflicts="unzip"
+	provides="unzip-${version}_1"
 	replaces="bsdcpio>=0"
 	short_desc="BSD utilities using libarchive"
 	pkg_install() {
@@ -53,6 +56,9 @@ bsdtar_package() {
 		# Conflicts with mtree.
 		mv ${PKGDESTDIR}/usr/share/man/man5/{mtree.5,libarchive-mtree.5}
 	}
+	alternatives="
+	 tar:tar:/usr/bin/bsdtar
+	 tar:tar.1:/usr/share/man/man1/bsdtar.1"
 }
 
 bsdunzip_package() {
@@ -73,3 +79,12 @@ libarchive-devel_package() {
 		vmove usr/share
 	}
 }
+
+build_options+=" static"
+build_options_default="static"
+make_build_args="$(vopt_if static '
+ bsdcat_LDFLAGS=-all-static
+ bsdcpio_LDFLAGS=-all-static
+ bsdtar_LDFLAGS=-all-static
+ bsdunzip_LDFLAGS=-all-static
+')"
