@@ -9,6 +9,8 @@ checkdepends="gtest-devel tar"
 short_desc="Fast real-time compression algorithm - CLI tool"
 maintainer="Leah Neukirchen <leah@vuxu.org>"
 license="BSD-3-Clause, GPL-2.0-or-later"
+build_options="static"
+build_options_default="static"
 homepage="https://facebook.github.io/zstd/"
 changelog="https://raw.githubusercontent.com/facebook/zstd/dev/CHANGELOG"
 distfiles="https://github.com/facebook/zstd/releases/download/v${version}/zstd-${version}.tar.gz"
@@ -16,6 +18,7 @@ checksum=8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1
 
 do_build() {
 	make ${makejobs} PREFIX=/usr lib-mt
+	LDFLAGS="$(vopt_if static -static)"
 	make ${makejobs} PREFIX=/usr -C programs zstd-dll LIB_BINDIR=../lib
 	make ${makejobs} PREFIX=/usr -C contrib/pzstd
 }
