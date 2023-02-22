@@ -10,6 +10,8 @@ homepage="http://www.kernel.org"
 distfiles="$KERNEL_SITE/kernel/v${version%%.*}.x/linux-${version}.tar.xz"
 checksum=2ca1f17051a430f6fed1196e4952717507171acfd97d96577212502703b25deb
 
+alternatives="soundcard.h:soundcard.h:/usr/include/linux/linux-soundcard.h"
+
 if [ "$CHROOT_READY" ]; then
 	hostmakedepends="perl"
 fi
@@ -33,4 +35,5 @@ do_build() {
 }
 do_install() {
  	vcopy usr/include usr
+	mv ${DESTDIR}/usr/include/linux/{,linux-}soundcard.h
 }
