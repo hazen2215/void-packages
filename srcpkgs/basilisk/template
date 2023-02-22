@@ -1,8 +1,8 @@
 # Template file for 'basilisk'
 pkgname=basilisk
-version=2022.11.04
+version=2023.01.26
 revision=1
-_UXP_githash=42d1d20efd5c6167900bf5c67531a0d4b4498183
+_UXP_githash=5b21c547de14f8d1cde62b9f247d8fd413bf8b83
 create_wrksrc=yes
 build_wrksrc="basilisk"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
@@ -19,8 +19,8 @@ homepage="https://www.basilisk-browser.org/"
 changelog="https://www.basilisk-browser.org/releasenotes.shtml"
 distfiles="https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v${version}.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_githash}.tar.gz"
-checksum="3fcffb4b2563eed2000df2df97d1806af25546407bb0d48fd34404aef101d05f
- 00e0fca7450dd19a24b838ff4d6090f664c25a93220bb31614df751650e9004f"
+checksum="bb688d2cbc364a8fe6eee082f3857e814cd6e25c522b3dc994c12f4874b407b2
+ 481a7894eeec8b828c111d24f50df447c6e72ad0fa88f8c1340b1a01a39b7177"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 build_options="alsa oss jack dbus pulseaudio xscreensaver sndio gtk3 webrtc"
@@ -121,8 +121,8 @@ do_install() {
 	# vinstall basilisk/branding/official/basilisk.desktop 644 \
 		# usr/share/applications
 
-	for i in 16 22 24 32 48 256; do
-		vinstall basilisk/branding/official/default$i.png 644 \
+	for i in 16 32 48; do
+		vinstall basilisk/branding/unofficial/default$i.png 644 \
 			usr/share/icons/hicolor/${i}x${i}/apps basilisk.png
 	done
 

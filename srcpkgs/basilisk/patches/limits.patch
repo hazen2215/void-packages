@@ -1,0 +1,12 @@
+diff --git a/platform/media/webrtc/trunk/webrtc/modules/audio_coding/codecs/opus/audio_encoder_opus.cc b/platform/media/webrtc/trunk/webrtc/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
+index 941e635b17..f402a830be 100644
+--- a/platform/media/webrtc/trunk/webrtc/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
++++ b/platform/media/webrtc/trunk/webrtc/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
+@@ -8,6 +8,7 @@
+  *  be found in the AUTHORS file in the root of the source tree.
+  */
+ 
++#include <limits>
+ #include "webrtc/modules/audio_coding/codecs/opus/interface/audio_encoder_opus.h"
+ 
+ #include "webrtc/base/checks.h"
