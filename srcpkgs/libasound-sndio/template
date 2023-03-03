@@ -1,0 +1,34 @@
+# Template file for 'libasound-sndio'
+pkgname=libasound-sndio
+version=0.0.20200314
+revision=1
+_commit=0dc8d16646229e2deb94b27ce4e43b0462364e1c
+build_style=gnu-makefile
+hostmakedepends="m4"
+makedepends="sndio-devel"
+short_desc="libasound implementation that uses sndio"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC, LGPL-2.1-or-later"
+homepage="https://github.com/Cloudef/libasound-sndio"
+distfiles="https://github.com/Cloudef/libasound-sndio/archive/${_commit}.tar.gz"
+checksum=d8c4d9e035a1eab5e73362e4b935d249baf61bc6259c0e500acebb367b44dd42
+
+conflicts="alsa-lib>=0"
+provides="alsa-lib-1.0.20_1"
+replaces="alsa-lib>=0"
+
+post_install() {
+	sed -n '/Copyright/,/OF THIS SOFTWARE./p' src/util/defs.h > LICENSE.ISC
+	vlicense LICENSE.ISC
+}
+
+libasound-sndio-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	conflicts="alsa-lib-devel"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/lib/*.so"
+	}
+}
