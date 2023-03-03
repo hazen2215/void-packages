@@ -1,0 +1,17 @@
+# Template file for 'yomichan-import'
+pkgname=yomichan-import
+version=21.12.14.0
+revision=1
+build_style=go
+go_import_path=github.com/FooSoft/yomichan-import/yomichan
+makedepends="zlib-devel"
+short_desc="External dictionary importer for Yomichan"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://foosoft.net/projects/yomichan-import/"
+distfiles="https://github.com/FooSoft/yomichan-import/archive/${version}.tar.gz"
+checksum=909193ce6943333f8f6727cbf8fe496618500b483bfee0301bcd436cb4007356
+
+post_install() {
+	vlicense LICENSE
+}
