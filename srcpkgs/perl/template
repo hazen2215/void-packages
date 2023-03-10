@@ -189,7 +189,7 @@ do_configure() {
 	./configure --prefix=/usr $_args \
 		-Dcccdlflags="-fPIC" \
 		-Doptimize=" -Wall ${CFLAGS} " -Dccflags=" ${CFLAGS} " \
-		-Dlddlflags="-shared ${LDFLAGS}" -Dldflags="${LDFLAGS}" \
+		-Dlddlflags="${LDFLAGS}" -Dldflags="${LDFLAGS}" \
 		-Dperl_static_inline='static __inline__' -Dd_static_inline ||
 	{
 		cat ./config.log
@@ -229,3 +229,6 @@ post_install() {
 	# ln -sfr ${DESTDIR}/usr/lib/perl5/core_perl/CORE/libperl.so.${version} ${DESTDIR}/usr/lib/
 	# ln -sfr ${DESTDIR}/usr/lib/perl5/core_perl/CORE/libperl.so.${version} ${DESTDIR}/usr/lib/libperl.so
 }
+
+LDFLAGS+=" -static"
+makedepends="zlib-devel bzip2-devel"
