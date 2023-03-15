@@ -1,0 +1,31 @@
+# Template file for 'mir'
+pkgname=mir
+version=0.1.2
+revision=1
+build_style=gnu-makefile
+make_install_args="PREFIX=\${DESTDIR}/usr"
+short_desc="Lightweight JIT compiler based on MIR"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/vnmakarov/mir"
+changelog="https://github.com/vnmakarov/mir/releases"
+distfiles="https://github.com/vnmakarov/mir/archive/v${version}.tar.gz"
+checksum=d9daecacf5a811d975b6320012d7c5fe585fc303e2811f45a56c1829f9400910
+CFLAGS="-fPIC"
+
+post_install() {
+	rm ${DESTDIR}/usr/lib/libmir.so.0
+	ln -s libmir.so.0.0.0 ${DESTDIR}/usr/lib/libmir.so.0
+	ln -s libmir.so.0.0.0 ${DESTDIR}/usr/lib/libmir.so
+	vlicense LICENSE
+}
+
+mir-devel_package() {
+	depends="${srcpkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+	}
+}
