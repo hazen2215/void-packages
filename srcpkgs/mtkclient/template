@@ -1,0 +1,19 @@
+# Template file for 'mtkclient'
+pkgname=mtkclient
+version=1.52
+revision=1
+build_style=python3-module
+hostmakedepends="python3-setuptools"
+depends="libusb python3-colorama python3-pycryptodome
+ python3-usb python3-wheel"
+short_desc="MTK reverse engineering and flash tool"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/bkerler/mtkclient"
+distfiles="https://github.com/bkerler/mtkclient/archive/${version}.tar.gz"
+checksum=5a9363cdcb65392ed4dd19f8442d73f0560d2195b67e790abcee7d7ea34e9ff2
+
+post_install() {
+	vinstall Setup/Linux/51-edl.rules 644 usr/lib/udev/rules.d 52-edl.rules
+	vlicense LICENSE
+}
