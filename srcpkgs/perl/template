@@ -171,6 +171,11 @@ do_configure() {
 		-Dman3dir=/usr/share/man/man3
 		-Dd_sockaddr_in6=define"
 
+	_args="-Dprefix=/usr -Dvendorprefix=/usr -Dusevendorprefix
+		-Dusethreads -Dinc_version_list=none -Dd_sockaddr_in6=define
+		-Dcccdlflags=-fno-PIC"
+	args+=" -Uusedl -Dnoextensions"
+
 	if [ "$CROSS_BUILD" ]; then
 		_args+=" --target=$XBPS_CROSS_TRIPLET"
 	fi
@@ -187,7 +192,7 @@ do_configure() {
 
 	export LD="$CC"
 	./configure --prefix=/usr $_args \
-		-Dcccdlflags="-fPIC" \
+		-Dcccdlflags="-fno-PIC" \
 		-Doptimize=" -Wall ${CFLAGS} " -Dccflags=" ${CFLAGS} " \
 		-Dlddlflags="${LDFLAGS}" -Dldflags="${LDFLAGS}" \
 		-Dperl_static_inline='static __inline__' -Dd_static_inline ||
@@ -230,5 +235,6 @@ post_install() {
 	# ln -sfr ${DESTDIR}/usr/lib/perl5/core_perl/CORE/libperl.so.${version} ${DESTDIR}/usr/lib/libperl.so
 }
 
-LDFLAGS+=" -static"
+LDFLAGS+=" -fPIE -static"
+CFLAGS+=" -fPIE -static"
 makedepends="zlib-devel bzip2-devel"
