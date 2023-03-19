@@ -1,0 +1,111 @@
+commit 9504c2afbd295a306c185e6110cf37b228978790
+Author: hazen2215 <haz@disroot.org>
+Date:   Tue Jun 20 20:02:24 2023 +0900
+
+    doSplit
+
+diff --git a/cmd/shfmt/main.go b/cmd/shfmt/main.go
+index bfc6d21f..66afad91 100644
+--- a/cmd/shfmt/main.go
++++ b/cmd/shfmt/main.go
+@@ -60,6 +60,7 @@ type multiFlag[T any] struct {
+ 
+ 	// Printer flags.
+ 	indent      = &multiFlag[uint]{"i", "indent", 0}
++	doSplit     = &multiFlag[bool]{"ds", "do-split", false}
+ 	binNext     = &multiFlag[bool]{"bn", "binary-next-line", false}
+ 	caseIndent  = &multiFlag[bool]{"ci", "case-indent", false}
+ 	spaceRedirs = &multiFlag[bool]{"sr", "space-redirects", false}
+@@ -85,6 +86,7 @@ funcNext    = &multiFlag[bool]{"fn", "func-next-line", false}
+ 	version = "(devel)" // to match the default from runtime/debug
+ 
+ 	allFlags = []any{
++		doSplit,
+ 		versionFlag, list, write, find, diff, applyIgnore,
+ 		lang, posix, filename, simplify, expRecover,
+ 		indent, binNext, caseIndent, spaceRedirs, keepPadding, funcNext, minify,
+@@ -172,6 +174,7 @@ func main() {
+ Printer options:
+ 
+   -i,  --indent uint       0 for tabs (default), >0 for number of spaces
++  -ds, --do-split          do (line) splitting, enables adding newlines to the input
+   -bn, --binary-next-line  binary ops like && and | may start a line
+   -ci, --case-indent       switch cases will be indented
+   -sr, --space-redirects   redirect operators will be followed by a space
+@@ -223,6 +226,7 @@ func main() {
+ 		// as shown by ./shfmt.1.scd.
+ 		switch f.Name {
+ 		case lang.short, lang.long,
++			doSplit.short, doSplit.long,
+ 			posix.short, posix.long,
+ 			simplify.short, simplify.long,
+ 			indent.short, indent.long,
+@@ -247,6 +251,7 @@ funcNext.short, funcNext.long,
+ 		}
+ 
+ 		syntax.Indent(indent.val)(printer)
++		syntax.DoSplit(doSplit.val)(printer)
+ 		syntax.BinaryNextLine(binNext.val)(printer)
+ 		syntax.SwitchCaseIndent(caseIndent.val)(printer)
+ 		syntax.SpaceRedirects(spaceRedirs.val)(printer)
+@@ -414,6 +419,7 @@ func propsOptions(lang syntax.LangVariant, props editorconfig.Section) (_ syntax
+ 		}
+ 	}
+ 	syntax.Indent(size)(printer)
++	syntax.DoSplit(props.Get("do_split") == "true")(printer)
+ 
+ 	syntax.BinaryNextLine(props.Get("binary_next_line") == "true")(printer)
+ 	// TODO(v4): rename to case_indent for consistency with flags
+diff --git a/syntax/printer.go b/syntax/printer.go
+index 74675ad9..ce1842f2 100644
+--- a/syntax/printer.go
++++ b/syntax/printer.go
+@@ -99,6 +99,11 @@ func FunctionNextLine(enabled bool) PrinterOption {
+ 	return func(p *Printer) { p.funcNextLine = enabled }
+ }
+ 
++// DoSplit will add additional newlines
++func DoSplit(enabled bool) PrinterOption {
++	return func(p *Printer) { p.doSplit = enabled }
++}
++
+ // NewPrinter allocates a new Printer and applies any number of options.
+ func NewPrinter(opts ...PrinterOption) *Printer {
+ 	p := &Printer{
+@@ -226,6 +231,7 @@ type Printer struct {
+ 	cols      colCounter
+ 
+ 	indentSpaces   uint
++	doSplit        bool
+ 	binNextLine    bool
+ 	swtCaseIndent  bool
+ 	spaceRedirects bool
+@@ -1392,7 +1398,11 @@ func (p *Printer) stmtList(stmts []*Stmt, last []Comment) {
+ 		p.comments(midComs...)
+ 		p.stmt(s)
+ 		p.comments(endComs...)
+-		p.wantNewline = true
++		if p.doSplit {
++			p.wantNewline = true
++		} else if !s.Coprocess && !s.Background && len(stmts) > 1 && i < len(stmts)-1 && s.Semicolon.IsValid() {
++			p.WriteByte(';')
++		}
+ 	}
+ 	if len(stmts) == 1 && !sep {
+ 		p.wantNewline = false
+@@ -1402,6 +1412,7 @@ func (p *Printer) stmtList(stmts []*Stmt, last []Comment) {
+ 
+ func (p *Printer) nestedStmts(stmts []*Stmt, last []Comment, closing Pos) {
+ 	p.incLevel()
++	if p.doSplit {
+ 	switch {
+ 	case len(stmts) > 1:
+ 		// Force a newline if we find:
+@@ -1419,6 +1430,7 @@ func (p *Printer) nestedStmts(stmts []*Stmt, last []Comment, closing Pos) {
+ 		//     do foo; done
+ 		p.wantNewline = true
+ 	}
++	}
+ 	p.stmtList(stmts, last)
+ 	if closing.IsValid() {
+ 		p.flushComments()
