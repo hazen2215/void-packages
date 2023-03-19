@@ -1,0 +1,133 @@
+diff --git a/cmd/shfmt/main.go b/cmd/shfmt/main.go
+index aa4afbdb..bdda589c 100644
+--- a/cmd/shfmt/main.go
++++ b/cmd/shfmt/main.go
+@@ -53,6 +53,7 @@ var (
+ 	spaceRedirs = &multiFlag[bool]{"sr", "space-redirects", false}
+ 	keepPadding = &multiFlag[bool]{"kp", "keep-padding", false}
+ 	funcNext    = &multiFlag[bool]{"fn", "func-next-line", false}
++	doSplit     = &multiFlag[bool]{"ds", "do-split", false}
+ 
+ 	toJSON   = &multiFlag[bool]{"tojson", "to-json", false} // TODO(v4): remove "tojson" for consistency
+ 	fromJSON = &multiFlag[bool]{"", "from-json", false}
+@@ -75,7 +76,7 @@ var (
+ 	allFlags = []any{
+ 		versionFlag, list, write, simplify, minify, find, diff,
+ 		lang, posix, filename,
+-		indent, binNext, caseIndent, spaceRedirs, keepPadding, funcNext, toJSON, fromJSON,
++		indent, binNext, caseIndent, spaceRedirs, keepPadding, funcNext, doSplit, toJSON, fromJSON,
+ 	}
+ )
+ 
+@@ -153,6 +154,7 @@ Printer options:
+   -sr, --space-redirects   redirect operators will be followed by a space
+   -kp, --keep-padding      keep column alignment paddings
+   -fn, --func-next-line    function opening braces are placed on a separate line
++  -ds, --do-split          do (line) splitting, enables adding newlines to the input
+ 
+ Utilities:
+ 
+@@ -197,7 +199,8 @@ For more information, see 'man shfmt' and https://github.com/mvdan/sh.
+ 			caseIndent.short, caseIndent.long,
+ 			spaceRedirs.short, spaceRedirs.long,
+ 			keepPadding.short, keepPadding.long,
+-			funcNext.short, funcNext.long:
++			funcNext.short, funcNext.long,
++			doSplit.short, doSplit.long:
+ 			useEditorConfig = false
+ 		}
+ 	})
+@@ -216,6 +219,7 @@ For more information, see 'man shfmt' and https://github.com/mvdan/sh.
+ 		syntax.SpaceRedirects(spaceRedirs.val)(printer)
+ 		syntax.KeepPadding(keepPadding.val)(printer)
+ 		syntax.FunctionNextLine(funcNext.val)(printer)
++		syntax.DoSplit(doSplit.val)(printer)
+ 	}
+ 
+ 	// Decide whether or not to use color for the diff output,
+@@ -369,6 +373,7 @@ func propsOptions(lang syntax.LangVariant, props editorconfig.Section) {
+ 	syntax.KeepPadding(props.Get("keep_padding") == "true")(printer)
+ 	// TODO(v4): rename to func_next_line for consistency with flags
+ 	syntax.FunctionNextLine(props.Get("function_next_line") == "true")(printer)
++	syntax.DoSplit(props.Get("do_split") == "true")(printer)
+ }
+ 
+ func formatPath(path string, checkShebang bool) error {
+diff --git a/syntax/printer.go b/syntax/printer.go
+index 84ad6850..5cedced9 100644
+--- a/syntax/printer.go
++++ b/syntax/printer.go
+@@ -94,6 +94,11 @@ func FunctionNextLine(enabled bool) PrinterOption {
+ 	return func(p *Printer) { p.funcNextLine = enabled }
+ }
+ 
++// DoSplit will add additional newlines
++func DoSplit(enabled bool) PrinterOption {
++	return func(p *Printer) { p.doSplit = enabled }
++}
++
+ // NewPrinter allocates a new Printer and applies any number of options.
+ func NewPrinter(opts ...PrinterOption) *Printer {
+ 	p := &Printer{
+@@ -228,6 +233,7 @@ type Printer struct {
+ 	minify         bool
+ 	singleLine     bool
+ 	funcNextLine   bool
++	doSplit        bool
+ 
+ 	wantSpace wantSpaceState // whether space is required or has been written
+ 
+@@ -1379,7 +1385,11 @@ func (p *Printer) stmtList(stmts []*Stmt, last []Comment) {
+ 		p.comments(midComs...)
+ 		p.stmt(s)
+ 		p.comments(endComs...)
+-		p.wantNewline = true
++		if p.doSplit {
++			p.wantNewline = true
++		} else if !s.Coprocess && !s.Background && len(stmts) > 1 && i < len(stmts)-1 && s.Semicolon.IsValid() {
++			p.WriteByte(';')
++		}
+ 	}
+ 	if len(stmts) == 1 && !sep {
+ 		p.wantNewline = false
+@@ -1389,22 +1399,24 @@ func (p *Printer) stmtList(stmts []*Stmt, last []Comment) {
+ 
+ func (p *Printer) nestedStmts(stmts []*Stmt, last []Comment, closing Pos) {
+ 	p.incLevel()
+-	switch {
+-	case len(stmts) > 1:
+-		// Force a newline if we find:
+-		//     { stmt; stmt; }
+-		p.wantNewline = true
+-	case closing.Line() > p.line && len(stmts) > 0 &&
+-		stmtsEnd(stmts, last).Line() < closing.Line():
+-		// Force a newline if we find:
+-		//     { stmt
+-		//     }
+-		p.wantNewline = true
+-	case len(p.pendingComments) > 0 && len(stmts) > 0:
+-		// Force a newline if we find:
+-		//     for i in a b # stmt
+-		//     do foo; done
+-		p.wantNewline = true
++	if p.doSplit {
++		switch {
++		case len(stmts) > 1:
++			// Force a newline if we find:
++			//     { stmt; stmt; }
++			p.wantNewline = true
++		case closing.Line() > p.line && len(stmts) > 0 &&
++			stmtsEnd(stmts, last).Line() < closing.Line():
++			// Force a newline if we find:
++			//     { stmt
++			//     }
++			p.wantNewline = true
++		case len(p.pendingComments) > 0 && len(stmts) > 0:
++			// Force a newline if we find:
++			//     for i in a b # stmt
++			//     do foo; done
++			p.wantNewline = true
++		}
+ 	}
+ 	p.stmtList(stmts, last)
+ 	if closing.IsValid() {
