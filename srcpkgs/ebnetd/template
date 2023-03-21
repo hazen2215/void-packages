@@ -1,0 +1,13 @@
+# Template file for 'ebnetd'
+pkgname=ebnetd
+version=1.0
+revision=1
+build_style=gnu-configure
+hostmakedepends="eb"
+makedepends="libeb-devel"
+short_desc="Servers for accessing CD-ROM books via TCP/IP"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="ftp://ftp.sra.co.jp/pub/misc/eb/"
+distfiles="ftp://ftp.sra.co.jp/pub/misc/eb/ebnetd-${version}.tar.gz"
+checksum=a69e5cbf085abd3d3e72212af787a93eb5b8a2dac8d11a77f753dafb0f527483
