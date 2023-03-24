@@ -1,0 +1,17 @@
+# Template file for 'chibicc'
+pkgname=chibicc
+version=0.0.20201207
+revision=1
+_commit=90d1f7f199cc55b13c7fdb5839d1409806633fdb
+build_style=gnu-makefile
+short_desc="Yet another small C compiler that implements most C11 features"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/rui314/chibicc/archive/"
+distfiles="https://github.com/rui314/chibicc/archive/${_commit}.tar.gz"
+checksum=cadb44e82354002000f6d2bbf41d3155f47a9b3e9abd50a309fdcd9b5ef791e0
+
+do_install() {
+	vbin chibicc
+	vlicense LICENSE
+}
