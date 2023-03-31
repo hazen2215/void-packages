@@ -1,0 +1,22 @@
+# Template file for 'cubiomes-viewer'
+pkgname=cubiomes-viewer
+version=3.2.1
+revision=1
+build_style=qmake
+hostmakedepends="qt5-qmake"
+makedepends="qt5-devel"
+short_desc="Efficient graphical Minecraft seed finder and map viewer"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/Cubitect/cubiomes-viewer"
+distfiles="https://github.com/Cubitect/cubiomes-viewer/releases/download/${version}/cubiomes-viewer-${version}-src.tar.gz"
+checksum=a06e2fc9c2029ca91167308632856482fe4a2109d7599b8ea285ec0bf82a6534
+
+pre_build() {
+	cd cubiomes
+	make
+}
+
+do_install() {
+	vbin cubiomes-viewer
+}
