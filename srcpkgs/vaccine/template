@@ -1,0 +1,26 @@
+# Template file for 'vaccine'
+pkgname=vaccine
+version=0.0.1.20210301
+revision=1
+_commit=f48f87d79c1ded1bd73410d6f2e74eb9d82fc616
+_bayes_glib_commit=a85eb13e877ebb9eeb6f6d2efd867d4261742f2a
+create_wrksrc=yes
+build_style=meson
+build_wrksrc=vaccine-${_commit}
+hostmakedepends="appstream-glib gst-plugins-good1 pkg-config vala"
+makedepends="glib-devel gst-plugins-bad1-devel gtk+3-devel gtksourceview-devel
+ json-glib-devel libgee-devel libsoup-devel vala-devel"
+short_desc="GTK3 imageboard client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/VaccineApp/vaccine"
+distfiles="https://github.com/VaccineApp/vaccine/archive/${_commit}.tar.gz
+ https://github.com/VaccineApp/bayes-glib/archive/${_bayes_glib_commit}.tar.gz"
+checksum="589fcc752f579ff1682b13c2ec69d301310ae17ac2caf025a620c0f4c24ef2fb
+ 814292e13e393c2fd9f3a96c08b3a146356ea9bcc06348e165638cc4fcc5bc6f"
+
+post_extract() {
+	rmdir ${build_wrksrc}/contrib/bayes-glib
+	mv bayes-glib-${_bayes_glib_commit} \
+		${build_wrksrc}/contrib/bayes-glib
+}
