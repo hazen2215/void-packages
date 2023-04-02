@@ -1,0 +1,29 @@
+# Template file for 'mecab'
+pkgname=mecab
+version=0.996
+revision=1
+build_style=gnu-configure
+short_desc="Yet another part-of-speech and morphological analyzer"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://taku910.github.io/mecab"
+distfiles="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/mecab/mecab-${version}.tar.gz"
+checksum=e073325783135b72e666145c781bb48fada583d5224fb2490fb6c1403ba69c59
+
+libmecab_package() {
+	short_desc+=" - library"
+	pkg_install() {
+		vmove "usr/lib/*.so.*"
+	}
+}
+
+libmecab-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/bin/mecab-config
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+	}
+}
