@@ -1,0 +1,76 @@
+# Template file for 'netsurf-wl'
+pkgname=netsurf-wl
+version=0.0.20221128
+revision=1
+_commit=72bd341d6ecf67bb5582fd48e0006b9c2631b4c7
+hostmakedepends="pkg-config"
+makedepends="freetype-devel libcss-devel libcurl-devel libdom-devel
+ libhubbub-devel libjpeg-turbo-devel libnsbmp-devel libnsgif-devel
+ libnsutils-devel libparserutils-devel libpng-devel libutf8proc-devel
+ libwapcaplet-devel libxkbcommon-devel pixman-devel wayland-devel
+ wayland-protocols zlib-devel"
+depends="font-adobe-source-code-pro source-sans-pro"
+short_desc="NetSurf with Wayland support"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only, MIT"
+homepage="https://github.com/oasislinux/netsurf"
+distfiles="https://github.com/oasislinux/netsurf/archive/${_commit}.tar.gz"
+checksum=7323a9ae7389b2a78770119208a734d7f93b24ebc3f230c994ee9e954fc7a56a
+
+do_build() {
+	# LDFLAGS=-static
+	wayland-scanner client-header \
+		/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+		xdg-shell-client-protocol.h
+	wayland-scanner public-code \
+		/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+		xdg-shell-clientprotocol.c
+	${CC} ${CFLAGS} ${LDFLAGS} -c xdg-shell-clientprotocol.c
+
+	LIBS="$(pkg-config --static --libs \
+		libcss \
+		libdom \
+		libhubbub \
+		libnsbmp \
+		libnsgif \
+		libnsutils \
+		libparserutils \
+		libwapcaplet \
+		libcurl \
+		freetype2 \
+		libjpeg \
+		libpng \
+		xkbcommon \
+		pixman-1 \
+		wayland-client \
+		wayland-cursor \
+		libutf8proc \
+		wayland-protocols \
+		zlib
+	)"
+
+	CFLAGS+=" -include ${FILESDIR}/config.h"
+	CFLAGS+=" -I ${FILESDIR}"
+	CFLAGS+=" -I ${wrksrc}"
+	CFLAGS+=" -I ${wrksrc}/include"
+	CFLAGS+=" -I ${wrksrc}/frontends"
+	CFLAGS+=" -I ${wrksrc}/content/handlers"
+	CFLAGS+=" -I/usr/include/pixman-1"
+	CFLAGS+=" -I/usr/include/freetype2"
+
+	${CC} ${CFLAGS} ${LDFLAGS} -o netsurf \
+		xdg-shell-clientprotocol.o \
+		desktop/{cookie_manager.c,knockout.c,hotlist.c,mouse.c,plot_style.c,print.c,search.c,searchweb.c,scrollbar.c,textarea.c,version.c,system_colour.c,local_history.c,global_history.c,treeview.c,page-info.c,browser.c,browser_window.c,browser_history.c,download.c,frames.c,netsurf.c,cw_helper.c,save_complete.c,save_text.c,selection.c,textinput.c,gui_factory.c,save_pdf.c,font_haru.c} \
+		frontends/tiny/{download.c,fetch.c,icons.c,gui.c,render.c,schedule.c,ui.c,wl.c} \
+		content/{content.c,content_factory.c,dirlist.c,fetch.c,hlcache.c,llcache.c,mimesniff.c,textsearch.c,urldb.c,no_backing_store.c,fetchers/{curl.c,data.c,file.c,about.c,resource.c},handlers/{image/{image.c,image_cache.c,bmp.c,gif.c,ico.c,jpeg.c,png.c},css/{css.c,dump.c,internal.c,hints.c,select.c,utils.c},javascript/{fetcher.c,none/none.c},html/{box_construct.c,box_inspect.c,box_manipulate.c,box_normalise.c,box_special.c,box_textarea.c,css.c,css_fetcher.c,dom_event.c,font.c,form.c,forms.c,html.c,imagemap.c,interaction.c,layout.c,object.c,redraw.c,redraw_border.c,script.c,table.c,textselection.c},text/textplain.c}} \
+		utils/{bloom.c,corestrings.c,file.c,filename.c,filepath.c,hashmap.c,hashtable.c,idna.c,libdom.c,log.c,messages.c,nscolour.c,nsoption.c,punycode.c,ssl_certs.c,talloc.c,time.c,url.c,useragent.c,utf8.c,utils.c,http/{challenge.c,generics.c,primitives.c,parameter.c,cache-control.c,content-disposition.c,content-type.c,strict-transport-security.c,www-authenticate.c},nsurl/{nsurl.c,parse.c}} \
+		${LIBS}
+}
+
+do_install() {
+	for icon in back forward add remove home reload stop close up down; do
+		vinstall frontends/tiny/res/icons/$icon.ff 644 usr/share/netsurf/icons/
+
+	done
+	vbin netsurf netsurf-wl
+}

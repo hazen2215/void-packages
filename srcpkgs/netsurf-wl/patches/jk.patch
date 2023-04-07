@@ -1,0 +1,29 @@
+diff --git a/frontends/tiny/ui.c b/frontends/tiny/ui.c
+index a9ac956a1..626783535 100644
+--- a/frontends/tiny/ui.c
++++ b/frontends/tiny/ui.c
+@@ -479,6 +479,12 @@ content_key(struct gui_window *g, struct element *e, uint32_t key)
+ 	case NS_KEY_PAGE_DOWN:
+ 		scrollbar_set(g->scroll.v, g->scroll.y + rectheight(&g->ui[UI_CONTENT].r), false);
+ 		break;
++	case NS_KEY_UP:
++		scrollbar_set(g->scroll.v, g->scroll.y - 50, false);
++		break;
++	case NS_KEY_DOWN:
++		scrollbar_set(g->scroll.v, g->scroll.y + 50, false);
++		break;
+ 	}
+ }
+ 
+@@ -1333,9 +1339,11 @@ gui_window_key(struct gui_window *g, xkb_keysym_t sym, bool pressed)
+ 			key = NS_KEY_LEFT;
+ 		break;
+ 	case XKB_KEY_Up:
++	case XKB_KEY_k:
+ 		key = NS_KEY_UP;
+ 		break;
+ 	case XKB_KEY_Down:
++	case XKB_KEY_j:
+ 		key = NS_KEY_DOWN;
+ 		break;
+ 	default:
