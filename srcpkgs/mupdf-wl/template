@@ -1,0 +1,68 @@
+# Template file for 'mupdf-wl'
+pkgname=mupdf-wl
+version=0.0.20220907
+revision=1
+_commit=90fd87f204511be0b290a1b54a33443a20630d5f
+hostmakedepends="pkg-config"
+makedepends="freetype-devel harfbuzz-devel jbig2dec-devel libjpeg-turbo-devel
+ libxkbcommon-devel pixman-devel wayland-devel wayland-protocols zlib-devel"
+short_desc="MuPDF with Wayland support"
+maintainer="hazen2215 <haz@disroot.org>"
+license="AGPL-3.0-only"
+homepage="https://github.com/oasislinux/mupdf"
+distfiles="https://github.com/oasislinux/mupdf/archive/${_commit}.tar.gz"
+checksum=84ce5e74eaf2275110a757ffa4c4a01f91ebbae47504f7a1bfbdfe95a924966f
+
+post_patch() {
+	vsed -i Makefile \
+		-e 's/INSTALL_APPS/VIEW_APPS/' \
+		-e '/wl_main/a\
+MUVIEW_WAYLAND_OBJ += xdg-shell-protocol.o'
+}
+
+pre_build() {
+	wayland-scanner client-header \
+		/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+		xdg-shell-client-protocol.h
+	wayland-scanner public-code \
+		/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+		xdg-shell-protocol.c
+	${CC} ${CFLAGS} ${LDFLAGS} -c xdg-shell-protocol.c
+}
+
+do_build() {
+	CFLAGS+=" -I/usr/include/pixman-1 -I ."
+	local _crosscompile
+
+	if [ "$CROSS_BUILD" ]; then
+		_crosscompile="CROSSCOMPILE=yes"
+	fi
+
+	CFLAGS+=" -D FZ_ENABLE_JS=0"
+	CFLAGS+=" -D FZ_ENABLE_HTML=0"
+	CFLAGS+=" -D FZ_ENABLE_EPUB=0"
+	CFLAGS+=" -D FZ_ENABLE_ICC=0"
+	CFLAGS+=" -D FZ_ENABLE_JPX=0"
+	CFLAGS+=" -D HAVE_PTHREAD"
+	CFLAGS+=" -D NOTO_SMALL"
+	# CFLAGS+=" -D NO_CJK"
+	CFLAGS+=" -D NO_ICC"
+	CFLAGS+=" -D SHARE_JPEG"
+
+	make \
+		USE_SYSTEM_LIBS=yes \
+		HAVE_GLUT=no \
+		HAVE_CURL=no \
+		HAVE_WAYLAND=yes \
+		HAVE_X11=no \
+		build=release \
+		all
+}
+
+do_install() {
+	vbin build/release/mupdf-wl
+}
+
+post_install() {
+	vlicense COPYING LICENSE
+}

@@ -1,0 +1,556 @@
+commit 59474a0935ce2bb44c7401bbc12c81fcd20716c4
+Author: hazen2215 <haz@disroot.org>
+Date:   Thu Nov 17 00:14:27 2022 +0900
+
+    tweak
+
+diff --git a/platform/x11/ext.c b/platform/x11/ext.c
+new file mode 100644
+index 000000000..1ab01c5dd
+--- /dev/null
++++ b/platform/x11/ext.c
+@@ -0,0 +1,100 @@
++void pdfapp_ext_nextprev(pdfapp_t *app, int next)
++{
++	FILE *fp;
++	char filename[PATH_MAX];
++	char cmdarg[PATH_MAX+256];
++	char *cmd;
++	if (!(cmd = getenv("MUPDF_NEXTPREV")))
++		return;
++
++	fz_snprintf(cmdarg, sizeof(cmdarg), "%s \"%s\" %d", cmd, app->docpath, next);
++
++	if ((fp = popen(cmdarg, "r")) == NULL) {
++		printf("Error opening pipe!\n");
++		return;
++	}
++
++	if (fgets(filename, sizeof filename, fp)) {
++		pdfapp_close(app);
++		pdfapp_open(app, filename, 1);
++	}
++
++	if (pclose(fp)) {
++		printf("Command not found or exited with error status\n");
++		return;
++	}
++
++	return;
++}
++
++void pdfapp_ext_search(pdfapp_t *app)
++{
++	FILE *fp;
++	char *cmd = getenv("MUPDF_SEARCH");
++	if (!cmd) cmd = "dmenu <&-";
++
++	if ((fp = popen(cmd, "r")) == NULL) {
++		printf("Error opening pipe!\n");
++		return;
++	}
++
++	if (fgets(app->search, sizeof app->search, fp))
++		app->search[strcspn(app->search, "\n")] = 0;
++
++	if (pclose(fp)) {
++		printf("Command not found or exited with error status\n");
++		return;
++	}
++
++	return;
++}
++
++int pdfapp_ext_outline(pdfapp_t *app)
++{
++	FILE *fp;
++	char buf[256];
++	char cmdarg[PATH_MAX+256];
++	char *cmd;
++	if (!(cmd = getenv("MUPDF_OUTLINE")))
++		return 0;
++
++	fz_snprintf(cmdarg, sizeof(cmdarg), "%s \"%s\" %d", cmd, app->docpath, app->pageno);
++
++	if ((fp = popen(cmdarg, "r")) == NULL) {
++		printf("Error opening pipe!\n");
++		return 0;
++	}
++
++	if (!fgets(buf, sizeof(buf), fp))
++		buf[0] = '0';
++
++	if (pclose(fp)) {
++		printf("Command not found or exited with error status\n");
++		return 0;
++	}
++
++	return atoi(buf);
++}
++
++void pdfapp_ext_save_history(pdfapp_t *app)
++{
++	FILE *fp;
++	char cmdarg[PATH_MAX+256];
++	char *cmd;
++	if (!(cmd = getenv("MUPDF_SAVEHIST")))
++		return;
++
++	if (app->docpath == NULL)
++		return;
++
++	fz_snprintf(cmdarg, sizeof(cmdarg), "%s \"%s\" %d %f", cmd, app->docpath, app->pageno, app->resolution);
++
++	if ((fp = popen(cmdarg, "r")) == NULL) {
++		printf("Error opening pipe!\n");
++		return;
++	}
++	if (pclose(fp)) {
++		printf("SAVEHIST: not found or exited with error status\n");
++		return;
++	}
++}
+diff --git a/platform/x11/pdfapp.c b/platform/x11/pdfapp.c
+index 47af70dee..c85252cd3 100644
+--- a/platform/x11/pdfapp.c
++++ b/platform/x11/pdfapp.c
+@@ -24,6 +24,8 @@
+ #define MAX(a,b) ((a) > (b) ? (a) : (b))
+ #endif
+ 
++#include "ext.c"
++
+ static int convert_to_accel_path(fz_context *ctx, char outname[], char *absname, size_t len)
+ {
+ 	char *tmpdir;
+@@ -561,6 +563,7 @@ void pdfapp_open_progressive(pdfapp_t *app, char *filename, int reload, int kbps
+ 
+ void pdfapp_close(pdfapp_t *app)
+ {
++	pdfapp_ext_save_history(app);
+ 	fz_drop_display_list(app->ctx, app->page_list);
+ 	app->page_list = NULL;
+ 
+@@ -720,12 +723,31 @@ static void pdfapp_panview(pdfapp_t *app, int newx, int newy)
+ 	if (newx > 0)
+ 		newx = 0;
+ 	if (newy > 0)
+-		newy = 0;
+-
++	{
++		if(app->pageno > 1 && app->continuous)
++		{
++			--app->pageno;
++			pdfapp_showpage(app, 1, 1, 0, 0, 0);
++			app->pany = newy = (app->winh-app->imgh>-app->pagedivh?
++								app->winh-app->imgh:-app->pagedivh)+newy;
++		}
++		else
++			newy = 0;
++	}
+ 	if (newx + app->imgw < app->winw)
+ 		newx = app->winw - app->imgw;
+ 	if (newy + app->imgh < app->winh)
+-		newy = app->winh - app->imgh;
++	{
++		if(app->pageno < app->pagecount && app->continuous)
++		{
++			++app->pageno;
++			pdfapp_showpage(app, 1, 1, 0, 0, 0);
++			app->pany=newy=(app->winh-app->pagedivh < 0?app->winh-app->pagedivh:0)
++					+ (newy+app->imgh - app->winh);
++		}
++		else
++			newy = app->winh - app->imgh;
++	}
+ 
+ 	if (app->winw >= app->imgw)
+ 		newx = (app->winw - app->imgw) / 2;
+@@ -765,6 +787,23 @@ static void pdfapp_loadpage(pdfapp_t *app, int no_cache)
+ 	app->page_bbox.x1 = 100;
+ 	app->page_bbox.y1 = 100;
+ 
++//page 1
++	if(app->continuous)
++	{
++		if (app->page1_list)
++			fz_drop_display_list(app->ctx, app->page1_list);
++		if (app->page1)
++			fz_drop_page(app->ctx, app->page1);
++
++		app->page1_list = NULL;
++		app->page1 = NULL;
++		app->page1_bbox.x0 = 0;
++		app->page1_bbox.y0 = 0;
++		app->page1_bbox.x1 = 100;
++		app->page1_bbox.y1 = 100;
++	}
++//page 1
++
+ 	app->incomplete = 0;
+ 
+ 	fz_try(app->ctx)
+@@ -774,6 +813,17 @@ static void pdfapp_loadpage(pdfapp_t *app, int no_cache)
+ 			app->incomplete = 1;
+ 		app->page_bbox = fz_bound_page(app->ctx, app->page);
+ 		app->page_links = fz_load_links(app->ctx, app->page);
++		if(app->continuous)
++		{
++			if(app->pageno < app->pagecount)
++			{
++				app->page1 = fz_load_page(app->ctx, app->doc, app->pageno);
++				app->isnextpage = 1;
++			}
++			else app->isnextpage = 0;
++			app->page1_bbox = fz_bound_page(app->ctx, app->page1);
++		}
++
+ 	}
+ 	fz_catch(app->ctx)
+ 	{
+@@ -837,6 +887,19 @@ static void pdfapp_loadpage(pdfapp_t *app, int no_cache)
+ 		fz_close_device(app->ctx, mdev);
+ 		fz_drop_device(app->ctx, mdev);
+ 		mdev = NULL;
++		//page 1
++		if(app->isnextpage && app->continuous)
++		{
++			app->page1_list = fz_new_display_list(app->ctx, fz_infinite_rect);
++			mdev = fz_new_list_device(app->ctx, app->page1_list);
++			if (no_cache)
++				fz_enable_device_hints(app->ctx, mdev, FZ_NO_CACHE);
++			fz_run_page_contents(app->ctx, app->page1, mdev, fz_identity, &cookie);
++			fz_close_device(app->ctx, mdev);
++			fz_drop_device(app->ctx, mdev);
++			mdev = NULL;
++		}
++		//page 1
+ 		app->annotations_list = fz_new_display_list(app->ctx, fz_infinite_rect);
+ 		mdev = fz_new_list_device(app->ctx, app->annotations_list);
+ 		fz_run_page_annots(app->ctx, app->page, mdev, fz_identity, &cookie);
+@@ -868,10 +931,10 @@ static void pdfapp_loadpage(pdfapp_t *app, int no_cache)
+ 	app->errored = errored;
+ }
+ 
+-static void pdfapp_runpage(pdfapp_t *app, fz_device *dev, const fz_matrix ctm, fz_rect scissor, fz_cookie *cookie)
++static void pdfapp_runpage(pdfapp_t *app, fz_device *dev, const fz_matrix ctm, fz_rect scissor, fz_cookie *cookie, int next)
+ {
+ 	if (app->page_list)
+-		fz_run_display_list(app->ctx, app->page_list, dev, ctm, scissor, cookie);
++		fz_run_display_list(app->ctx, (next ? app->page1_list : app->page_list), dev, ctm, scissor, cookie);
+ 	if (app->annotations_list)
+ 		fz_run_display_list(app->ctx, app->annotations_list, dev, ctm, scissor, cookie);
+ }
+@@ -897,9 +960,9 @@ static void pdfapp_showpage(pdfapp_t *app, int loadpage, int drawpage, int repai
+ 	fz_device *idev = NULL;
+ 	fz_device *tdev;
+ 	fz_colorspace *colorspace;
+-	fz_matrix ctm;
+-	fz_rect bounds;
+-	fz_irect ibounds;
++	fz_matrix ctm,ctm1,ctm2;
++	fz_rect bounds, bounds1;
++	fz_irect ibounds, ibounds1;
+ 	fz_cookie cookie = { 0 };
+ 
+ 	if (!app->nowaitcursor)
+@@ -946,7 +1009,7 @@ static void pdfapp_showpage(pdfapp_t *app, int loadpage, int drawpage, int repai
+ 			tdev = fz_new_stext_device(app->ctx, app->page_text, NULL);
+ 			fz_try(app->ctx)
+ 			{
+-				pdfapp_runpage(app, tdev, fz_identity, fz_infinite_rect, &cookie);
++				pdfapp_runpage(app, tdev, fz_identity, fz_infinite_rect, &cookie, 0);
+ 				fz_close_device(app->ctx, tdev);
+ 			}
+ 			fz_always(app->ctx)
+@@ -981,6 +1044,12 @@ static void pdfapp_showpage(pdfapp_t *app, int loadpage, int drawpage, int repai
+ 		bounds = fz_transform_rect(app->page_bbox, ctm);
+ 		ibounds = fz_round_rect(bounds);
+ 		bounds = fz_rect_from_irect(ibounds);
++		if(app->continuous)
++		{
++			bounds1 = fz_transform_rect(app->page1_bbox, ctm);
++			ibounds1 = fz_round_rect(bounds1);
++			bounds1 = fz_rect_from_irect(ibounds1);
++		}
+ 
+ 		/* Draw */
+ 		fz_drop_pixmap(app->ctx, app->image);
+@@ -993,6 +1062,16 @@ static void pdfapp_showpage(pdfapp_t *app, int loadpage, int drawpage, int repai
+ 		app->imgw = 0;
+ 		app->imgh = 0;
+ 
++		if(app->isnextpage && app->continuous)
++		{
++			app->pagedivh=ibounds.y1;
++			ibounds.y1 += ibounds1.y1;
++			if(ibounds1.x0 < ibounds.x0)
++				ibounds.x0 = ibounds1.x0;
++			if(ibounds1.x1 > ibounds.x1)
++				ibounds.x1 = ibounds1.x1;
++		}
++
+ 		fz_var(app->image);
+ 		fz_var(idev);
+ 
+@@ -1006,13 +1085,22 @@ static void pdfapp_showpage(pdfapp_t *app, int loadpage, int drawpage, int repai
+ 			if (app->page_list || app->annotations_list)
+ 			{
+ 				idev = fz_new_draw_device(app->ctx, fz_identity, app->image);
+-				pdfapp_runpage(app, idev, ctm, bounds, &cookie);
++				pdfapp_runpage(app, idev, ctm, bounds, &cookie, 0);
++				if(app->isnextpage && app->continuous && app->page1_list)
++				{
++					ctm1 = fz_translate(0, bounds.y1);
++					ctm2 = fz_concat(ctm, ctm1);
++					bounds1.y0 += bounds.y1;
++					bounds1.y1 += bounds.y1;
++					pdfapp_runpage(app, idev, ctm2, bounds1, &cookie, app->continuous);
++				}
++
+ 				fz_close_device(app->ctx, idev);
+ 			}
+ 			if (app->invert)
+ 			{
+ 				fz_invert_pixmap_luminance(app->ctx, app->image);
+-				fz_gamma_pixmap(app->ctx, app->image, 1 / 1.4f);
++				fz_gamma_pixmap(app->ctx, app->image, 1.0f);
+ 			}
+ 			if (app->tint)
+ 				fz_tint_pixmap(app->ctx, app->image, 0, app->tint_white);
+@@ -1358,7 +1446,10 @@ key_rewritten:
+ 		app->resolution = zoom_out(app->resolution);
+ 		pdfapp_showpage(app, 0, 1, 1, 0, 0);
+ 		break;
+-
++	case 'K':
++		app->continuous ^=1;
++		pdfapp_showpage(app, 1, 1, 1, 0, 0);
++		break;
+ 	case 'W':
+ 		pdfapp_autozoom_horizontal(app);
+ 		break;
+@@ -1369,6 +1460,7 @@ key_rewritten:
+ 		pdfapp_autozoom(app);
+ 		break;
+ 	case 'z':
++	case '=':
+ 		if (app->numberlen > 0)
+ 			app->resolution = atoi(app->number);
+ 		else
+@@ -1376,14 +1468,14 @@ key_rewritten:
+ 		pdfapp_showpage(app, 0, 1, 1, 0, 0);
+ 		break;
+ 
+-	case '[':
++	case '{':
+ 		if (app->numberlen > 0)
+ 			app->rotate -= atoi(app->number);
+ 		else
+ 			app->rotate -= 90;
+ 		pdfapp_showpage(app, 0, 1, 1, 0, 0);
+ 		break;
+-	case ']':
++	case '}':
+ 		if (app->numberlen > 0)
+ 			app->rotate += atoi(app->number);
+ 		else
+@@ -1470,31 +1562,37 @@ key_rewritten:
+ 		break;
+ 
+ 	case 'j':
++	case 'd':
++	case 0x04:
+ 		{
+-			if (app->imgh <= app->winh || app->pany <= app->winh - app->imgh)
++			if (!app->continuous && (app->imgh <= app->winh || app->pany <= app->winh - app->imgh))
+ 			{
+ 				panto = PAN_TO_TOP;
+ 				app->pageno++;
+ 			}
+ 			else
+ 			{
+-				app->pany -= app->imgh / 10;
++				app->pany -= app->imgh / (c == 'j' ? 10 : 5);
+ 				pdfapp_showpage(app, 0, 0, 1, 0, 0);
++				oldpage=app->pageno;
+ 			}
+ 			break;
+ 		}
+ 
+ 	case 'k':
++	case 'u':
++	case 0x15:
+ 		{
+-			if (app->imgh <= app->winh || app->pany == 0)
++			if (!app->continuous && (app->imgh <= app->winh || app->pany == 0))
+ 			{
+ 				panto = PAN_TO_BOTTOM;
+ 				app->pageno--;
+ 			}
+ 			else
+ 			{
+-				app->pany += app->imgh / 10;
++				app->pany += app->imgh / (c == 'k' ? 10 : 5);
+ 				pdfapp_showpage(app, 0, 0, 1, 0, 0);
++				oldpage=app->pageno;
+ 			}
+ 			break;
+ 		}
+@@ -1513,10 +1611,18 @@ key_rewritten:
+ 			pdfapp_gotopage(app, atoi(app->number));
+ 		else
+ 			pdfapp_gotopage(app, 1);
++		app->pany = 0;
++		pdfapp_showpage(app, 0, 0, 1, 0, 0);
+ 		break;
+ 
+ 	case 'G':
+-		pdfapp_gotopage(app, app->pagecount);
++		if (app->numberlen > 0)
++			pdfapp_gotopage(app, atoi(app->number));
++		else
++			pdfapp_gotopage(app, app->pagecount);
++		app->pany = INT_MIN;
++		pdfapp_showpage(app, 0, 0, 1, 0, 0);
++		panto = PAN_TO_BOTTOM;
+ 		break;
+ 
+ 	case 'm':
+@@ -1555,6 +1661,15 @@ key_rewritten:
+ 		app->presentation_time_in_seconds = (app->numberlen > 0) ? atoi(app->number) : 5;
+ 		break;
+ 
++	case 'o':
++		int n;
++		if (n = pdfapp_ext_outline(app)) {
++			pdfapp_gotopage(app, n);
++			app->pany = 0;
++		}
++		/* pdfapp_showpage(app, 0, 0, 1, 0, 0); */
++		break;
++
+ 	/*
+ 	 * Back and forth ...
+ 	 */
+@@ -1662,6 +1777,22 @@ key_rewritten:
+ 		pdfapp_reloadfile(app);
+ 		break;
+ 
++	case ']':
++	case 0x0e:
++		panto = PAN_TO_TOP;
++		oldpage = -1;
++		pdfapp_ext_nextprev(app, 1);
++		pdfapp_gotopage(app, 1);
++		break;
++
++	case '[':
++	case 0x10:
++		panto = PAN_TO_TOP;
++		oldpage = -1;
++		pdfapp_ext_nextprev(app, 0);
++		pdfapp_gotopage(app, 1);
++		break;
++
+ 	/*
+ 	 * Searching
+ 	 */
+@@ -1675,7 +1806,7 @@ key_rewritten:
+ 		winrepaintsearch(app);
+ 		break;
+ 
+-	case '/':
++	case 0x1f:
+ 		app->issearching = 1;
+ 		app->searchdir = 1;
+ 		app->search[0] = 0;
+@@ -1684,6 +1815,16 @@ key_rewritten:
+ 		winrepaintsearch(app);
+ 		break;
+ 
++	case '/':
++		app->searchdir = 1;
++		app->search[0] = 0;
++		app->hit_count = 0;
++		app->searchpage = -1;
++		pdfapp_ext_search(app);
++		pdfapp_search_in_direction(app, &panto, 1);
++		loadpage = 0;
++		break;
++
+ 	case 'n':
+ 		if (app->searchdir > 0)
+ 			pdfapp_search_in_direction(app, &panto, 1);
+@@ -1717,7 +1858,10 @@ key_rewritten:
+ 			app->pany = 0;
+ 			break;
+ 		case PAN_TO_BOTTOM:
+-			app->pany = INT_MIN;
++			if(app->continuous)
++				app->pany = app->winh-app->imgh/2 < 0 ? app->winh-app->imgh/2 : 0;
++			else
++				app->pany = INT_MIN;
+ 			break;
+ 		case DONT_PAN:
+ 			break;
+diff --git a/platform/x11/pdfapp.h b/platform/x11/pdfapp.h
+index ea7650507..91a9132d1 100644
+--- a/platform/x11/pdfapp.h
++++ b/platform/x11/pdfapp.h
+@@ -103,6 +103,7 @@ struct pdfapp_s
+ 	int useicc;
+ 	int useseparations;
+ 	int aalevel;
++	int continuous;
+ 
+ 	/* presentation mode */
+ 	int presentation_mode;
+@@ -118,8 +119,13 @@ struct pdfapp_s
+ 	/* current page params */
+ 	int pageno;
+ 	fz_page *page;
++	int isnextpage;
++	int pagedivh;
++	fz_page *page1;
+ 	fz_rect page_bbox;
++	fz_rect page1_bbox;
+ 	fz_display_list *page_list;
++	fz_display_list *page1_list;
+ 	fz_display_list *annotations_list;
+ 	fz_stext_page *page_text;
+ 	fz_link *page_links;
+diff --git a/platform/x11/x11_main.c b/platform/x11/x11_main.c
+index 043744a0b..484a74eb4 100644
+--- a/platform/x11/x11_main.c
++++ b/platform/x11/x11_main.c
+@@ -248,9 +248,9 @@ static void winopen(void)
+ 	xcwait = XCreateFontCursor(xdpy, XC_watch);
+ 	xccaret = XCreateFontCursor(xdpy, XC_xterm);
+ 
+-	xbgcolor.red = 0x7000;
+-	xbgcolor.green = 0x7000;
+-	xbgcolor.blue = 0x7000;
++	xbgcolor.red = 0x0000;
++	xbgcolor.green = 0x0000;
++	xbgcolor.blue = 0x0000;
+ 
+ 	XAllocColor(xdpy, DefaultColormap(xdpy, xscr), &xbgcolor);
+ 
+@@ -907,7 +907,7 @@ int main(int argc, char **argv)
+ 
+ 	pdfapp_init(ctx, &gapp);
+ 
+-	while ((c = fz_getopt(argc, argv, "Ip:r:A:C:W:H:S:U:Xb:")) != -1)
++	while ((c = fz_getopt(argc, argv, "IKp:r:A:C:W:H:S:U:Xb:")) != -1)
+ 	{
+ 		switch (c)
+ 		{
+@@ -919,6 +919,7 @@ int main(int argc, char **argv)
+ 		case 'p': password = fz_optarg; break;
+ 		case 'r': resolution = atoi(fz_optarg); break;
+ 		case 'I': gapp.invert = 1; break;
++		case 'K': gapp.continuous = 1; break;
+ 		case 'A': fz_set_aa_level(ctx, atoi(fz_optarg)); break;
+ 		case 'W': gapp.layout_w = fz_atof(fz_optarg); break;
+ 		case 'H': gapp.layout_h = fz_atof(fz_optarg); break;
