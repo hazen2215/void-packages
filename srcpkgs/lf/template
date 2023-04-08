@@ -28,3 +28,5 @@ post_install() {
 	vsconf etc/lfcd.csh
 	vsconf etc/lfcd.nu
 }
+
+CGO_ENABLED=0
