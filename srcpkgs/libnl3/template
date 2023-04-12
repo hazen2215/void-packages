@@ -35,3 +35,12 @@ libnl3-progs_package() {
 		vmove usr/lib/libnl
 	}
 }
+
+libnl3-static_package() {
+	depends="libnl3-devel>=${version}_${revision}"
+	short_desc+=" - development files (static)"
+	pkg_install() {
+		vmove usr/lib/*.a
+	}
+}
+configure_args=" "
