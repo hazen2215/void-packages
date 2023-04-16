@@ -1,0 +1,14 @@
+# Template file for 'steghide'
+pkgname=steghide
+version=0.5.1
+revision=1
+build_style=gnu-configure
+hostmakedepends="libtool"
+configure_args="--disable-rpath --disable-nls"
+makedepends="libmcrypt-devel mhash-devel libjpeg-turbo-devel zlib-devel"
+short_desc="Steganography program"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://steghide.sourceforge.net/"
+distfiles="http://downloads.sourceforge.net/steghide/steghide-${version}.tar.bz2"
+checksum=a2c7f879a3e22860879889106cc49e486000653f81448264affa0fd616a47da1
