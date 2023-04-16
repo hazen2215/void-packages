@@ -1,0 +1,15 @@
+diff --git a/include/mutils/mutils.h b/include/mutils/mutils.h
+index 2712a33..a28ac98 100644
+--- a/include/mutils/mutils.h
++++ b/include/mutils/mutils.h
+@@ -21,6 +21,10 @@
+ #if !defined(__MUTILS_H)
+ #define __MUTILS_H
+ 
++#if !defined(_Bool)
++#define _Bool bool
++#endif
++
+ #include <mutils/mincludes.h>
+ 
+ #if defined(const)
