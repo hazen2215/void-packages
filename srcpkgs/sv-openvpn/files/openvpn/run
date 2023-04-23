@@ -1,0 +1,4 @@
+#!/bin/sh
+exec 2>&1
+[ -r conf ] && . ./conf
+exec openvpn ${OPTS:=--config $CONF_FILE}

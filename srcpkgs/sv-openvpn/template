@@ -1,0 +1,15 @@
+# Template file for 'sv-openvpn
+pkgname=sv-openvpn
+version=0.0.20230423
+revision=1
+build_style=meta
+short_desc="Runit OpenVPN service"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Public Domain"
+homepage="https://www.openvpn.net"
+
+depends="openvpn"
+
+post_install() {
+	vsv openvpn
+}
