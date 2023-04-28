@@ -1,0 +1,18 @@
+# Template file for 'gitleaks'
+pkgname=gitleaks
+version=8.16.3
+revision=1
+build_style=go
+go_import_path=github.com/zricethezav/gitleaks/v8
+short_desc="Protect and discover secrets using Gitleaks"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://gitleaks.io/"
+distfiles="https://github.com/gitleaks/gitleaks/archive/refs/tags/v${version}.tar.gz"
+checksum=a3cc323cba5f75641da090858aebfd050d36cc34f0cb27b19c1fd520543f0546
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
