@@ -1,0 +1,18 @@
+# Template file for 'trufflehog'
+pkgname=trufflehog
+version=3.33.0
+revision=1
+build_style=go
+go_import_path=github.com/trufflesecurity/trufflehog/v3
+short_desc="Find credentials all over the place"
+maintainer="hazen2215 <haz@disroot.org>"
+license="AGPL-3.0-only"
+homepage="https://trufflesecurity.com/"
+distfiles="https://github.com/trufflesecurity/trufflehog/archive/refs/tags/v${version}.tar.gz"
+checksum=41eb880035751549b2b0234fbf35fa98096241840859017d6f4f35aa8d7078a9
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
