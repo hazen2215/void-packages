@@ -1,0 +1,21 @@
+# Template file for 'multipass'
+pkgname=multipass
+version=20.05
+revision=1
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="libX11-devel libXft-devel freetype-devel"
+short_desc="Broadcast X11 key events to multiple windows"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://www.uninformativ.de/git/multipass/archives/"
+changelog="https://www.uninformativ.de/git/multipass/file/CHANGES.html"
+distfiles="https://www.uninformativ.de/git/multipass/archives/multipass-v${version}.tar.gz"
+checksum=39a6b0e2f359cf55c3570bb8b4f3397652cf59ffbf18c796802908c5ec4d9ab0
+
+CFLAGS="-I${XBPS_CROSS_BASE}/usr/include/freetype2"
+
+do_install() {
+	vbin multipass
+	vlicense LICENSE
+}
