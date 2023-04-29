@@ -1,0 +1,14 @@
+# Template file for 'exif'
+pkgname=exif
+version=0.6.22
+revision=1
+build_style=gnu-configure
+hostmakedepends="pkg-config"
+makedepends="libexif-devel popt-devel"
+short_desc="Command line tools to access EXIF extensions in JPEG files"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.1-or-later"
+homepage="https://github.com/libexif/exif"
+changelog="https://raw.githubusercontent.com/libexif/exif/master/ChangeLog"
+distfiles="https://github.com/libexif/exif/releases/download/exif-0_6_22-release/exif-0.6.22.tar.gz"
+checksum=41d07977f1619c6ea2e0edc1f2fc5598610f026b1a26afc814f03d9c79dd0b84
