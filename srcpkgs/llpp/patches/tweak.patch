@@ -1,0 +1,76 @@
+diff --git a/link.c b/link.c
+index ecf6189..a97cff1 100644
+--- a/link.c
++++ b/link.c
+@@ -905,6 +905,7 @@ static void layout (void)
+                 zh = state.h / h;
+                 zoom = fz_min (zw, zh);
+                 p->left = (int) ((maxw - (w * zoom)) / 2.f);
++                zoom = maxw / 120;
+             }
+             break;
+         case FitWidth:
+diff --git a/main.ml b/main.ml
+index a2f439c..3ea66a9 100644
+--- a/main.ml
++++ b/main.ml
+@@ -552,6 +552,11 @@ let gotoxy x y =
+   S.x := x;
+   S.y := y;
+   S.layout := layout;
++  match !S.layout with
++  | [] -> ()
++  | l :: _ ->
++     Wsi.settitle @@ Filename.basename !S.path ^ " - "
++       ^ string_of_int (l.pageno+1) ^ "/" ^ string_of_int !S.pagecount;
+   begin match !S.mode with
+   | LinkNav ln ->
+      begin match ln with
+@@ -1096,10 +1101,7 @@ let act cmds =
+      if n = 0
+      then (
+        let y = (getpagey pageno) + truncate y0 in
+-       let x =
+-         if (!S.x < - truncate x0) || (!S.x > !S.winw - truncate x1)
+-         then !S.winw/2 - truncate (x0 /. 2. +. x1 /. 2.)
+-         else !S.x
++       let x = !S.x
+        in
+        addnav ();
+        gotoxy x y;
+@@ -3297,6 +3299,13 @@ let viewkeyboard key mask =
+   | Ascii '4' when ctrl ->
+      let zoom = Ffi.getmaxw () /. float !S.winw in
+      if zoom > 0.0 then setzoom zoom
++  | Ascii ('5'|'6' as c) when ctrl ->
++     let fm = (if c = '5' then FitPage else FitWidth) in
++     S.text := "fit model: " ^ FMTE.to_string fm;
++     reqlayout conf.angle fm
++  | Ascii '7' when ctrl ->
++     let zoom = Ffi.getmaxw () /. 1900. *. 6. in
++     if zoom > 0.0 then setzoom zoom
+   | Fn 9 -> togglebirdseye ()
+   | Ascii '9' when ctrl -> togglebirdseye ()
+   | Ascii ('0'..'9' as c) when not ctrl ->
+diff --git a/uiutils.ml b/uiutils.ml
+index 811d01b..735f231 100644
+--- a/uiutils.ml
++++ b/uiutils.ml
+@@ -97,17 +97,6 @@ let enttext () =
+ 
+     | Birdseye _ | View | LinkNav _ -> !S.text
+   in
+-  let s =
+-    if !S.newerrmsgs
+-    then (
+-      if not (istextentry !S.mode) && !S.uioh#eformsgs
+-      then
+-        let s1 = "(press 'e' to review error messages)" in
+-        if nonemptystr s then s ^ " " ^ s1 else s1
+-      else s
+-    )
+-    else s
+-  in
+   if nonemptystr s
+   then drawstring s
+ 
