@@ -1,0 +1,36 @@
+# Template file for 'llpp'
+pkgname=llpp
+version=42
+revision=1
+hostmakedepends="asciidoc ocaml4 pkg-config"
+makedepends="freetype-devel glu-devel gumbo-parser-devel harfbuzz-devel
+ jbig2dec-devel libjpeg-turbo-devel libopenjpeg2-devel mupdf-devel ocaml4
+ ocaml-lablgl zlib-devel"
+short_desc="Graphical PDF viewer which aims to superficially resemble less(1)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Public Domain"
+homepage="https://github.com/criticic/llpp"
+distfiles="https://github.com/criticic/llpp/archive/refs/tags/v${version}.tar.gz"
+checksum=a154d97d21b2e8dc28aa9db073f4ad349ae23c343c69b77d57620d0d621f96dc
+disable_parallel_build=1
+nostrip=yes
+
+CFLAGS="-I${XBPS_CROSS_BASE}/usr/include/freetype2"
+
+post_patch() {
+	vsed -i build.bash -e "2d;s/ver=.*/ver=${version}/" \
+		-e '/^clibs=.*/s//clibs="-lmupdf -lmupdf-third -lmupdf-pkcs7 -lmupdf-threads -lgumbo -lfreetype -lharfbuzz -lz -ljbig2dec -ljpeg -lopenjp2"/'
+}
+
+do_build() {
+	bash ./build.bash build
+	bash ./build.bash build doc
+}
+
+do_install() {
+	vbin build/llpp
+	vbin misc/llpp.inotify
+	vbin misc/llppac
+	vman build/doc/llpp.1
+	vman build/doc/llppac.1
+}

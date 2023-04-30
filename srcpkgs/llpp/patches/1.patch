@@ -1,0 +1,549 @@
+diff --git a/link.c b/link.c
+index d5fba49..b8cf20b 100644
+--- a/link.c
++++ b/link.c
+@@ -967,9 +967,8 @@ static void recurse_outline (fz_outline *outline, int level)
+                                                   outline->page)
+                     );
+             int h = fz_maxi (fz_absi (pdim->bounds.y1 - pdim->bounds.y0), 0);
+-            p = fz_transform_point (p, pdim->ctm);
+             printd ("o %d %d %d %d %s",
+-                    level, pageno, (int) p.y, h, outline->title);
++                    level, pageno, isnan(p.y) ? 0 : (int) p.y, h, outline->title);
+         }
+         else {
+             printd ("on %d %s", level, outline->title);
+diff --git a/main.ml b/main.ml
+index 7fdf5a9..df578c8 100644
+--- a/main.ml
++++ b/main.ml
+@@ -77,6 +77,21 @@ let launchpath () =
+        adderrfmt "spawn" "failed to execute `%s': %s" cmd @@ exntos exn
+     | _pid -> ()
+ 
++let launchmenu args =
++    let n =
++      match !S.layout with
++      | l :: _ -> string_of_int l.pageno
++      | _ -> E.s
++    in
++    let cmd = "llpp-menu '" ^ !S.path ^ "'" in
++    let cmd =
++      if nonemptystr n
++      then cmd ^ " " ^ n
++      else cmd
++    in
++    let cmd = cmd ^ " '" ^ args ^ "'" in
++    getcmdoutput (adderrfmt cmd "failed to obrain query: %s") cmd
++
+ let getopaque pageno = Hashtbl.find S.pagemap (pageno, !S.gen)
+ 
+ let pagetranslatepoint l x y =
+@@ -552,6 +567,11 @@ let gotoxy x y =
+   S.x := x;
+   S.y := y;
+   S.layout := layout;
++  match !S.layout with
++  | [] -> ()
++  | l :: _ ->
++     Wsi.settitle @@ Filename.basename !S.path ^ " - "
++       ^ string_of_int (l.pageno+1) ^ "/" ^ string_of_int !S.pagecount;
+   begin match !S.mode with
+   | LinkNav ln ->
+      begin match ln with
+@@ -1008,6 +1028,12 @@ let getpassword () =
+   then (adderrmsg "askpass" "ask password program not set"; E.s)
+   else getcmdoutput (adderrfmt passcmd "failed to obrain password: %s") passcmd
+ 
++let getsearchquery () =
++  let searchcmd = getenvdef "LLPP_SEARCH" "llpp-search" in
++  if emptystr searchcmd
++  then (adderrmsg "search" "search program not set"; E.s)
++  else getcmdoutput (adderrfmt searchcmd "failed to obrain query: %s") searchcmd
++
+ let pgoto opaque pageno x y =
+   let pdimno = getpdimno pageno in
+   let x, y = Ffi.project opaque pageno pdimno x y in
+@@ -1096,10 +1122,7 @@ let act cmds =
+      if n = 0
+      then (
+        let y = (getpagey pageno) + truncate y0 in
+-       let x =
+-         if (!S.x < - truncate x0) || (!S.x > !S.winw - truncate x1)
+-         then !S.winw/2 - truncate (x0 /. 2. +. x1 /. 2.)
+-         else !S.x
++       let x = !S.x
+        in
+        addnav ();
+        gotoxy x y;
+@@ -1712,6 +1735,14 @@ class outlinelistview ~zebra ~source =
+       let ctrl = Wsi.withctrl mask in
+       let open Keys in
+       match Wsi.ks2kt key with
++      | Ascii '/' ->
++         (* needs <map in='/' out='/ n'/> *)
++         let query = getsearchquery() in
++         if nonemptystr query
++         then
++           coe {< m_first = m_first; m_active = m_active; m_qsearch = query >}
++         else
++           coe {< m_first = m_first; m_active = m_active - 1; m_qsearch = m_qsearch >}
+       | Ascii 'a' when ctrl ->
+          let text =
+            if m_autonarrow
+@@ -1729,7 +1760,7 @@ class outlinelistview ~zebra ~source =
+          settext (not m_autonarrow) text;
+          Glutils.postRedisplay "toggle auto narrowing";
+          coe {< m_first = 0; m_active = 0; m_autonarrow = not m_autonarrow >}
+-      | Ascii '/' when emptystr m_qsearch && not m_autonarrow ->
++      | Ascii '\\' when emptystr m_qsearch && not m_autonarrow ->
+          settext true E.s;
+          Glutils.postRedisplay "toggle auto narrowing";
+          coe {< m_first = 0; m_active = 0; m_autonarrow = true >}
+@@ -1744,7 +1775,7 @@ class outlinelistview ~zebra ~source =
+          let first = firstof m_first active in
+          Glutils.postRedisplay "outline ctrl-s";
+          coe {< m_first = first; m_active = active >}
+-      | Ascii 'u' when ctrl ->
++      | Ascii 'U' when ctrl ->
+          Glutils.postRedisplay "outline ctrl-u";
+          if m_autonarrow && nonemptystr m_qsearch
+          then (
+@@ -2770,11 +2801,11 @@ let gotoremote spec =
+         S.ranchors := ranchor :: !S.ranchors;
+         opendoc path E.s E.s;
+     in
+-    if substratis spec 0 "page="
++    if substratis dest 0 "page="
+     then
+-      match Scanf.sscanf spec "page=%d" (fun n -> n) with
++      match Scanf.sscanf dest "page=%d" (fun n -> n) with
+       | exception exn ->
+-         adderrfmt "error parsing remote destination" "%s %s" spec @@ exntos exn
++         adderrfmt "error parsing remote destination" "%s %s" dest @@ exntos exn
+       | pageno ->
+          S.anchor := (pageno, 0.0, 0.0);
+          dospawn @@ lazy (Printf.sprintf "%s -page %d %S"
+@@ -3033,7 +3064,7 @@ let setautoscrollspeed step goingdown =
+ let canpan () =
+   match conf.columns with
+   | Csplit _ -> true
+-  | Csingle _ | Cmulti _ -> !S.x != 0 || conf.zoom > 1.0
++  | Csingle _ | Cmulti _ -> !S.x != 0 || conf.zoom > 0.0
+ 
+ let existsinrow pageno (columns, coverA, coverB) p =
+   let last = ((pageno - coverA) mod columns) + columns in
+@@ -3050,7 +3081,7 @@ let existsinrow pageno (columns, coverA, coverB) p =
+   in
+   any !S.layout
+ 
+-let nextpage () =
++let nextpage keeppan =
+   match !S.layout with
+   | [] ->
+      let pageno = page_of_y !S.y in
+@@ -3064,7 +3095,8 @@ let nextpage () =
+           gotoxy !S.x y
+         else
+           let pageno = min (l.pageno+1) (!S.pagecount-1) in
+-          gotoxy !S.x (getpagey pageno)
++          let d = if keeppan then !S.y - getpagey l.pageno else 0 in
++          gotoxy !S.x (d + getpagey pageno)
+      | Cmulti ((c, _, _) as cl, _) ->
+         if conf.presentation
+            && (existsinrow l.pageno cl
+@@ -3083,7 +3115,7 @@ let nextpage () =
+           let ips = if l.pagecol = 0 then 0 else conf.interpagespace in
+           gotoxy !S.x (pagey + pageh + ips)
+ 
+-let prevpage () =
++let prevpage keeppan =
+   match !S.layout with
+   | [] ->
+      let pageno = page_of_y !S.y in
+@@ -3095,7 +3127,8 @@ let prevpage () =
+         then gotoxy !S.x (U.add_to_y_and_clamp (U.pgscale ~-(!S.winh)))
+         else
+           let pageno = max 0 (l.pageno-1) in
+-          gotoxy !S.x (getpagey pageno)
++          let d = if keeppan then !S.y - getpagey l.pageno else 0 in
++          gotoxy !S.x (d + getpagey pageno)
+      | Cmulti ((c, _, coverB) as cl, _) ->
+         if conf.presentation &&
+              (existsinrow l.pageno cl (fun l -> l.pagey != 0))
+@@ -3237,7 +3270,7 @@ let viewkeyboard key mask =
+      S.text := E.s;
+      Hashtbl.iter (fun _ opaque -> Ffi.clearmark opaque) S.pagemap;
+      Glutils.postRedisplay "dehighlight";
+-  | Ascii (('/' | '?') as c) ->
++  | Ascii (('?') as c) ->
+      let ondone isforw s =
+        cbput !S.hists.pat s;
+        S.searchpattern := s;
+@@ -3245,6 +3278,14 @@ let viewkeyboard key mask =
+      in
+      enttext (String.make 1 c, E.s, Some (onhist !S.hists.pat),
+               textentry, ondone (c = '/'), true)
++  | Ascii '/' ->
++     let query = getsearchquery() in
++     if nonemptystr query
++     then (
++       cbput !S.hists.pat query;
++       S.searchpattern := query;
++       search query true
++     )
+   | Ascii '+' | Ascii '=' when ctrl ->
+      let incr = if conf.zoom +. 0.01 > 0.1 then 0.1 else 0.01 in
+      pivotzoom (conf.zoom +. incr)
+@@ -3297,6 +3338,13 @@ let viewkeyboard key mask =
+   | Ascii '4' when ctrl ->
+      let zoom = Ffi.getmaxw () /. float !S.winw in
+      if zoom > 0.0 then setzoom zoom
++  | Ascii ('5'|'6' as c) when ctrl ->
++     let fm = (if c = '5' then FitPage else FitWidth) in
++     S.text := "fit model: " ^ FMTE.to_string fm;
++     reqlayout conf.angle fm
++  | Ascii '7' when ctrl ->
++     let zoom = Ffi.getmaxw () /. 1900. *. 6. in
++     if zoom > 0.0 then setzoom zoom
+   | Fn 9 -> togglebirdseye ()
+   | Ascii '9' when ctrl -> togglebirdseye ()
+   | Ascii ('0'..'9' as c) when not ctrl ->
+@@ -3357,7 +3405,43 @@ let viewkeyboard key mask =
+         S.autoscroll := None
+      | None -> S.autoscroll := Some conf.autoscrollstep
+      end
+-  | Ascii 'p' when ctrl -> launchpath ()
++  | Ascii '$' -> launchpath ()
++  | Enter when ctrl -> launchpath ()
++  | Ascii ('m'|'n'|'p' as c) when ctrl ->
++     let cmds = launchmenu (Char.escaped c) in
++     let cl = splitatchar cmds ' ' in
++     let scan s fmt f =
++       try Scanf.sscanf s fmt f
++       with exn -> adderrfmt "remote exec" "error processing '%S': %s\n"
++                     cmds @@ exntos exn
++     in
++     (
++     match cl with
++     | "goto", args ->
++        scan args "%u %f %f"
++          (fun pageno x y ->
++            let cmd, _ = !S.geomcmds in
++            if emptystr cmd
++            then gotopagexy pageno x y
++            else
++              let f prevf () =
++                gotopagexy pageno x y;
++                prevf ()
++              in
++              S.reprf := f !S.reprf
++          )
++     | "opendoc", args ->
++        scan args "%S"
++          (fun path ->
++            S.path := path;
++            if Config.load false then
++              opendoc path E.s E.s;
++          )
++     | "gotor", args -> scan args "%S" gotoremote
++     | _ ->
++        adderrfmt "remote command"
++          "error processing remote command: %S\n" cmds
++     )
+   | Ascii 'P' ->
+      setpresentationmode (not conf.presentation);
+      showtext ' ' ("presentation mode " ^ onoffs conf.presentation)
+@@ -3372,9 +3456,23 @@ let viewkeyboard key mask =
+      | [] -> ()
+      | l :: _ -> gotoxy !S.x (getpagey l.pageno)
+      end
+-  | Ascii ' ' -> nextpage ()
+-  | Delete -> prevpage ()
+-  | Ascii '=' -> showtext ' ' (describe_layout !S.layout);
++  | Ascii ' ' -> nextpage false
++  | Delete -> prevpage false
++  | Ascii '.' -> nextpage true
++  | Ascii ',' -> prevpage true
++  | Ascii '=' ->
++     if conf.zoom = 1.0
++     then gotoxy 0 !S.y
++     else setzoom 1.0;
++     reqlayout conf.angle FitPage
++  | Ascii 'Z' ->
++     if Wsi.withshift mask
++     then (
++       setzoom 1.745;
++       reqlayout conf.angle FitPage;
++       let m = (!S.winw - !S.w) / 2 in
++       gotoxy m !S.y
++     )
+   | Ascii 'w' ->
+      begin match !S.layout with
+      | [] -> ()
+@@ -3397,15 +3495,24 @@ let viewkeyboard key mask =
+      showtext ' ' "Quick bookmark added";
+   | Ascii 'x' -> !S.roamf ()
+   | Ascii ('<'|'>' as c) ->
+-     reqlayout (conf.angle + (if c = '>' then 30 else -30)) conf.fitmodel
++     reqlayout (conf.angle + (if c = '>' then 90 else -90)) conf.fitmodel
+   | Ascii ('['|']' as c) ->
+      conf.colorscale <-
+        bound (conf.colorscale +. (if c = ']' then 0.1 else -0.1)) 0.0 1.0;
+      Glutils.postRedisplay "brightness";
++  | Ascii 'C' when !S.mode = View ->
++     let (c, a, b) =
++       match conf.columns with
++       | Csingle _ -> 2, 0, 0
++       | Cmulti ((2, 0, 0), _) -> 2, 1, 0
++       | Cmulti ((_, _, _), _) -> 1, 0, 0
++       | Csplit _ -> error "bird's eye split mode"
++     in
++     setcolumns !S.mode c a b
+   | Ascii 'c' when !S.mode = View ->
+      if Wsi.withalt mask
+      then (
+-       if conf.zoom > 1.0
++       if conf.zoom > 0.0
+        then
+          let m = (!S.winw - !S.w) / 2 in
+          gotoxy m !S.y
+@@ -3439,7 +3546,7 @@ let viewkeyboard key mask =
+            then gotoxy !S.x (U.add_to_y_and_clamp ~-(!S.winh/2))
+            else (
+              if not (Wsi.withshift mask) && conf.presentation
+-             then prevpage ()
++             then prevpage false
+              else gotoxy !S.x (U.add_to_y_and_clamp (-conf.scrollstep))
+            )
+         end
+@@ -3455,7 +3562,7 @@ let viewkeyboard key mask =
+            then gotoxy !S.x (U.add_to_y_and_clamp (!S.winh/2))
+            else (
+              if not (Wsi.withshift mask) && conf.presentation
+-             then nextpage ()
++             then nextpage false
+              else gotoxy !S.x (U.add_to_y_and_clamp (conf.scrollstep))
+            )
+         end
+@@ -4096,8 +4203,8 @@ let viewmouse button down x y mask =
+           if conf.wheelbypage || conf.presentation
+           then (
+             if n = 4
+-            then prevpage ()
+-            else nextpage ()
++            then prevpage false
++            else nextpage false
+           )
+           else
+             let incr = if n = 4 then -conf.scrollstep else conf.scrollstep in
+@@ -4586,7 +4693,7 @@ let () =
+   if !S.confpath == E.s
+   then (
+     let dir =
+-      let dir = Filename.concat home ".config" in
++      let dir = Filename.concat home ".local/share" in
+       if try Sys.is_directory dir with _ -> false then dir else home
+     in
+     S.confpath := Filename.concat dir "llpp.conf"
+diff --git a/misc/llppac b/misc/llppac
+index 46dd727..cb09be4 100755
+--- a/misc/llppac
++++ b/misc/llppac
+@@ -6,7 +6,7 @@ die() {
+     exit 1
+ }
+ 
+-cachedir="$HOME/.cache/llpp"
++cachedir="${XDG_CACHE_HOME:-$HOME/.cache}/llpp"
+ test -d "$cachedir" || die "cache directory '$cachedir' does not exist"
+ 
+ caspsuf=
+diff --git a/uiutils.ml b/uiutils.ml
+index 811d01b..4668ff1 100644
+--- a/uiutils.ml
++++ b/uiutils.ml
+@@ -97,17 +97,6 @@ let enttext () =
+ 
+     | Birdseye _ | View | LinkNav _ -> !S.text
+   in
+-  let s =
+-    if !S.newerrmsgs
+-    then (
+-      if not (istextentry !S.mode) && !S.uioh#eformsgs
+-      then
+-        let s1 = "(press 'e' to review error messages)" in
+-        if nonemptystr s then s ^ " " ^ s1 else s1
+-      else s
+-    )
+-    else s
+-  in
+   if nonemptystr s
+   then drawstring s
+ 
+@@ -230,6 +219,7 @@ object (self)
+   val m_first = source#getfirst
+   val m_active = source#getactive
+   val m_qsearch = E.s
++  val m_searching = false
+   val m_prev_uioh = !S.uioh
+ 
+   method private elemunder y =
+@@ -537,11 +527,74 @@ object (self)
+           active, first
+       in
+       postRedisplay "listview navigate";
+-      set active first;
++      set1 active first m_qsearch;
+     in
+     let open Keys in
+     let kt = Wsi.ks2kt key in
+     match [@warning "-fragile-match"] kt with
++    | Ascii '/' ->
++       if m_searching && nonemptystr m_qsearch
++       then (
++         S.text := m_qsearch ^ "/";
++         postRedisplay "listview qsearch add /";
++         set1 m_active m_first (m_qsearch ^ "/")
++       )
++       else (
++         S.text := "/";
++         postRedisplay "list view start searching";
++         coe {< m_qsearch = E.s; m_searching = true >};
++       )
++    | Enter when m_searching ->
++       S.text := E.s;
++       postRedisplay "list view finish searching";
++       coe {< m_searching = false >}
++    | Ascii 'q' when not m_searching ->
++       S.text := E.s;
++       postRedisplay "list view quit";
++       Option.value ~default:m_prev_uioh @@
++         source#exit ~uioh:(coe self) ~cancel:true ~active:m_active
++           ~first:m_first ~pan:m_pan
++    | Ascii (('n'|'N') as c) when not m_searching ->
++       let incr = if c = 'N' then -1 else 1 in
++       let active, first =
++         match search (m_active + incr) m_qsearch incr with
++         | None ->
++            S.text := m_qsearch ^ " [not found]";
++            m_active, m_first
++         | Some active ->
++            S.text := m_qsearch;
++            active, firstof m_first active
++       in
++       postRedisplay "listview ctrl-r/s";
++       set1 active first m_qsearch;
++    | Ascii 'k' when not m_searching -> navigate ~-1;
++    | Ascii 'j' when not m_searching -> navigate 1;
++    | Ascii 'u' when Wsi.withctrl mask ->
++       let incr = float (~-(fstate.maxrows) / 2) in
++       navigate (int_of_float incr)
++    | Ascii 'd' when Wsi.withctrl mask  ->
++       let incr = float (fstate.maxrows / 2) in
++       navigate (int_of_float incr)
++    | Ascii 'g' when not m_searching ->
++       let active = find 0 1 in
++       postRedisplay "listview home";
++       set1 active 0 m_qsearch;
++    | Ascii 'G' when not m_searching ->
++       let first = max 0 (itemcount - fstate.maxrows) in
++       let active = find (itemcount - 1) ~-1 in
++       postRedisplay "listview end";
++       set1 active first m_qsearch;
++    | Ascii 'l' when not m_searching ->
++       S.text := E.s;
++       let self = {< m_qsearch = E.s >} in
++       let opt =
++         postRedisplay "listview enter";
++         let cancel = not (m_active >= 0 && m_active < source#getitemcount) in
++         source#exit ~uioh:(coe self) ~cancel
++                     ~active:m_active ~first:m_first ~pan:m_pan;
++       in
++       Option.value ~default:m_prev_uioh opt
++
+     | Ascii (('r'|'s') as c) when Wsi.withctrl mask ->
+        let incr = if c = 'r' then -1 else 1 in
+        let active, first =
+@@ -589,7 +642,7 @@ object (self)
+            set1 active first qsearch
+        );
+ 
+-    | Ascii _ | Code _ ->
++    | Ascii _ | Code _ when m_searching ->
+        let utf8 =
+          match [@warning "-partial-match"] kt with
+          | Ascii c -> String.make 1 c
+@@ -610,7 +663,7 @@ object (self)
+ 
+     | Escape ->
+        S.text := E.s;
+-       if emptystr m_qsearch
++       if not m_searching
+        then (
+          postRedisplay "list view escape";
+          (* XXX:
+@@ -623,7 +676,7 @@ object (self)
+        )
+        else (
+          postRedisplay "list view kill qsearch";
+-         coe {< m_qsearch = E.s >}
++         coe {< m_searching = false >}
+        )
+ 
+     | Enter ->
+@@ -739,24 +792,7 @@ object (self)
+     | Mzoomrect _
+     | Mnone -> coe self
+ 
+-  method pmotion x y =
+-    if x < !S.winw - conf.scrollbw
+-    then
+-      let n =
+-        match self#elemunder y with
+-        | None -> Wsi.setcursor Wsi.CURSOR_INHERIT; m_active
+-        | Some n -> Wsi.setcursor Wsi.CURSOR_INFO; n
+-      in
+-      let o =
+-        if n != m_active
+-        then (postRedisplay "listview pmotion"; {< m_active = n >})
+-        else self
+-      in
+-      coe o
+-    else (
+-      Wsi.setcursor Wsi.CURSOR_INHERIT;
+-      coe self
+-    )
++  method pmotion _ _ = coe self
+ 
+   method infochanged _ = ()
+ 
+diff --git a/uiutils.mli b/uiutils.mli
+index 5cde4ad..361a7fe 100644
+--- a/uiutils.mli
++++ b/uiutils.mli
+@@ -45,6 +45,7 @@ class listview :
+     val m_pan : int
+     val m_prev_uioh : Config.uioh
+     val m_qsearch : string
++    val m_searching : bool
+     method alwaysscrolly : bool
+     method button : int -> bool -> int -> int -> int -> Config.uioh
+     method display : unit
+diff --git a/wsi/x11/wsi.ml b/wsi/x11/wsi.ml
+index e1903fc..6f17f4a 100644
+--- a/wsi/x11/wsi.ml
++++ b/wsi/x11/wsi.ml
+@@ -1101,7 +1101,11 @@ let init t w h =
+   w16 s 8 (String.length adata);
+   sendstr1 s 0 (Bytes.length s) fd;
+   S.sock := fd;
+-  setup d fd 0 screennum w h;
++  let rootwid =
++    try int_of_string(Sys.getenv "LLPP_WID")
++    with Not_found -> 0
++  in
++  setup d fd rootwid screennum w h;
+   S.t := t;
+   fd, !S.w, !S.h
+ 
