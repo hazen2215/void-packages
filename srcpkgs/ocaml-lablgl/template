@@ -1,0 +1,34 @@
+# Template file for 'ocaml-lablgl'
+pkgname=ocaml-lablgl
+version=1.07
+revision=1
+build_style=gnu-makefile
+make_build_args="lib libopt"
+make_install_args="LIBDIR=\${DESTDIR}/usr/lib/ocaml
+ DDLDIR=\${DESTDIR}/usr/lib/ocaml/stublibs
+ INSTALLDIR=\${DESTDIR}/usr/lib/ocaml/lablGL"
+hostmakedepends="ocaml ocaml-findlib"
+makedepends="glfw-devel glu-devel libXext-devel libXi-devel libXmu-devel
+ libfreeglut-devel ocaml ocaml-findlib ocaml-camlp-streams"
+short_desc="OpenGL interface for OCaml"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause"
+homepage="https://forge.ocamlcore.org/projects/lablgl/"
+changelog="https://raw.githubusercontent.com/garrigue/lablgl/master/CHANGES"
+distfiles="https://github.com/garrigue/lablgl/archive/v${version}.tar.gz"
+checksum=845477ed8d5aeaad63907a9edfc1d8f8d62b932c6e37a32502926ee402a6271f
+disable_parallel_build=yes
+
+pre_build() {
+	echo "GLLIBS = -lGL -lGLU" >>Makefile.config
+	echo "GLUTLIBS = -lglut" >>Makefile.config
+	echo "XLIBS = -lXext -lXmu -lX11" >>Makefile.config
+	echo "RANLIB = :" >>Makefile.config
+	echo 'COPTS = -c -O $(CFLAGS)' >>Makefile.config
+}
+
+pre_install() {
+	vmkdir usr/lib/ocaml/stublibs
+	vinstall src/lablgl.cmxa 644 usr/lib/ocaml
+	vlicense COPYRIGHT
+}
