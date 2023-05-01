@@ -1,0 +1,18 @@
+# Template file for 'clibgen'
+pkgname=clibgen
+version=0.2.0
+revision=1
+build_style=go
+go_import_path=github.com/laureanray/clibgen
+short_desc="Command Line Tool for Library Genesis (libgen)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/laureanray/clibgen"
+distfiles="https://github.com/laureanray/clibgen/archive/v${version}.tar.gz"
+checksum=2bd7c1b42643d6f2d306334aad3ccb8af2c635a4d8ff5a56b868bb63154dc508
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
