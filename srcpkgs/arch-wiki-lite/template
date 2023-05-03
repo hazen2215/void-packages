@@ -1,0 +1,15 @@
+# Template file for 'arch-wiki-lite'
+pkgname=arch-wiki-lite
+version=20230228
+revision=1
+_commit=a9673ee216ba152377543339e1b26e024975d804
+short_desc="Arch Wiki without HTML. 1/9 as big, easily searched & viewable on console"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later, GFDL-1.3-or-later"
+homepage="https://gitlab.archlinux.org/grawlinson/arch-wiki-lite"
+distfiles="https://mirror.cmt.de/archlinux/community/os/x86_64/arch-wiki-lite-${version}-1-any.pkg.tar.zst"
+checksum=ab0aa5a874d7e4359ba6b6e97c7e15b6cab8c62638d581e187fdaf756f3b8274
+
+do_install() {
+	vcopy usr/share usr
+}
