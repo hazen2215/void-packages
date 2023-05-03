@@ -1,8 +1,8 @@
 # Template file for 'palemoon'
 pkgname=palemoon
-version=32.0.1
+version=32.1.1
 revision=1
-_UXP_version=RB_20230219
+_UXP_version=RB_20230417
 create_wrksrc=yes
 build_wrksrc="pale-moon"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
@@ -17,8 +17,8 @@ license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
-checksum="bcddf43530fd59396ab43c5accd68c13fb2f9ae62d1dc0339979debaffd81124
- b14f20d7f98cd246ba2c6223cd0e5d84b04b04b117f4fac6cd691d307b7df0b5"
+checksum="4a138c1fe6efa96be233e912a44ab2162d4a50bf3f8b980398dfcb22658deb3c
+ b866d4ae65d95d7827411e5e40096c0bb83c8b510ea233b4d256a211e6476d7c"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3"
