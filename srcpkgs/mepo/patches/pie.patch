@@ -1,0 +1,12 @@
+diff --git a/build.zig b/build.zig
+index f4bfc00..fe9b3f8 100644
+--- a/build.zig
++++ b/build.zig
+@@ -28,6 +28,7 @@ pub fn build(b: *Builder) void {
+     const mode = b.standardReleaseOptions();
+     exe.setTarget(target);
+     exe.setBuildMode(mode);
++    exe.pie = true;
+ 
+     setDependencies(exe);
+ 

@@ -1,0 +1,19 @@
+# Template file for 'mepo'
+pkgname=mepo
+version=1.1.2
+revision=1
+build_style=zig-build
+hostmakedepends="pkg-config"
+makedepends="libcurl-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel
+ SDL2_gfx-devel"
+depends="jq curl"
+short_desc="Fast, simple, and hackable OSM map viewer for Linux"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://git.sr.ht/~mil/mepo"
+distfiles="https://git.sr.ht/~mil/mepo/archive/${version}.tar.gz"
+checksum=d2dd93988fc75964715051720cbc30b6c2b8646812b508fa4e25495fbe33b284
+
+do_check() {
+	zig build test
+}
