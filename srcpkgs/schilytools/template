@@ -78,3 +78,19 @@ ved_package() {
 		vlicense CDDL.Schily.txt
 	}
 }
+bosh_package() {
+	alternatives="
+	 sh:sh:/usr/bin/schilytools-sh
+	 sh:sh.1:/usr/share/man/man1/schilytools-sh.1"
+	short_desc+=" - bosh"
+	pkg_install() {
+		make install -C sh DESTDIR="$PKGDESTDIR" INS_BASE=/usr
+		mv ${PKGDESTDIR}/usr/bin/{,schilytools-}sh
+		mv ${PKGDESTDIR}/usr/share/man/man1/{,schilytools-}sh.1
+		for f in bosh jsh pfsh; do
+			ln -sf schilytools-sh ${PKGDESTDIR}/usr/bin/$f
+		done
+		rm -r ${PKGDESTDIR}/usr/xpg4
+		vlicense CDDL.Schily.txt
+	}
+}
