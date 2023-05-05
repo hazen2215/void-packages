@@ -1,0 +1,31 @@
+# Template file for 'bsd-finger'
+pkgname=bsd-finger
+version=0.17
+revision=1
+build_style=configure
+short_desc="User information lookup program"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-4-Clause"
+homepage="http://ftp.linux.org.uk/pub/linux/Networking/netkit/"
+distfiles="http://ftp.linux.org.uk/pub/linux/Networking/netkit/bsd-finger-${version}.tar.gz"
+checksum=84885d668d117ef50e01c7034a45d8343d747cec6212e40e8d08151bc18e13fa
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	CFLAGS+=" -Dloff_t=off_t"
+fi
+
+do_configure() {
+	cat <<! >MCONFIG
+CFLAGS= -D_GNU_SOURCE $CFLAGS
+LDFLAGS= $LDFLAGS
+!
+}
+
+do_install() {
+	vbin finger/finger
+	vman finger/finger.1
+	vbin fingerd/fingerd
+	vman fingerd/fingerd.8
+	sed -n '/Copyright/,/SUCH DAMAGE/p' finger/finger.c >LICENSE
+	vlicense LICENSE
+}
