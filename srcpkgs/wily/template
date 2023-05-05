@@ -1,0 +1,22 @@
+# Template file for 'wily'
+pkgname=wily
+version=0.13.42.20180721
+revision=1
+_commit=079ddae79520c98d21e62304bf45f368471b54ec
+build_style=gnu-configure
+hostmakedepends="autoconf automake"
+makedepends="libXt-devel"
+short_desc="Gary Capell's wily, an acme work-alike"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Artistic-1.0"
+homepage="https://github.com/9wm/wily"
+distfiles="https://github.com/9wm/wily/archive/${_commit}.tar.gz"
+checksum=fe0bda512c7541e2e55c2968c16ea2983f21b049c20c65e2686240ddce229614
+
+pre_configure() {
+	autoreconf -fi
+}
+
+do_install() {
+	vbin wily/wily
+}
