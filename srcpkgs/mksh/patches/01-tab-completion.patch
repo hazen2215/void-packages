@@ -1,0 +1,25 @@
+commit 95fa3311dd8331465b1023e44fbebf2d9639fdf9
+Author: multiplexd <multi@in-addr.xyz>
+Date:   Tue May 19 09:55:04 2020 +0100
+
+    Sync tab completion patch with upstream
+
+diff --git a/edit.c b/edit.c
+index db2a682..7e0bfca 100644
+--- a/edit.c
++++ b/edit.c
+@@ -647,12 +647,12 @@ x_try_array(const char *buf, int buflen, const char *want, int wantlen,
+ 	}
+ 
+ 	/* Try to find the array. */
+-	if (asprintf(&name, "complete_%.*s_%d", cmdlen, cmd, n) < 0)
++	if (asprintf(&name, "complete_%.*s_%d", cmdlen, cmd, n) == -1)
+ 		internal_errorf("unable to allocate memory");
+ 	v = global(name);
+ 	free(name);
+ 	if (~v->flag & (ISSET|ARRAY)) {
+-		if (asprintf(&name, "complete_%.*s", cmdlen, cmd) < 0)
++		if (asprintf(&name, "complete_%.*s", cmdlen, cmd) == -1)
+ 			internal_errorf("unable to allocate memory");
+ 		v = global(name);
+ 		free(name);
