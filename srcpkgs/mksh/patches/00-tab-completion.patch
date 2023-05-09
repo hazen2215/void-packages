@@ -1,0 +1,135 @@
+commit 25fa1070bca3451843320b2920c458d78d0d4695
+Author: multiplexd <multiplexd@gmx.com>
+Date:   Mon Jul 9 19:47:20 2018 +0100
+
+    Import OpenBSD ksh(1) tab completion diff
+
+diff --git a/edit.c b/edit.c
+index f38092e..db2a682 100644
+--- a/edit.c
++++ b/edit.c
+@@ -610,6 +610,81 @@ x_locate_word(const char *buf, int buflen, int pos, int *startp,
+ 	return (end - start);
+ }
+ 
++static int
++x_try_array(const char *buf, int buflen, const char *want, int wantlen,
++    int *nwords, char ***words)
++{
++	const char *cmd, *cp;
++	int cmdlen, n, i, slen;
++	char *name, *s;
++	struct tbl *v, *vp;
++
++	*nwords = 0;
++	*words = NULL;
++
++	/* Walk back to find start of command. */
++	if (want == buf)
++		return 0;
++	for (cmd = want; cmd > buf; cmd--) {
++		if (strchr(";|&()`", cmd[-1]) != NULL)
++			break;
++	}
++	while (cmd < want && ctype((u_char)*cmd, C_SPACE))
++		cmd++;
++	cmdlen = 0;
++	while (cmd + cmdlen < want && !ctype((u_char)cmd[cmdlen], C_SPACE))
++		cmdlen++;
++	for (i = 0; i < cmdlen; i++) {
++		if (!ctype((u_char)cmd[i], C_ALNUX) && cmd[i] != '_')
++			return 0;
++	}
++
++	/* Take a stab at argument count from here. */
++	n = 1;
++	for (cp = cmd + cmdlen + 1; cp < want; cp++) {
++		if (!ctype((u_char)cp[-1], C_SPACE) && ctype((u_char)*cp, C_SPACE))
++			n++;
++	}
++
++	/* Try to find the array. */
++	if (asprintf(&name, "complete_%.*s_%d", cmdlen, cmd, n) < 0)
++		internal_errorf("unable to allocate memory");
++	v = global(name);
++	free(name);
++	if (~v->flag & (ISSET|ARRAY)) {
++		if (asprintf(&name, "complete_%.*s", cmdlen, cmd) < 0)
++			internal_errorf("unable to allocate memory");
++		v = global(name);
++		free(name);
++		if (~v->flag & (ISSET|ARRAY))
++			return 0;
++	}
++
++	/* Walk the array and build words list. */
++	for (vp = v; vp; vp = vp->u.array) {
++		if (~vp->flag & ISSET)
++			continue;
++
++		s = str_val(vp);
++		slen = strlen(s);
++
++		if (slen < wantlen)
++			continue;
++		if (slen > wantlen)
++			slen = wantlen;
++		if (slen != 0 && strncmp(s, want, slen) != 0)
++			continue;
++
++		*words = aresize(*words, ((*nwords) + 2) * (sizeof **words),
++		    ATEMP);
++		strdupx((*words)[(*nwords)++], s, ATEMP);
++	}
++	if (*nwords != 0)
++		(*words)[*nwords] = NULL;
++
++	return *nwords != 0;
++}
++
+ static int
+ x_cf_glob(int *flagsp, const char *buf, int buflen, int pos, int *startp,
+     int *endp, char ***wordsp)
+@@ -678,9 +753,10 @@ x_cf_glob(int *flagsp, const char *buf, int buflen, int pos, int *startp,
+ 		 * Expand (glob) it now.
+ 		 */
+ 
+-		nwords = is_command ?
+-		    x_command_glob(*flagsp, toglob, &words) :
+-		    x_file_glob(flagsp, toglob, &words);
++		if (is_command)
++		   nwords = x_command_glob(*flagsp, toglob, &words);
++		else if (!x_try_array(buf, buflen, buf + *startp, len, &nwords, &words))
++		   nwords = x_file_glob(flagsp, toglob, &words);
+ 		afree(toglob, ATEMP);
+ 	}
+ 	if (nwords == 0) {
+diff --git a/mksh.1 b/mksh.1
+index 672e6b6..3867ffe 100644
+--- a/mksh.1
++++ b/mksh.1
+@@ -5981,6 +5981,24 @@ is appended.
+ If there is no command or file name with the current partial word
+ as its prefix, a bell character is output (usually causing a beep to be
+ sounded).
++.Pp
++Custom completions may be configured by creating an array named
++.Ql complete_command ,
++optionally suffixed with an argument number to complete only for a single
++argument.
++So defining an array named
++.Ql complete_kill
++provides possible completions for any argument to the
++.Xr kill 1
++command, but
++.Ql complete_kill_1
++only completes the first argument.
++For example, the following command makes
++.Nm
++offer a selection of signal names for the first argument to
++.Xr kill 1 :
++.Pp
++.Dl set -A complete_kill_1 -- -9 -HUP -INFO -KILL -TERM
+ .It complete\-command: \*(haX\*(ha[
+ Automatically completes as much as is unique of the command name having the
+ partial word up to the cursor as its prefix, as in the
