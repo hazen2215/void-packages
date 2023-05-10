@@ -36,6 +36,8 @@ build_options="fido2 gssapi ldns bearssl static"
 build_options_default="fido2 bearssl static"
 desc_option_fido2="Enable support for FIDO2 USB tokens"
 
+# export LIBS="-lbearssl"
+
 if [ "$build_option_ldns" -a -z "$build_option_ssl" ]; then
 	broken="option 'ldns' requires option 'ssl'"
 fi
@@ -55,6 +57,20 @@ esac
 pre_configure() {
 	autoreconf -fi
 	vsed -i -e 's|#include <sys/sysctl.h>||' servconf.c
+}
+
+post_configure() {
+	if [ "$build_option_fido2" ]; then
+		cat <<-! >> config.h
+		#define HAVE_FIDO_ASSERT_SET_CLIENTDATA 1
+		#define HAVE_FIDO_CRED_PROT 1
+		#define HAVE_FIDO_CRED_SET_CLIENTDATA 1
+		#define HAVE_FIDO_CRED_SET_PROT 1
+		#define HAVE_FIDO_DEV_GET_TOUCH_BEGIN 1
+		#define HAVE_FIDO_DEV_GET_TOUCH_STATUS 1
+		#define HAVE_FIDO_DEV_SUPPORTS_CRED_PROT 1
+		!
+	fi
 }
 
 post_install() {
