@@ -14,6 +14,8 @@ checksum=e4dcbd92b25bbb371216b0fad5aa80cdff19f466f7ec8b5e145111fb348c91eb
 conflicts="signify>=0 openbsd-rs>=0 ts>=0"
 
 post_install() {
+	mv ${DESTDIR}/usr/bin/{,outils-}vis
+	mv ${DESTDIR}/usr/share/man/man1/{,outils-}vis.1
 	rm ${DESTDIR}/usr/bin/cksum ${DESTDIR}/usr/share/man/man1/cksum.1
 	vlicense LICENSE
 }
