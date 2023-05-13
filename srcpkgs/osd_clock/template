@@ -1,0 +1,18 @@
+# Template file for 'osd_clock'
+pkgname=osd_clock
+version=0.6.1
+revision=1
+build_style=gnu-makefile
+make_install_args="PREFIX=\${DESTDIR}/usr MANDIR=\${DESTDIR}/usr/share/man"
+makedepends="xosd"
+short_desc="Clock which uses the X On-Screen Display library (Linux)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://github.com/danitool/osd_clock"
+changelog="https://raw.githubusercontent.com/danitool/osd_clock/master/ChangeLog"
+distfiles="https://github.com/danitool/osd_clock/archive/refs/tags/${version}.tar.gz"
+checksum=3452f7728fe9fc84b695403ac9e0d0cd631247769565869ff12fae1d035e2db1
+
+pre_install() {
+	vmkdir usr/bin
+}
