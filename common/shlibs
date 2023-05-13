@@ -4255,3 +4255,4 @@ libayatana-indicator3.so.7 libayatana-indicator-0.9.3_1
 libayatana-appindicator3.so.1 libayatana-appindicator-0.5.91_1
 libplayerctl.so.2 playerctl-2.4.1_1
 libwireplumber-0.4.so.0 wireplumber-0.4.14_1
+libxosd.so.2 xosd-2.2.14_1
