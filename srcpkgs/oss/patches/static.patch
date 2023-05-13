@@ -1,0 +1,39 @@
+diff --git a/setup/srcconf.c b/setup/srcconf.c
+index a081e22..16e95da 100644
+--- a/setup/srcconf.c
++++ b/setup/srcconf.c
+@@ -971,6 +971,8 @@ printf("Symlink %s -> %s\n", source, target);
+     fprintf (f, "CFLAGS += %s\n", conf.cflags);
+   if (conf.mode == MD_SHLIB)
+     fprintf (f, "CFLAGS += %s\n", shlib_cflags);
++    fprintf (f, "AR=ar\n");
++    fprintf (f, "AROPTS=rc\n");
+ #endif
+   if (conf.mode != MD_KERNEL)
+     objdir = "TMPDIR";
+@@ -1105,6 +1107,7 @@ printf("Symlink %s -> %s\n", source, target);
+   else if (conf.mode == MD_SHLIB)
+     {
+ 	fprintf (f, "$(LIBDIR)/%s.so ", name);
++	fprintf (f, "$(LIBDIR)/%s.a ", name);
+     }
+   else if (conf.mode != MD_KERNEL)
+     {
+@@ -1169,6 +1172,7 @@ printf("Symlink %s -> %s\n", source, target);
+   if (conf.mode == MD_SHLIB)
+     {
+       fprintf (f, "%s.so:\t$(LIBDIR)/%s.so\n\n", name, name);
++      fprintf (f, "%s.a:\t$(LIBDIR)/%s.a\n\n", name, name);
+ 
+       fprintf (f, "$(LIBDIR)/%s.so:\t$(OBJECTS)\n", name);
+ #if defined(linux)
+@@ -1182,6 +1186,9 @@ printf("Symlink %s -> %s\n", source, target);
+ 	       shlib_ldflags, name);
+ #endif
+       fprintf (f, "\n\n");
++      fprintf (f, "$(LIBDIR)/%s.a:\t$(OBJECTS)\n", name);
++      fprintf (f, "\t$(AR) $(AROPTS) $(LIBDIR)/%s.a $(OBJECTS)\n", name);
++      fprintf (f, "\n\n");
+     }
+ 
+   if (conf.mode == MD_SBIN)

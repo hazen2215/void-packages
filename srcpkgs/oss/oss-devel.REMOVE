@@ -1,0 +1,9 @@
+case "${ACTION}" in
+post)
+	if xbps-query -r . kernel-libc-headers >/dev/null; then
+		ln -sf linux-soundcard.h usr/include/linux/soundcard.h
+	else
+		rm usr/include/linux/soundcard.h
+	fi
+	;;
+esac

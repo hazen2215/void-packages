@@ -1,0 +1,124 @@
+Index: oss4-4.2-build2004/cmd/ossdevlinks/ossdevlinks.c
+===================================================================
+--- oss4-4.2-build2004.orig/cmd/ossdevlinks/ossdevlinks.c	2011-06-14 11:33:24.000000000 -0500
++++ oss4-4.2-build2004/cmd/ossdevlinks/ossdevlinks.c	2011-06-14 11:33:24.000000000 -0500
+@@ -75,7 +75,7 @@
+ #if defined(sun)
+ #define DEFAULT_OSSLIBDIR "/etc/oss"
+ #else
+-#define DEFAULT_OSSLIBDIR "/usr/lib/oss"
++#define DEFAULT_OSSLIBDIR "/var/lib/oss"
+ #endif
+ 
+ static char *
+@@ -99,7 +99,7 @@
+       if (l > 0 && tmp[l - 1] == '\n')
+ 	tmp[l - 1] = '\0';
+ 
+-      if (strncmp (tmp, "OSSLIBDIR=", 10) == 0)
++      if (strncmp (tmp, "OSSVARDIR=", 10) == 0)
+ 	{
+ 	  l = snprintf (name, sizeof (name), "%s", &tmp[10]);
+ 	  if ((l >= OSSLIBDIRLEN) || (l < 0))
+@@ -991,7 +991,7 @@
+       char lfile[PATH_MAX+20], * osslibdir;
+ 
+       osslibdir = get_mapname ();
+-      snprintf (lfile, sizeof (lfile), "%s/%s", osslibdir, "etc/legacy_devices");
++      snprintf (lfile, sizeof (lfile), "%s/%s", osslibdir, "legacy_devices");
+       if ((f = fopen (lfile, "w")) == NULL)
+ 	{
+ 	  perror (lfile);
+Index: oss4-4.2-build2004/cmd/ossdevlinks/ossdevlinks.man
+===================================================================
+--- oss4-4.2-build2004.orig/cmd/ossdevlinks/ossdevlinks.man	2011-06-14 11:33:24.000000000 -0500
++++ oss4-4.2-build2004/cmd/ossdevlinks/ossdevlinks.man	2011-06-14 11:33:24.000000000 -0500
+@@ -34,7 +34,7 @@
+ 
+ FILES
+ /usr/sbin/ossdevlinks
+-/usr/lib/oss/etc/legacy_devices
++/var/lib/oss/legacy_devices
+ /dev/dspN
+ /dev/midiNN
+ /dev/mixerN
+Index: oss4-4.2-build2004/cmd/savemixer/savemixer.c
+===================================================================
+--- oss4-4.2-build2004.orig/cmd/savemixer/savemixer.c	2011-06-14 11:33:24.000000000 -0500
++++ oss4-4.2-build2004/cmd/savemixer/savemixer.c	2011-06-14 11:33:24.000000000 -0500
+@@ -268,14 +268,14 @@
+ get_mapname (void)
+ {
+   FILE *f;
+-  char tmp[ETCDIRLEN+11]; /* Adding 'OSSLIBDIR=' */
+-  static char name[ETCDIRLEN+15]; /* Adding '/etc/mixer.save' */
++  char tmp[ETCDIRLEN+11]; /* Adding 'OSSVARDIR=' */
++  static char name[ETCDIRLEN+10]; /* Adding 'mixer.save' */
+   struct stat st;
+ 
+-  if (stat ("/etc/oss", &st) != -1)	/* Use /etc/oss/mixer.save */
++  if (stat ("/var/lib/oss", &st) != -1)	/* Use /var/lib/oss/mixer.save */
+     {
+-      strcpy (name, "/etc/oss/mixer.save");
+-      strcpy (ossetcdir, "/etc/oss");
++      strcpy (name, "/var/lib/oss/mixer.save");
++      strcpy (ossetcdir, "/var/lib/oss");
+       return name;
+     }
+ 
+@@ -291,15 +291,15 @@
+       if (l > 0 && tmp[l - 1] == '\n')
+ 	tmp[l - 1] = '\0';
+ 
+-      if (strncmp (tmp, "OSSLIBDIR=", 10) == 0)
++      if (strncmp (tmp, "OSSVARDIR=", 10) == 0)
+ 	{
+-	  l = snprintf (name, sizeof (name), "%s/etc/mixer.save", &tmp[10]);
++	  l = snprintf (name, sizeof (name), "%s/mixer.save", &tmp[10]);
+ 	  if ((l >= sizeof (name)) || (l < 0))
+ 	    {
+ 	      fprintf (stderr, "String in /etc/oss.conf is too long!\n");
+ 	      goto oexit;
+ 	    }
+-	  snprintf (ossetcdir, sizeof (ossetcdir), "%s/etc", &tmp[10]);
++	  snprintf (ossetcdir, sizeof (ossetcdir), "%s", &tmp[10]);
+ 	  if ((l >= sizeof (ossetcdir)) || (l < 0))
+ 	    {
+ 	      fprintf (stderr, "String in /etc/oss.conf is too long!\n");
+@@ -311,7 +311,7 @@
+     }
+ 
+   fclose (f);
+-  fprintf (stderr, "Error: OSSLIBDIR not set in /etc/oss.conf\n");
++  fprintf (stderr, "Error: OSSVARDIR not set in /etc/oss.conf\n");
+ 
+ dexit:
+   snprintf (name, sizeof (name), "%s/mixer.save", ossetcdir);
+Index: oss4-4.2-build2004/cmd/savemixer/savemixer.man
+===================================================================
+--- oss4-4.2-build2004.orig/cmd/savemixer/savemixer.man	2011-06-14 11:33:23.000000000 -0500
++++ oss4-4.2-build2004/cmd/savemixer/savemixer.man	2011-06-14 11:33:24.000000000 -0500
+@@ -9,8 +9,8 @@
+ settings back into the mixer.
+ 
+ Running this program without any parameters will save the current mixer
+-settings into /etc/oss/mixer.save or $OSSLIBDIR/etc/mixer.save file.
+-OSSLIBDIR is decided by reading /etc/oss.conf, and defaults to /usr/lib/oss.
++settings into /var/lib/oss/mixer.save or $OSSVARDIR/mixer.save file.
++OSSVARDIR is decided by reading /etc/oss.conf, and defaults to /var/lib/oss.
+ 
+ AUTOMATIC SAVE
+ By default the soundoff command will automatically run savemixer to save
+@@ -29,9 +29,9 @@
+ FILES
+ /etc/oss.conf
+ /usr/sbin/savemixer
+-/usr/lib/oss/etc/mixer.save
+-/usr/lib/oss/etc/dspdevs.map
+-/usr/lib/oss/etc/applist.conf
++/var/lib/oss/mixer.save
++/var/lib/oss/dspdevs.map
++/var/lib/oss/applist.conf
+ 
+ AUTHOR
+ 4Front Technologies

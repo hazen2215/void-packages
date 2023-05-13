@@ -1,0 +1,67 @@
+#!/bin/sh
+exec 2>&1
+
+_pause() { exec chpst -b oss pause; }
+
+OSSETCDIR=/etc/oss
+OSSVARDIR=/var/lib/oss
+[ -f /etc/oss.conf ] && . /etc/oss.conf
+
+# Check if OSS is already running
+if [ -f /proc/opensound/devfiles ]; then
+	echo "OSS is already loaded"
+	_pause
+fi
+
+# Check if oss kernel modules are installed
+
+if [ ! "$(find /usr/lib/modules/$(uname -r)/updates/dkms/ -name 'osscore.ko*')" ]; then
+	echo "No kernel modules detected"
+	exit 1
+fi
+
+# Detect hardware
+if [ ! -f "$OSSETCDIR"/installed_drivers ]; then
+	ossdetect -v
+fi
+
+# Load osscore
+if [ -f "$OSSETCDIR"/conf/osscore.conf ]; then
+	OPTIONS="$(grep -v '^#' "$OSSETCDIR"/conf/osscore.conf | sed 's/ //g')"
+fi
+if ! modprobe osscore $OPTIONS; then
+	echo "Cannot load the osscore module"
+	exit 1
+fi
+
+# Load oss drivers
+for n in $(sed 's/#.*//' "$OSSETCDIR"/installed_drivers); do
+	unset OPTIONS
+
+	if [ -f "$OSSETCDIR"/conf/$n.conf ]; then
+		OPTIONS="$(grep -v '^#' "$OSSETCDIR"/conf/$n.conf | sed 's/ //g')"
+	fi
+
+	if ! modprobe $n $OPTIONS; then
+		echo "Loading module $n failed - ignored"
+	fi
+done
+unset OPTIONS
+
+# Create device file
+ossdetect -d -m 660 -g audio
+
+# Create basic links
+ossdevlinks
+if [ -f "$OSSVARDIR"/legacy_devices ]; then
+	sh "$OSSVARDIR"/legacy_devices
+fi
+
+savemixer -L
+
+if [ -x "$OSSETCDIR"/soundon.user ]; then
+	echo "Running $OSSETCDIR/soundon.user"
+	"$OSSETCDIR"/soundon.user
+fi
+
+_pause

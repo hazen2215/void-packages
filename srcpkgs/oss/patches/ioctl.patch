@@ -1,0 +1,19 @@
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index e7d2c2a..2b712ff 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -1039,10 +1039,12 @@ alloc_fop (oss_device_t * osdev, struct oss_file_operation_handle *op)
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+   fop->owner = osdev_get_owner (osdev);
+ #endif
+-#ifdef HAVE_UNLOCKED_IOCTL
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0)) || \
++    defined (HAVE_UNLOCKED_IOCTL)
+   fop->unlocked_ioctl = tmp_unlocked_ioctl;
+ #endif
+-#ifdef HAVE_COMPAT_IOCTL
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0)) || \
++    defined (HAVE_COMPAT_IOCTL)
+   fop->compat_ioctl = tmp_compat_ioctl;
+ #endif
+ 

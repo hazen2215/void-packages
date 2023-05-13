@@ -1,0 +1,11 @@
+--- oss-v4.2-build2006-src-gpl/setup/Linux/build.sh.orig	2012-02-18 18:56:31.543278967 +0100
++++ oss-v4.2-build2006-src-gpl/setup/Linux/build.sh	2012-02-18 18:56:47.167278816 +0100
+@@ -110,7 +110,6 @@
+ if ! $LD -r -o prototype/$OSSLIBDIR/$OBJECTS/osscore.o target/objects/*.o
+ then
+   echo Linking osscore failed!
+-  exit 1
+ fi
+ 
+ rm -f devlist.txt devices.list
+

@@ -1,0 +1,32 @@
+commit 5693e1e60c86dd9bcf4b6810196292b229cb07cc
+Author: Hannu Savolainen <hannu@rakettitiede.com>
+Date:   Sun Apr 10 13:44:18 2022 +0300
+
+    Linux v5.15 adds <linux/stdarg.h> to the kernel source
+    
+    by Clive Wright
+
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index f197e9d..d69c66d 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -14,7 +14,6 @@ typedef int *ioctl_arg;
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+-#include <stdarg.h>
+ #include <linux/vmalloc.h>
+ #include "timestamp.h"
+ #include "local_config.h"
+@@ -31,6 +30,11 @@ typedef int *ioctl_arg;
+ #include <linux/irq.h>
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0)
++#include <stdarg.h>
++#else
++#include <linux/stdarg.h>
++#endif
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(3,10,0)
+ #include <linux/cred.h>
+ #include <linux/uidgid.h>

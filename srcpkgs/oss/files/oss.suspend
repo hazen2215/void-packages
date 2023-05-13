@@ -1,0 +1,2 @@
+#!/bin/sh
+[ -d /var/service/oss ] && [ ! -f /var/service/oss/down ] && exec sv stop oss

@@ -1,0 +1,346 @@
+commit bd513a97213075472c56fb4dd839b796c00ae6bc
+Author: Hannu Savolainen <hannu@opensound.com>
+Date:   Tue Feb 1 11:57:08 2022 +0200
+
+    Fixes by Clive Wright
+    
+    Three patches for OSS sources in the Source Forge git repository attached.
+    
+    The ossvermagic program fails to find system vermagic when kernel modules use xz or zstd compression, ossvermagic.patch adds tests and inflation functions for ".xz" and ".zst".
+    The typos.patch corrects typing errors encountered in various comments, a /dev/sndstat print statement and the mixext program readme file.
+    Perhaps slightly more controversial is that currently regparm and noregparm object files for x86_64 bit Linux kernel modules are compiled by default. This architecture does not use regparm so packages currently contain two identical copies of each kernel module object file which is wasteful in both compilation time and package size. The x86_64.patch uses "uname -m" to check for x86_64 architecture and sets configure for CONFIG_REGPARM kernels. In ossvermagic with -r option if un.machine = "x86_64" kernel version check is bypassed and build/install.sh sets symlinks to point to regparm directories.
+
+diff --git a/cmd/ossmix/ossmix.c b/cmd/ossmix/ossmix.c
+index 9fb614c..b1713cb 100644
+--- a/cmd/ossmix/ossmix.c
++++ b/cmd/ossmix/ossmix.c
+@@ -6,9 +6,9 @@
+  * program for the new mixer API. However it has been included in the
+  * oss package because there is need for a command line mixer.
+  *
+- * Due to the history ofg this utility it's probably not the most
++ * Due to the history of this utility it's probably not the most
+  * clean one to be used as an sample program. The {!nlink mixext.c}
+- * test program is must smaller and easier to read than this.
++ * test program is much smaller and easier to read than this.
+  */
+ #define COPYING Copyright (C) Hannu Savolainen and Dev Mazumdar 2000-2006. All rights reserved.
+ 
+diff --git a/cmd/ossxmix/ossxmix.c b/cmd/ossxmix/ossxmix.c
+index 4dba352..1fb2a20 100644
+--- a/cmd/ossxmix/ossxmix.c
++++ b/cmd/ossxmix/ossxmix.c
+@@ -21,7 +21,7 @@
+  * What might be interesting in this program is how to create the GUI layout
+  * based on the control tree obtained using the SNDCTL_MIX_EXTINFO routine.
+  * However unfortunately this part of the program is not particularily easy
+- * understand.
++ * to understand.
+  *
+  * {!notice Please read the mixer programming documentation very carefully
+  * before studying this program.
+diff --git a/configure b/configure
+index 48ca437..47fc720 100755
+--- a/configure
++++ b/configure
+@@ -224,6 +224,12 @@ case `uname` in
+ 	;;
+ 
+ "Linux")
++	if test "`uname -m` " = "x86_64 "
++	then
++	  # x86_64 doesn't have regparm support
++		echo Setting up for x86_64 architecture
++		export USE_REGPARM=1
++	fi
+ 
+ 	if test "$NOALSA" != "1"
+ 	then
+diff --git a/kernel/framework/sndstat/oss_sndstat.c b/kernel/framework/sndstat/oss_sndstat.c
+index 63e340a..ee44380 100644
+--- a/kernel/framework/sndstat/oss_sndstat.c
++++ b/kernel/framework/sndstat/oss_sndstat.c
+@@ -75,7 +75,7 @@ init_status (void)
+ #endif
+ 
+ #ifdef OSS_CONFIG_OPTIONS
+-  put_status ("\nSource configration options: ");
++  put_status ("\nSource configuration options: ");
+   put_status (OSS_CONFIG_OPTIONS);
+   put_status ("\n");
+ #endif
+diff --git a/os_cmd/Linux/ossvermagic/ossvermagic.c b/os_cmd/Linux/ossvermagic/ossvermagic.c
+index 2289e9e..e48dd44 100644
+--- a/os_cmd/Linux/ossvermagic/ossvermagic.c
++++ b/os_cmd/Linux/ossvermagic/ossvermagic.c
+@@ -88,7 +88,7 @@ find_link_vermagic (char *fname)
+ static void
+ check_gzipped_module (char *fname)
+ {
+-  char tmp[1024];
++  char tmp[1056];
+ 
+   sprintf (tmp, "gunzip -c %s > /tmp/oss.tmpmodule", fname);
+   unlink ("/tmp/oss.tmpmodule");
+@@ -106,7 +106,7 @@ check_gzipped_module (char *fname)
+ static void
+ check_bzipped_module (char *fname)
+ {
+-  char tmp[1024];
++  char tmp[1056];
+ 
+   sprintf (tmp, "bunzip2 -c %s > /tmp/oss.tmpmodule", fname);
+   unlink ("/tmp/oss.tmpmodule");
+@@ -121,6 +121,42 @@ check_bzipped_module (char *fname)
+   unlink ("/tmp/oss.tmpmodule");
+ }
+ 
++static void
++check_xzipped_module (char *fname)
++{
++  char tmp[1056];
++
++  sprintf (tmp, "xz -d -c %s > /tmp/oss.tmpmodule", fname);
++  unlink ("/tmp/oss.tmpmodule");
++
++  if (system (tmp) != 0)
++    {
++      unlink ("/tmp/oss.tmpmodule");
++      return;
++    }
++
++  find_vermagic ("/tmp/oss.tmpmodule");
++  unlink ("/tmp/oss.tmpmodule");
++}
++
++static void
++check_zstdcomped_module (char *fname)
++{
++  char tmp[1056];
++
++  sprintf (tmp, "zstd -d -c %s > /tmp/oss.tmpmodule", fname);
++  unlink ("/tmp/oss.tmpmodule");
++
++  if (system (tmp) != 0)
++    {
++      unlink ("/tmp/oss.tmpmodule");
++      return;
++    }
++
++  find_vermagic ("/tmp/oss.tmpmodule");
++  unlink ("/tmp/oss.tmpmodule");
++}
++
+ static void
+ scan_dir (char *dirname)
+ {
+@@ -154,7 +190,7 @@ scan_dir (char *dirname)
+ 
+ 	  if (verbose)
+ 	    printf ("Checking %s\n", tmp);
+-	  p = tmp + strlen (tmp) - 3;	// Seek the .gz suffix
++	  p = tmp + strlen (tmp) - 3;	/* Seek the .gz suffix */
+ 	  if (strcmp (p, ".gz") == 0)
+ 	    {
+ 	      fname = tmp;
+@@ -162,7 +198,7 @@ scan_dir (char *dirname)
+ 	      continue;
+ 	    }
+ 
+-	  p = tmp + strlen (tmp) - 4;	// Seek the .bz2 suffix
++	  p = tmp + strlen (tmp) - 4;	/* Seek the .bz2 suffix */
+ 	  if (strcmp (p, ".bz2") == 0)
+ 	    {
+ 	      fname = tmp;
+@@ -170,6 +206,22 @@ scan_dir (char *dirname)
+ 	      continue;
+ 	    }
+ 
++	  p = tmp + strlen (tmp) - 3;	/* Seek the .xz suffix */
++	  if (strcmp (p, ".xz") == 0)
++	    {
++	      fname = tmp;
++	      check_xzipped_module (tmp);
++	      continue;
++	    }
++
++	  p = tmp + strlen (tmp) - 4;	/* Seek the .zst suffix */
++	  if (strcmp (p, ".zst") == 0)
++	    {
++	      fname = tmp;
++	      check_zstdcomped_module (tmp);
++	      continue;
++	    }
++
+ 	  fname = tmp;
+ 	  find_vermagic (tmp);
+ 	}
+@@ -221,8 +273,8 @@ main (int argc, char *argv[])
+       if (strcmp (argv[i], "-r") == 0)
+ 	{
+ 	  /*
+-	   * Check if the system is 2.6.20 or later which is
+-	   * always compiled with CONFIG_REGPARM.
++	   * Check if arch is "x86_64" or the system is 2.6.20 or
++	   * later which is always compiled with CONFIG_REGPARM.
+ 	   */
+ 
+ 	  struct utsname un;
+@@ -234,6 +286,9 @@ main (int argc, char *argv[])
+ 	      exit (-1);
+ 	    }
+ 
++	  if (strcmp (un.machine, "x86_64") == 0)
++	    exit (0);		/* Always REGPARM */
++
+ 	  if (sscanf (un.release, "%d.%d.%d", &a, &b, &c) != 3)
+ 	    {
+ 	      fprintf (stderr, "Unrecognized kernel release '%s'\n",
+diff --git a/setup/Linux/oss/build/install.sh b/setup/Linux/oss/build/install.sh
+index d47637c..1ba8c4b 100644
+--- a/setup/Linux/oss/build/install.sh
++++ b/setup/Linux/oss/build/install.sh
+@@ -34,8 +34,8 @@ UNAME=`uname -r`
+ if test -f /lib/modules/$UNAME/kernel/oss/vmix.ko || test -f /lib/modules/$UNAME/kernel/oss/ich.ko
+ then
+ # Older versions of OSS modules exist under /lib/modules. This indicates that
+-# previous version of OSS has not been properly uninstalled. Run osdetect
+-# again to fix rthe situation
++# previous version of OSS has not been properly uninstalled. Run ossdetect
++# again to fix the situation
+ 
+ 	/usr/sbin/soundoff > /dev/null 2>&1
+ 	/usr/sbin/ossdetect
+diff --git a/tutorials/sndkit/samples/mixext.c b/tutorials/sndkit/samples/mixext.c
+index a70e638..e9828b3 100644
+--- a/tutorials/sndkit/samples/mixext.c
++++ b/tutorials/sndkit/samples/mixext.c
+@@ -8,9 +8,9 @@
+  * change the settings. Please read the OSS API Developer's Manual for
+  * more info about this API.
+  *
+- * This mixer interface is designed to ne "human readable". The idea is that
++ * This mixer interface is designed to be "human readable". The idea is that
+  * the mixer program just shows whatever controls are available and lets the
+- * user to adjust them as he/she likes.
++ * user adjust them as he/she likes.
+  *
+  * Please note that the control names and numbers are fully dynamic. There are
+  * some control names such as "spdif.enable" that are used by several different
+@@ -30,7 +30,7 @@
+  * list the available controls and their values. The mixer device number
+  * (0 by default) can be given on the command line.
+  *
+- * Another way is to give the mixer number, control ame and value
++ * Another way is to give the mixer number, control name and value
+  * on the command line ({!shell mixext 1 spdif.enable 1}).
+  */
+ #include <stdio.h>
+diff --git a/tutorials/sndkit/samples/mixext.readme b/tutorials/sndkit/samples/mixext.readme
+index 53c74c7..f582564 100644
+--- a/tutorials/sndkit/samples/mixext.readme
++++ b/tutorials/sndkit/samples/mixext.readme
+@@ -4,7 +4,7 @@ OSS Mixer extension API sample program
+ This program (mixext.c) is a simple program that demonstrates how to
+ read and write certain parameters using the mixer extension API of OSS.
+ 
+-This API will be released officially in OSS v4.0 and until that we
++This API will be released officially in OSS v4.0 and until then we
+ reserve all rights to do changes to it without notice. However such
+ changes should not require more than recompile of the application.
+ 
+@@ -33,7 +33,7 @@ programs like ossxmix will be released later (no known dates yet).
+ So the purpose of this program is to demonstrate how to:
+ 
+ - Find out the control names that are used by the current device.
+-- Set a value of a mixer control with given mame.
++- Set a value of a mixer control with given name.
+ 
+ The program intentionally skips all controls before special MIXT_MARKER
+ entry. Such controls are aliases created automatically for the "ordinary"
+@@ -54,7 +54,7 @@ Execute the mixext program as
+ ./mixext <mixerdev>
+ 
+ This shows a list of control names, their types and their values. The
+-usefull mixer control types will be listed at the end of this document.
++useful mixer control types will be listed at the end of this document.
+ The <mixerdev> argument is an integer between 0 and N. See the printout
+ produced by cat /dev/sndstat for the list of available mixers.
+ 
+@@ -66,9 +66,9 @@ Execute the program as:
+ ./mixext <mixerdev> <name> <value>
+ 
+ The <name> is one of the mixer control names shown by the mixext program in
+-the "list mode". Node that with some devices there may be several entries
++the "list mode". Note that with some devices there may be several entries
+ with exactly the same name. This program can access only the first of them.
+-To make this program to work with such devices you need to do some hacking
++To make this program work with such devices you need to do some hacking
+ (see the Theory section below).
+ 
+ The <value> is a decimal value (some controls require hex value).
+@@ -84,7 +84,7 @@ As you may notice the entries listed form a tree like structure. The entry
+ number 0 is always the device root (type=MIXT_DEVROOT). For all
+ control entries the parent field shows the parent node. In addition to 
+ MIXT_DEVROOT also MIXT_GROUP can work as a parent node (other controls can't
+-be parents of any other control). The parent node has always smaller entry 
++be parents of any other control). The parent nodes always have a lower entry 
+ number than any of the daughter controls that belong to them.
+ 
+ Some of the extensions are just aliases for the "normal" mixer controls that
+@@ -98,11 +98,11 @@ the ones before MIXT_MARKER). The ossmix program shipped with OSS uses
+ a special algorithm to convert the names provided by  the SNDCTL_MIX_EXTINFO
+ ioctl to the "external" names. This algorithm use "." as the separator between
+ the parts of the name (the names may contain most other special characters
+-including (but not limiting to) /@,:). Names may not contain spaces.
++including (but not limited to) /@,:). Names may not contain spaces.
+ 
+ For example if a control is "ENVY24_RATELOCK" and it's parent is "ENVY24"
+ the name used by ossmix will become envy24.ratelock. There are many rules
+-ane exceptions so the required algorithm will later be published as a library
++and exceptions so the required algorithm will be published later as a library
+ routine.
+ 
+ The application should skip all records whose type is not known.
+@@ -160,7 +160,7 @@ is valid (the right channel field is assumed to be set to the same value).
+ MIXT_MONOSLIDER16
+ MIXT_STEREOSLIDER16
+ 
+-These are replacementsof MIXT_MONOSLIDER and MIXT_STEREOSLIDER. The only
++These are replacements for MIXT_MONOSLIDER and MIXT_STEREOSLIDER. The only
+ difference is that their value range has been expanded to 0-32767.
+ 
+ 	left = value & 0xffff;
+@@ -176,10 +176,10 @@ MIXT_STEREOPEAK
+ 
+ These are peak meters (usually read only). These meters hold the maximum
+ signal values since the control was previously read. Reading the value
+-resets it to 0. This kind of controls can be used to implement LED bar
+-displays and similar things. MIXT_MONOPEAK is 1 channel
+-controls while MIXT_STEREOPEAK is stereo one (the channel
+-values are returned using the same value format than with MIXT_STEREOSLIDER).
++resets it to 0. This kind of control can be used to implement LED bar
++displays and similar things. MIXT_MONOPEAK is a single channel
++control while MIXT_STEREOPEAK is a stereo one. The channel values 
++are returned using the same value format used with MIXT_STEREOSLIDER.
+ 
+ MIXT_MONODB
+ MIXT_STEREODB
+@@ -190,7 +190,7 @@ MIXT_VALUE
+ MIXT_HEXVALUE
+ 
+ These types are used for controls that are integer values. The difference is
+-the radix that should be sued when presenting the value to the user.
++the radix that should be used when presenting the value to the user.
+ 
+ 
+ The following control types are reserved for future use (if any). They should
+@@ -222,7 +222,7 @@ before trying to read or change the value. The MIXF_WRITEABLE and MIXF_READABLE
+ bits tell if the value is writeable or readable.
+ 
+ OSS will compare the timestamp field against it's internal list of
+-currently available controls. If the timestamp doesn't match the ioctl 
++currently available controls. If the timestamp doesn't match, the ioctl 
+ call will return -1 with errno=EIDRM. This happens if the mixer structure
+ has changed between SNDCTL_MIX_EXTINFO and the SNDCTL_MIX_READ/SNDCTL_MIX_WRITE
+ calls. The only way to recover is re-loading the SNDCTL_MIX_EXTINFO info

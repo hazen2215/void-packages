@@ -1,0 +1,5 @@
+case "${ACTION}" in
+post)
+	xbps-alternatives -r . -s oss-devel
+	;;
+esac

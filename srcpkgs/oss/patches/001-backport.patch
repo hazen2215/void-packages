@@ -1,0 +1,182 @@
+commit 828399f5ed68a6944ac4b8fc95542a3b08ae7dcc
+Author: Hannu Savolainen <hannu@opensound.com>
+Date:   Wed Jun 30 07:33:39 2021 +0300
+
+    Linux 5.11 related changes, etc by Clive Wright
+    
+    Kernel version 5.11 breaks the Open Sound System yet again.
+    Building osscore.ko will fail as the "get_seconds" function is no longer defined. The attached oss511fix.patch uses "ktime_get_real_seconds" instead when necessary.
+    It also contains a fix for another problem pre-dating Kernel version 5.11 which effects the ossvermagic command.
+    It fails to identify vermagic where modules use symbol __UNIQUE_ID_vermagic instead of __mod_vermagic.
+    
+    Tutorials.patch contains corrections for programmes in the tutorials directory.
+    
+    Miscellaneous.patch contains some general corrections, changes to reduce compiler warnings during build and also update the build ID from 2017 to 2021.
+
+diff --git a/Changelog b/Changelog
+index d43f423..34de11d 100644
+--- a/Changelog
++++ b/Changelog
+@@ -1,6 +1,6 @@
+ Change log for OSS
+ ==================
+ 
+-The list of changes made to OSS is available from our Mercurial repository
+-(http://mercurial.opensound.com).
++The list of changes made to OSS is available from our Git repository
++(https://sourceforge.net/projects/opensound/).
+ 
+diff --git a/buildid.dat b/buildid.dat
+index deaf823..c533c5e 100644
+--- a/buildid.dat
++++ b/buildid.dat
+@@ -1 +1 @@
+-2020
++2021
+diff --git a/cmd/osspartysh/osspartysh.c b/cmd/osspartysh/osspartysh.c
+index ea7eca8..9d93b8b 100644
+--- a/cmd/osspartysh/osspartysh.c
++++ b/cmd/osspartysh/osspartysh.c
+@@ -5,14 +5,14 @@
+  * The osspartysh program is an utility that permits safe access to the
+  * customer systems by the OSS support staff.
+  *
+- * Unlike usual ssh/telnet access this program works in revewrse way. The
+- * person who gives technical support can establish a termibal server using
++ * Unlike usual ssh/telnet access this program works in reverse way. The
++ * person who gives technical support can establish a terminal server using
+  * osspartysh -d -p <TCP port>. The client can then connect to this
+  * terminal server program by executing osspartysh -h <the support host> -p <port>.
+  * Outgoing TCP connections can easily pass usual firewall and NAT settings
+  * which makes establishing the connection very easy. After the connection is 
+  * open both sides can type commands and see what happens in the system. If
+- * the customer thiks the tech suport guy is doing something too dangerous he
++ * the customer thinks the tech suport guy is doing something too dangerous he
+  * can always hit ^C or ^Z and unplug the ethernet connector.
+  */
+ #define COPYING Copyright (C) Hannu Savolainen and Dev Mazumdar 2000-2008. All rights reserved.
+diff --git a/kernel/OS/Linux/os_linux.c b/kernel/OS/Linux/os_linux.c
+index db4117c..13940ac 100644
+--- a/kernel/OS/Linux/os_linux.c
++++ b/kernel/OS/Linux/os_linux.c
+@@ -148,7 +148,7 @@ osdev_create (dev_info_t * dip, int dev_type,
+     case DRV_PCI:
+       {
+ 	unsigned int subvendor;
+-	char *devpath;
++	const char *devpath;
+ 	devpath = oss_pci_read_devpath (osdev->dip);
+ 	oss_pci_read_config_dword (osdev, 0x2c, &subvendor);
+ 
+@@ -492,7 +492,8 @@ oss_cdev_open (oss_inode_handle_t * inode, oss_file_handle_t * file)
+ {
+   int dev = oss_inode_get_minor (inode);
+   oss_native_word d;
+-  int tmpdev, dev_class, retval;
++  //int tmpdev, dev_class, retval;
++  int tmpdev, retval;
+   struct fileinfo fi;
+   oss_cdev_t *cdev;
+ 
+@@ -514,7 +515,7 @@ oss_cdev_open (oss_inode_handle_t * inode, oss_file_handle_t * file)
+       return OSS_ENODEV;
+     }
+ 
+-  dev_class = cdev->dev_class;
++  //dev_class = cdev->dev_class;
+ 
+   tmpdev = -1;
+   oss_inc_refcounts ();
+diff --git a/kernel/drv/oss_hdaudio/hdaudio_asus_P4B_E.c b/kernel/drv/oss_hdaudio/hdaudio_asus_P4B_E.c
+index b787d80..f825169 100644
+--- a/kernel/drv/oss_hdaudio/hdaudio_asus_P4B_E.c
++++ b/kernel/drv/oss_hdaudio/hdaudio_asus_P4B_E.c
+@@ -31,9 +31,9 @@ hdaudio_Asus_P4B_E_mixer_init (int dev, hdaudio_mixer_t * mixer, int cad,
+ 
+   /* Handle misc widgets */
+   {
+-    int n, group;
++    int group;
+ 
+-    n = 0;
++    /* int n = 0; */
+ 
+     HDA_GROUP (group, top_group, "input-mix");
+ 
+diff --git a/kernel/drv/oss_hdaudio/hdaudio_generic.c b/kernel/drv/oss_hdaudio/hdaudio_generic.c
+index 2ea9811..c300baf 100644
+--- a/kernel/drv/oss_hdaudio/hdaudio_generic.c
++++ b/kernel/drv/oss_hdaudio/hdaudio_generic.c
+@@ -618,10 +618,10 @@ attach_pin_widget (int dev, hdaudio_mixer_t * mixer, codec_t * codec,
+ 
+ 	  if (inselects > 0)	/* Input capable */
+ 	    {
+-	      char *s;
++	      /* char *s; */
+ 
+ 	      i = widget->nconn;
+-	      s = widget->name;
++	      /* s = widget->name; */
+ 
+ 	      if (*tmp != 0)
+ 		*t++ = ' ';
+diff --git a/kernel/drv/oss_hdaudio/hdaudio_scaleoP.c b/kernel/drv/oss_hdaudio/hdaudio_scaleoP.c
+index 0af5906..269fb49 100644
+--- a/kernel/drv/oss_hdaudio/hdaudio_scaleoP.c
++++ b/kernel/drv/oss_hdaudio/hdaudio_scaleoP.c
+@@ -98,9 +98,9 @@ hdaudio_scaleoP_mixer_init (int dev, hdaudio_mixer_t * mixer, int cad,
+   }
+   /* Handle misc widgets */
+   {
+-    int n, group;
++    int group;
+ 
+-    n = 0;
++    /* int n = 0; */
+ 
+     HDA_GROUP (group, top_group, "input-mix");
+ 
+diff --git a/os_cmd/Linux/ossvermagic/ossvermagic.c b/os_cmd/Linux/ossvermagic/ossvermagic.c
+index d0ca321..2289e9e 100644
+--- a/os_cmd/Linux/ossvermagic/ossvermagic.c
++++ b/os_cmd/Linux/ossvermagic/ossvermagic.c
+@@ -70,6 +70,8 @@ find_vermagic (char *fname)
+   ok = ELF_LOAD_SYMTAB (fname, "vermagic", sym_callback);
+   if (!ok)
+     ok = ELF_LOAD_SYMTAB (fname, "__mod_vermagic", sym_callback);
++  if (!ok)
++    ok = ELF_LOAD_SYMTAB (fname, "__UNIQUE_ID_vermagic", sym_callback);
+   if (!ok)
+     ELF_LOAD_SYMTAB (fname, "__oss_compile_vermagic", sym_callback);
+ }
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index ad17b49..f197e9d 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -85,10 +85,10 @@ static int nminors = 0;
+ oss_time_t
+ oss_get_time (void)
+ {
+-#if 1
++#ifdef _LINUX_TIMEKEEPING32_H
+   return get_seconds ();
+ #else
+-  return xtime.tv_sec;
++  return ktime_get_real_seconds;
+ #endif
+ }
+ 
+diff --git a/setup/srcconf.c b/setup/srcconf.c
+index 967aed3..a081e22 100644
+--- a/setup/srcconf.c
++++ b/setup/srcconf.c
+@@ -160,7 +160,8 @@ parse_config (FILE * f, conf_t * conf, char *comment)
+ 	    parms = "`gtk-config --cflags` -DGTK1_ONLY";
+ 	  else
+ 	  if (getenv ("GTK2") != NULL)
+-	    parms = "`pkg-config gtk+-2.0 --cflags`";
++	    parms = "-Wno-deprecated-declarations "
++		    "`pkg-config gtk+-2.0 --cflags`";
+ 	}
+ 
+       if (strcmp (parms, "$GTKLDFLAGS") == 0)

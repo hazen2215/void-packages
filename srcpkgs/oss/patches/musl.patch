@@ -1,0 +1,26 @@
+diff --git a/kernel/OS/Linux/wrapper/wrap.h b/kernel/OS/Linux/wrapper/wrap.h
+index 3aa1504..f68d160 100644
+--- a/kernel/OS/Linux/wrapper/wrap.h
++++ b/kernel/OS/Linux/wrapper/wrap.h
+@@ -18,6 +18,9 @@
+  *
+  */
+ 
++#if !defined(__GLIBC__)
++#define loff_t off_t
++#endif
+ /*
+  * Some integer types
+  */
+diff --git a/os_cmd/Linux/ossdetect/ossdetect.c b/os_cmd/Linux/ossdetect/ossdetect.c
+index 4130851..973c8bc 100644
+--- a/os_cmd/Linux/ossdetect/ossdetect.c
++++ b/os_cmd/Linux/ossdetect/ossdetect.c
+@@ -14,6 +14,7 @@
+  *
+  */
+ 
++#include <limits.h>
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>

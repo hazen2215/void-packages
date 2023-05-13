@@ -1,0 +1,51 @@
+#!/bin/sh
+exec 2>&1
+
+[ -f /proc/opensound/devfiles ] || exit 0
+
+OSSETCDIR=/etc/oss
+OSSVARDIR=/var/lib/oss
+[ -f /etc/oss.conf ] && . /etc/oss.conf
+
+savemixer
+
+# kill processes using sound
+echo_procs_using_sound() {
+	echo $(fuser /dev/mixer* /dev/dsp* /dev/midi* /dev/oss/*/* 2>/dev/null)
+}
+
+procs_using_sound="$(echo_procs_using_sound)"
+if [ "$procs_using_sound" ]; then
+	printf %s "Terminating processes:"
+	for attempt in 1 2 3 4; do
+		printf %s " ${procs_using_sound}"
+		kill $procs_using_sound || :
+		sleep 1
+		procs_using_sound="$(echo_procs_using_sound)"
+		[ "$procs_using_sound" ] || break
+	done
+	# Either no more procs using sound or attempts ran out
+	if [ "$procs_using_sound" ]; then
+		printf %s " (with SIGKILL:) ${procs_using_sound}"
+		kill -9 $procs_using_sound || :
+		sleep 1
+	fi
+	procs_using_sound="$(echo_procs_using_sound)"
+	if [ "$procs_using_sound" ]; then
+		echo " (failed: processes still using sound devices: $(echo_with_command_names $procs_using_sound))."
+		exit 1
+	fi
+	echo "."
+fi
+
+# Unload oss drivers
+for m in $(sed 's/#.*//' "$OSSETCDIR"/installed_drivers); do
+	if ! rmmod $m; then
+		echo "Unloading module $m failed - ignored"
+	fi
+done
+
+if ! rmmod osscore; then
+	echo "Cannot unload the OSS driver modules"
+	exit 1
+fi

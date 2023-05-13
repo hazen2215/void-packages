@@ -1,0 +1,13 @@
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index d69c66d..609f047 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -1945,7 +1945,7 @@ oss_fp_check (void)
+ 
+   local_save_flags (flags_reg);
+   if (!(flags_reg & FLAGS_ID))
+-    return 0;
++    return 1;
+ 
+ #define CPUID_FXSR	(1<<24)
+ #define CPUID_SSE	(1<<25)

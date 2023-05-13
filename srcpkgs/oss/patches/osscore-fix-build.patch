@@ -1,0 +1,43 @@
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index d69c66d..dc3069a 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -39,6 +39,9 @@ typedef int *ioctl_arg;
+ #include <linux/cred.h>
+ #include <linux/uidgid.h>
+ #endif
++#if LINUX_VERSION_CODE > KERNEL_VERSION(6,0,0)
++#define virt_to_bus virt_to_phys
++#endif
+ #undef strlen
+ #undef strcpy
+ #define strlen oss_strlen
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index d69c66d..dc3069a 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -92,7 +95,7 @@ oss_get_time (void)
+ #ifdef _LINUX_TIMEKEEPING32_H
+   return get_seconds ();
+ #else
+-  return ktime_get_real_seconds;
++  return ktime_get_real_seconds();
+ #endif
+ }
+ 
+diff --git a/setup/Linux/oss/build/osscore.c b/setup/Linux/oss/build/osscore.c
+index d69c66d..f512f91 100644
+--- a/setup/Linux/oss/build/osscore.c
++++ b/setup/Linux/oss/build/osscore.c
+@@ -138,11 +138,6 @@ oss_memcpy (void *t_, const void *f_, size_t l)
+   return t;
+ }
+ 
+-void *memmove(void *dest, const void *src, size_t n)
+-{
+-	return oss_memcpy(dest, src, n);
+-}
+-
+ void *
+ oss_memset (void *t, int val, size_t l)
+ {

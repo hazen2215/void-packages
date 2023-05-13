@@ -1,0 +1,139 @@
+Index: oss4-4.2-build2004/os_cmd/Linux/ossdetect/ossdetect.c
+===================================================================
+--- oss4-4.2-build2004.orig/os_cmd/Linux/ossdetect/ossdetect.c
++++ oss4-4.2-build2004/os_cmd/Linux/ossdetect/ossdetect.c
+@@ -23,6 +23,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/dir.h>
++#include <grp.h>
+ 
+ #define PCI_PASS	0
+ #define USB_PASS	1
+@@ -31,6 +32,7 @@
+ 
+ #define OSSLIBDIRLEN 512
+ static char *osslibdir = NULL;
++static char *groupname = "root";
+ 
+ static int usb_ok = 0;
+ 
+@@ -90,7 +92,7 @@
+       if (l > 0 && tmp[l - 1] == '\n')
+ 	tmp[l - 1] = '\0';
+ 
+-      if (strncmp (tmp, "OSSLIBDIR=", 10) == 0)
++      if (strncmp (tmp, "OSSETCDIR=", 10) == 0)
+ 	{
+ 	  l = snprintf (name, sizeof (name), "%s", &tmp[10]);
+ 	  if ((l >= OSSLIBDIRLEN) || (l < 0))
+@@ -109,12 +111,12 @@
+ 	}
+     }
+ 
+-  fprintf (stderr, "OSSLIBDIR not set in /etc/oss.conf, using default "
+-		   "/usr/lib/oss\n");
++  fprintf (stderr, "OSSETCDIR not set in /etc/oss.conf, using default "
++		   "/etc/oss\n");
+ oexit:
+   fclose (f);
+ oexit2:
+-  snprintf (name, sizeof (name), "/usr/lib/oss");
++  snprintf (name, sizeof (name), "/etc/oss");
+   return name;
+ }
+ 
+@@ -503,6 +505,13 @@
+   mode_t perm;
+   int minor, major;
+ 
++  struct group *grpstruct;
++  if((grpstruct = getgrnam(groupname)) == NULL)
++    {
++      fprintf (stderr, "getgrnam() error\n");
++      exit (-1);
++    }
++
+   if ((f = fopen ("/proc/opensound/devfiles", "r")) == NULL)
+     {
+       perror ("/proc/opensound/devfiles");
+@@ -554,6 +563,8 @@
+ 	printf ("mknod %s c %d %d -m %o\n", dev, major, minor, node_m);
+       if (mknod (dev, node_m, makedev (major, minor)) == -1)
+ 	perror (dev);
++
++      chown(dev, 0, grpstruct->gr_gid);
+     }
+ 
+   umask (perm);
+@@ -586,7 +597,7 @@
+   struct stat st;
+   FILE *f;
+ 
+-  while ((i = getopt(argc, argv, "L:a:dilm:uv")) != EOF)
++  while ((i = getopt(argc, argv, "L:a:dg:ilm:uv")) != EOF)
+     switch (i)
+       {
+ 	case 'v':
+@@ -613,6 +624,10 @@
+ 	  do_license = 1;
+ 	  break;
+ 
++	case 'g':
++	  groupname = optarg;
++	  break;
++
+ 	case 'L':
+ 	  osslibdir = optarg;
+ 	  break;
+@@ -648,7 +663,7 @@
+       exit (0);
+     }
+ 
+-  load_devlist ("etc/devices.list", 0);
++  load_devlist ("devices.list", 0);
+ 
+   if (stat ("/etc/oss_3rdparty", &st) != -1)
+     load_devlist ("/etc/oss_3rdparty", 1);
+@@ -674,7 +689,7 @@
+     }
+ 
+   snprintf (instfname, sizeof (instfname), "%s/%s", osslibdir,
+-	    "etc/installed_drivers");
++	    "installed_drivers");
+  
+   if ((f = fopen (instfname, "w")) == NULL)
+     {
+Index: oss4-4.2-build2004/os_cmd/Linux/ossdetect/ossdetect.man
+===================================================================
+--- oss4-4.2-build2004.orig/os_cmd/Linux/ossdetect/ossdetect.man
++++ oss4-4.2-build2004/os_cmd/Linux/ossdetect/ossdetect.man
+@@ -6,9 +6,10 @@
+ 
+ DESCRIPTION
+ The ossdetect application performs automatic detection of soundcards.
+-The application looks at the /usr/lib/oss/etc/device.list and performs
++The application looks at the $OSSETCDIR/device.list and performs
+ automatic detection. It will create a file with the list of the configured
+-drivers in /usr/lib/oss/etc/installed_drivers.
++drivers in $OSSETCDIR/installed_drivers.
++OSSETCDIR is decided by reading /etc/oss.conf, and defaults to /etc/oss.
+ 
+ The Input Multiplexer driver (IMUX) is not configured by default and
+ can be added to the OSS configuration using the -i option.
+@@ -17,6 +18,7 @@
+ -d		Create device file links.
+ -i	 	Adds the oss_imux driver.
+ -m<mode>	Create nodes with permissions set to octal <mode>.
++-g<group>	Create nodes with group ownership set to <group>.
+ -u		Adds the oss_userdev driver.
+ -v		Verbose output.
+ -L<path>	Use <path> as root directory for OSS files.
+@@ -26,6 +28,7 @@
+ ossdevlinks(1), ossinfo(1)
+ 
+ FILES
++/etc/oss.conf
+ /usr/sbin/ossdetect
+ 
+ AUTHOR

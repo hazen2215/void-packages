@@ -1,0 +1,215 @@
+# Template file for 'oss'
+pkgname=oss
+version=4.2+build2020
+revision=1
+build_wrksrc=build
+build_style=configure
+configure_script="../configure"
+configure_args="--enable-libsalsa=NO
+ --config-vmix=$(vopt_if float FLOAT FIXEDPOINT)"
+make_build_target="copy"
+hostmakedepends="pkg-config"
+makedepends="$(vopt_if gtk gtk+-devel)"
+depends="psmisc dkms"
+short_desc="Open Sound System UNIX audio architecture"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="http://developer.opensound.com/"
+distfiles="http://www.4front-tech.com/developer/sources/stable/gpl/oss-v${version/+/-}-src-gpl.tar.bz2"
+checksum=df45d86b7e76d75c20bf3b98ce4849a196fa3de309ec3839dc48951010927e9e
+
+nocross=yes
+conf_files="/etc/oss.conf /etc/oss/conf/*.conf"
+make_dirs="/var/lib/oss 0755 root root"
+dkms_modules="oss ${version}"
+subpackages="oss-devel"
+
+build_options="gtk float static"
+build_options_default="gtk float"
+desc_option_float="Enable support for floating arithmetric"
+
+if [ "$build_option_gtk" ]; then
+	subpackages+=" ossxmix"
+fi
+
+post_extract() {
+	mkdir build
+}
+
+pre_configure() {
+	rm -r * || :
+	if [ "$build_option_static" ]; then
+		for f in ${wrksrc}/cmd/* ${wrksrc}/os_cmd/Linux/*; do
+			case "$f" in
+			*/ossxmix) ;;
+			*) echo cflags=-static >>"$f"/.config ;;
+			esac
+		done
+	fi
+}
+
+do_install() {
+	DKMSDIR=${DESTDIR}/usr/src/oss-${version}
+	mkdir -p $DKMSDIR/{core,drivers,include}
+
+	# Move bits into the kernel tree...
+	cp -L include/{soundcard.h,oss_userdev_exports.h} \
+		$DKMSDIR/include
+	cp -RL kernel/OS/Linux/{,wrapper/}*.[ch] setup/Linux/oss/build/*.[ch] \
+		kernel/framework/include/* $DKMSDIR/core
+	cp -L setup/Linux/oss/build/*.inc $DKMSDIR/drivers
+	mv $DKMSDIR/core/oss{,_}core.c
+
+	SRCCOUNT=0
+	for i in kernel/framework/*; do
+		[ -d "$i" ] || continue
+		NAME="${i##*/}"
+		case "$NAME" in
+		include) continue ;; # Already copied
+		esac
+		for j in "$i"/*.c; do
+			SOURCES="$SOURCES ${j##*/}"
+			SRCCOUNT=$((SRCCOUNT + 1))
+		done
+		find "$i" \( -name '*.c' -o -name '*.h' -o -name '*.inc' \) \
+			-exec cp -L {} $DKMSDIR/core \;
+	done
+	OBJS="os_linux.o $(echo $SOURCES | sed -e 's,\.c,.o,g')"
+	cat >$DKMSDIR/core/Makefile <<!
+EXTRA_CFLAGS = -I\$(KBUILD_EXTMOD) -mhard-float -isystem /usr/include \
+	-isystem \$(shell \$(CC) --print-file-name=include-fixed)
+obj-m += osscore.o
+osscore-objs := oss_core.o $OBJS
+!
+
+	# This is somewhat ugly, but unavoidable -- parts of OSS need those
+	# defines and access to system includes while osscore.c can't be
+	# compiled with them...
+	for i in $OBJS; do
+		echo "CFLAGS_$i = -D_KERNEL" >>$DKMSDIR/core/Makefile
+	done
+
+	cat >$DKMSDIR/drivers/Makefile <<!
+osscore_symbols.inc:
+	echo "static const struct modversion_info ____versions[]" \
+		>> osscore_symbols.inc
+	echo " __attribute__((used))" >> osscore_symbols.inc
+	echo "__attribute__((section(\"__versions\"))) = {" \
+		>> osscore_symbols.inc
+	sed -e "s:^:{:" -e "s:\t:, \":" -e "s:\t\(.\)*:\"},:" < Module.symvers \
+		>> osscore_symbols.inc
+	echo "};" >> osscore_symbols.inc
+
+KBUILD_EXTRA_SYMBOLS := \$(PWD)/core/Module.symvers
+
+EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
+	-isystem /usr/include -mhard-float \
+	-isystem \$(shell \$(CC) --print-file-name=include-fixed)
+!
+
+	# Merge the drivers...
+	for i in kernel/drv/*; do
+		[ -d "$i" ] || continue
+		NAME="${i##*/}"
+		case "$NAME" in
+		# Ignore sparc/solaris stuff
+		osscore | oss_audiocs | oss_sadasupport) continue ;;
+		# XXX: C++ not ready
+		lynxtwo) continue ;;
+		esac
+
+		unset SOURCES
+		SRCCOUNT=0
+		for j in "$i"/*.c; do
+			if [ "${j##*/}" = "$NAME.c" ]; then
+				SOURCES="$SOURCES ${NAME}driver.c"
+			else
+				SOURCES="$SOURCES ${j##*/}"
+			fi
+			SRCCOUNT=$((SRCCOUNT + 1))
+		done
+		if [ -e target/build/"$NAME".c ]; then
+			cp target/build/"$NAME".c \
+				$DKMSDIR/drivers/${NAME}module.c
+			SOURCES="$SOURCES ${NAME}module.c"
+			SRCCOUNT=$((SRCCOUNT + 1))
+		fi
+
+		find "$i" \( -name '*.c' -o -name '*.h' -o -name '*.inc' \) \
+			-exec cp -L {} $DKMSDIR/drivers \;
+
+		mv $DKMSDIR/drivers/${NAME}{,driver}.c
+		if [ "$SRCCOUNT" = "1" ]; then
+			echo "obj-m += ${SOURCES/.c/.o}" \
+				>>$DKMSDIR/drivers/Makefile
+		else
+			echo "obj-m += $NAME.o" >>$DKMSDIR/drivers/Makefile
+			echo "$NAME-objs := $(echo $SOURCES | sed -e 's,\.c,.o,g')" \
+				>>$DKMSDIR/drivers/Makefile
+		fi
+	done
+
+	# Adjust OSS files to some changed header file locations
+	find $DKMSDIR -type f -exec sed -i '{}' \
+		-e 's,"soundcard.h","../include/soundcard.h",g' \
+		-e 's,../include/internals/,,g' \
+		-e 's,"../include/sys/soundcard.h","../include/soundcard.h",g' \
+		-e 's,<oss_userdev_exports.h>,"../include/oss_userdev_exports.h",g' \
+		-e 's,"oss_exports.h",<ossddk/oss_exports.h>,g' \
+		-e 's,"ossddk.h",<ossddk/ossddk.h>,g' \;
+	sed -i $DKMSDIR/core/os.h \
+		-e 's,kernel/OS/Linux/wrapper/wrap.h,wrap.h,g'
+	sed -i $DKMSDIR/core/oss_core.c \
+		-e 's,#include "ubuntu_version_hack.inc",,g'
+
+	# OSS4 drivers need to depend on OSS4 core and not OSS3 from the kernel
+	ln -sf ../core/Module.symvers $DKMSDIR/drivers/Module.symvers
+
+	vmkdir etc/oss
+	vcopy ${FILESDIR}/oss.conf etc
+	vcopy prototype/usr/lib/oss/conf.tmpl etc/oss/conf
+	vcopy prototype/usr/lib/oss/etc/devices.list etc/oss
+	vcopy prototype/usr/lib/oss/version.dat etc/oss
+
+	vcopy prototype/usr/bin usr
+	vcopy prototype/usr/sbin/* usr/bin
+	rm ${DESTDIR}/usr/bin/sound{on,off}
+	ln -sf ossplay ${DESTDIR}/usr/bin/ossrecord
+
+	vcopy prototype/usr/lib/oss/lib/libossmix.so usr/lib
+
+	vmkdir usr/share
+	vcopy prototype/usr/share usr
+
+	# Alternative soundcard.h
+	vmkdir usr/include/linux
+	cp include/soundcard.h ${DESTDIR}/usr/include/linux/oss-soundcard.h
+
+	# Remove backup files
+	# rm ${DESTDIR}/usr/src/oss-${version}/core/*.orig
+
+	cp ${FILESDIR}/dkms.conf ${DESTDIR}/usr/src/oss-${version}
+	vsed -i ${DESTDIR}/usr/src/oss-${version}/dkms.conf \
+		-e "s/_VERSION_/${version}/"
+
+	vinstall ${FILESDIR}/oss.resume 755 /etc/zzz.d/resume 99-oss.sh
+	vinstall ${FILESDIR}/oss.suspend 755 /etc/zzz.d/suspend 99-oss.sh
+
+	vsv oss
+}
+
+ossxmix_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - ossxmix"
+	pkg_install() {
+		vmove usr/bin/ossxmix
+	}
+}
+
+oss-devel_package() {
+	short_desc+=" - development files"
+	alternatives="soundcard.h:soundcard.h:/usr/include/linux/oss-soundcard.h"
+	pkg_install() {
+		vmove usr/include
+	}
+}
