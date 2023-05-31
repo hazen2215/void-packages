@@ -1,0 +1,18 @@
+commit 0679dbe49d2496296541a5899fe27c2db5683994
+Author: illiliti <illiliti@protonmail.com>
+Date:   Sat Sep 23 23:46:54 2023 +0300
+
+    lib/init.sh: support init=<path> kernel command-line parameter
+
+diff --git a/lib/init.sh b/lib/init.sh
+index 7023c4a..dd5b90a 100755
+--- a/lib/init.sh
++++ b/lib/init.sh
+@@ -53,6 +53,7 @@ parse_cmdline()
+         rootfstype=*) root_type=${_param#*=} ;;
+         rootflags=*)  root_opts=${_param#*=} ;;
+         rootdelay=*)  root_wait=${_param#*=} ;;
++        init=*)       init=${_param#*=} ;;
+     esac; done
+ }
+ 

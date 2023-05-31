@@ -1,0 +1,20 @@
+commit 9d699d00aada7eaabbc787a8584b0279abe5fa83
+Author: illiliti <illiliti@protonmail.com>
+Date:   Sat Apr 15 03:36:22 2023 +0300
+
+    tinyramfs: copy modules.builtin.modinfo file
+
+diff --git a/tinyramfs b/tinyramfs
+index f2f1d96..7b7a6b0 100755
+--- a/tinyramfs
++++ b/tinyramfs
+@@ -143,6 +143,9 @@ copy_modules()
+     copy_file "${moddir}/${kernel}/modules.builtin" \
+               "/lib/modules/${kernel}/modules.builtin" 0644
+ 
++    copy_file "${moddir}/${kernel}/modules.builtin.modinfo" \
++              "/lib/modules/${kernel}/modules.builtin.modinfo" 0644
++
+     depmod -b "$tmpdir" "$kernel"
+ }
+ 
