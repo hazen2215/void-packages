@@ -1,0 +1,19 @@
+# Template file for 'storrent'
+pkgname=storrent
+version=0.0.20230521
+revision=1
+_commit=bf75a925ba8f8ae2ade48b8208d28a5377c4ffda
+build_style=go
+go_import_path=github.com/jech/storrent
+short_desc="BitTorrent implementation optimised for streaming"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://www.irif.fr/~jch/software/storrent/"
+distfiles="https://github.com/jech/storrent/archive/${_commit}.tar.gz"
+checksum=efd09339e51cdb5406017c50c76418dd1c82e656700fff3298a714640bd8d810
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENCE
+}
