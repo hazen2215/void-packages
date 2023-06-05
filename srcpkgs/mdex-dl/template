@@ -1,0 +1,18 @@
+# Template file for 'mdex-dl'
+pkgname=mdex-dl
+version=0.1
+revision=1
+build_style=go
+go_import_path=mdex-dl
+short_desc="Simple Downloader for mangadex.org"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/refcounter/mdex-dl"
+distfiles="https://github.com/refcounter/mdex-dl/archive/refs/tags/v${version}.tar.gz"
+checksum=4495cb334280c232039e1aa9b5668f0b2688cfcf24c8730f3381f4239f4da73b
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
