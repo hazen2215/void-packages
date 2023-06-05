@@ -1,0 +1,19 @@
+# Template file for 'mangal'
+pkgname=mangal
+version=4.0.6
+revision=1
+build_style=go
+go_import_path=github.com/metafates/mangal
+short_desc="Most advanced CLI manga downloader in the entire universe!"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/metafates/mangal"
+changelog="https://raw.githubusercontent.com/metafates/mangal/main/CHANGELOG.md"
+distfiles="https://github.com/metafates/mangal/archive/refs/tags/v${version}.tar.gz"
+checksum=312e2d204343fac603a2bdbce3b21d813cd786d5163a0a97b259810b43f53d4d
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
