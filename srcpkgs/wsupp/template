@@ -1,0 +1,30 @@
+# Template file for 'wsupp'
+pkgname=wsupp
+version=0.7.20230508
+revision=1
+_commit=35ac5b8b28e82c3c3220bfc62ef5a09e8be9c432
+build_style=configure
+short_desc="WPA supplicant from minibase"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/arsv/minibase"
+distfiles="https://github.com/arsv/minibase/archive/${_commit}.tar.gz"
+checksum=1c0d869ed6f64f24c2bf924873f03a22c8b3936eff1156ccaf5590f8c8ac2108
+make_dirs="/var/base 0775 root wheel"
+
+do_configure() {
+	./configure cflags="$CFLAGS"
+}
+
+do_build() {
+	make libs
+	make -C src/wsupp
+}
+
+do_install() {
+	vbin src/wsupp/wsupp
+	vbin src/wsupp/wifi wsupp-wifi
+	vman man/wsupp.8
+	vman man/wifi.1 wsupp-wifi.1
+	vsv wsupp
+}

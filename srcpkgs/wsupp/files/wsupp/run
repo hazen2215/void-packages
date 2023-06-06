@@ -1,0 +1,2 @@
+#!/bin/sh
+exec wsupp 2>&1
