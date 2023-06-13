@@ -1,0 +1,158 @@
+# Template file for 'web'
+pkgname=web
+version=32.2.1
+revision=1
+_UXP_version=RB_20230613
+create_wrksrc=yes
+build_wrksrc="pale-moon"
+hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
+ which"
+makedepends="libXt-devel $(vopt_if alsa alsa-lib-devel) $(vopt_if oss oss-devel)
+ $(vopt_if dbus dbus-glib-devel) $(vopt_if pulseaudio pulseaudio-devel)
+ $(vopt_if xscreensaver libXScrnSaver-devel) $(vopt_if sndio sndio-devel)
+ $(vopt_if jack jack-devel) $(vopt_if gtk3 gtk+3-devel gtk+-devel)"
+short_desc="Open source web browser based on Firefox focusing on efficiency"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
+homepage="https://www.palemoon.org/"
+distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
+ https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
+checksum="d038a595e02d799a0d5c08ac6fde875b751dab3e87a32dc21d20d6acf6fde54e
+ 8d8031d1eccd8c2041d11e3fb026d9b1d44eb9a3745fba37b8b5720b28fe95de"
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+build_options="alsa jack dbus pulseaudio oss xscreensaver sndio gtk3"
+build_options_default="alsa oss xscreensaver"
+
+if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+	makedepends+=" libatomic-devel"
+fi
+
+post_extract() {
+	rmdir pale-moon/platform
+	mv uxp pale-moon/platform
+}
+
+post_patch() {
+	if [ "$build_option_gtk3" ]; then
+		patch -Np1 --directory=${build_wrksrc} -i \
+			"${FILESDIR}/no-gtk2.patch"
+	fi
+}
+
+do_build() {
+	export LDFLAGS="-Wl,-rpath=/usr/lib/web"
+
+	# increase default stack size as web uses a recursive js parser
+	export LDFLAGS+=" -Wl,-z,stack-size=2097152"
+
+	cat <<-! >.mozconfig
+	ac_add_options --prefix=/usr
+	ac_add_options --libdir=/usr/lib
+	ac_add_options --host=${XBPS_TRIPLET}
+	ac_add_options --target=${XBPS_CROSS_TRIPLET:-${XBPS_TRIPLET}}
+
+	ac_add_options --enable-application=palemoon
+	ac_add_options --enable-optimize="\${CFLAGS}"
+	ac_add_options --enable-devtools
+	ac_add_options --with-pthreads
+	ac_add_options --enable-av1
+	mk_add_options AUTOCLOBBER=1
+
+	ac_add_options --disable-eme
+	ac_add_options --disable-webrtc
+	ac_add_options --disable-gamepad
+	ac_add_options --disable-tests
+	ac_add_options --disable-debug
+	ac_add_options --disable-necko-wifi
+	ac_add_options --disable-updater
+	ac_add_options --disable-gconf
+	ac_add_options --disable-crashreporter
+	ac_add_options --disable-parental-controls
+	ac_add_options --disable-maintenance-service
+	ac_add_options --disable-strip
+	ac_add_options --disable-install-strip
+	ac_add_options --disable-profiling
+
+	# Please see https://www.palemoon.org/redist.shtml for restrictions when using the official branding.
+	ac_add_options --disable-official-branding
+	export MOZILLA_OFFICIAL=1
+
+	ac_add_options --enable-default-toolkit=cairo-gtk$(vopt_if gtk3 '3' '2')
+	ac_add_options $(vopt_enable alsa)
+	ac_add_options $(vopt_enable jack)
+	ac_add_options $(vopt_enable sndio)
+	ac_add_options $(vopt_enable dbus)
+	ac_add_options $(vopt_enable pulseaudio)
+	ac_add_options $(vopt_enable oss)
+	export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
+	!
+
+	case "$XBPS_TARGET_MACHINE" in
+	*-musl)
+		echo "ac_add_options --disable-jemalloc" >>.mozconfig
+		echo "ac_add_options --disable-gold" >>.mozconfig
+		;;
+	esac
+
+	case "$XBPS_TARGET_MACHINE" in
+	x86_64*|i686*|arm*|aarch64*)
+		echo "ac_add_options --disable-elf-hack" >>.mozconfig
+		;;
+	esac
+
+	if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+		export LDFLAGS+=" -latomic"
+	fi
+
+	if [ "$CROSS_BUILD" ]; then
+		export HOST_CFLAGS="${XBPS_CFLAGS}"
+		export HOST_CXXFLAGS="${XBPS_CXXFLAGS}"
+		export CXXFLAGS+=" ${CFLAGS}"
+		export LDFLAGS+=" -L${XBPS_CROSS_BASE}/usr/lib"
+
+		export ac_cv_sqlite_secure_delete=yes \
+			ac_cv_sqlite_threadsafe=yes \
+			ac_cv_sqlite_enable_fts3=yes \
+			ac_cv_sqlite_dbstat_vtab=yes \
+			ac_cv_sqlite_enable_unlock_notify=yes \
+			ac_cv_prog_hostcxx_works=1
+	fi
+
+	# work around large debug symbols on 32-bit hosts
+	if [ "$XBPS_WORDSIZE" = "32" ]; then
+		echo "ac_add_options --disable-debug-symbols" >>.mozconfig
+		export LDFLAGS+=" -Wl,--no-keep-memory"
+	fi
+
+	if [ "$SOURCE_DATE_EPOCH" ]; then
+		export MOZ_BUILD_DATE=$(date --date "@$SOURCE_DATE_EPOCH" "+%Y%m%d%H%M%S")
+	fi
+
+	export MOZ_MAKE_FLAGS="${makejobs}"
+	export MOZ_NOSPAM=1
+	export MOZBUILD_STATE_PATH="${wrksrc}/mozbuild"
+
+	rm -f old-configure
+	./mach build
+}
+
+do_install() {
+	export MOZBUILD_STATE_PATH="${wrksrc}/mozbuild"
+	DESTDIR="$DESTDIR" ./mach install
+
+	for i in 16 32 48; do
+		vinstall palemoon/branding/unofficial/default$i.png 644 \
+			usr/share/icons/hicolor/${i}x${i}/apps web.png
+	done
+
+	# We don't want the development stuff
+	rm -rf ${DESTDIR}/usr/{include,lib/palemoon-devel,share}
+
+	rm ${DESTDIR}/usr/lib/palemoon/palemoon-bin
+	mv ${DESTDIR}/usr/lib/palemoon/{palemoon,web}
+	rm ${DESTDIR}/usr/bin/palemoon
+
+	mv ${DESTDIR}/usr/lib/{palemoon,web}
+	ln -s /usr/lib/web/web ${DESTDIR}/usr/bin/web
+}
