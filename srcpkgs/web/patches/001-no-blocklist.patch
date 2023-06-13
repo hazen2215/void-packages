@@ -1,0 +1,12 @@
+diff --git a/palemoon/installer/package-manifest.in b/palemoon/installer/package-manifest.in
+index c46831a1c..b68a90e86 100644
+--- a/palemoon/installer/package-manifest.in
++++ b/palemoon/installer/package-manifest.in
+@@ -142,7 +142,6 @@
+ @BINPATH@/@DLL_PREFIX@mozavutil@DLL_SUFFIX@
+ @BINPATH@/@DLL_PREFIX@mozavcodec@DLL_SUFFIX@
+ #endif
+-@RESPATH@/browser/blocklist.xml
+ @RESPATH@/browser/ua-update.json
+ #ifdef XP_UNIX
+ #ifndef XP_MACOSX
