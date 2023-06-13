@@ -1,0 +1,33 @@
+--- a/platform/toolkit/moz.configure	2022-07-27 15:07:45.000000000 +0900
++++ b/platform/toolkit/moz.configure	2022-09-21 23:54:54.385354606 +0900
+@@ -17,6 +17,19 @@
+ set_config('MOZ_JACK', jack)
+ set_define('MOZ_JACK', jack)
+ 
++# OSS cubeb backend
++# ==============================================================
++option('--enable-oss', env='MOZ_OSS',
++       help='Enable OSS audio backend.')
++
++@depends('--enable-oss')
++def oss(value):
++    if value:
++        return True
++
++set_config('MOZ_OSS', oss)
++set_define('MOZ_OSS', oss)
++
+ # Javascript engine
+ # ==============================================================
+ include('../js/moz.configure')
+--- a/platform/media/libcubeb/src/moz.build	2022-09-21 23:47:26.895343970 +0900
++++ b/platform/media/libcubeb/src/moz.build	2022-09-21 23:48:46.497345862 +0900
+@@ -42,7 +42,7 @@
+     ]
+     DEFINES['USE_JACK'] = True
+ 
+-if CONFIG['OS_ARCH'] in ('DragonFly', 'FreeBSD'):
++if CONFIG['MOZ_OSS'] or CONFIG['OS_ARCH'] in ('DragonFly', 'FreeBSD'):
+     SOURCES += [
+         'cubeb_oss.c',
+     ]
