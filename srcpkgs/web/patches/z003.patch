@@ -1,0 +1,52 @@
+--- b/platform/media/libcubeb/src/cubeb_osx_run_loop.c
++++ /dev/null
+@@ -1,11 +0,0 @@
+-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-*/
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+-
+-#include "OSXRunLoopSingleton.h"
+-
+-void cubeb_set_coreaudio_notification_runloop()
+-{
+-  mozilla_set_coreaudio_notification_runloop_if_needed();
+-}
+--- b/platform/media/libcubeb/src/cubeb_osx_run_loop.h
++++ /dev/null
+@@ -1,22 +0,0 @@
+-/*
+- * Copyright © 2014 Mozilla Foundation
+- *
+- * This program is made available under an ISC-style license.  See the
+- * accompanying file LICENSE for details.
+- */
+-
+-/* On OSX 10.6 and after, the notification callbacks from the audio hardware are
+- * called on the main thread. Setting the kAudioHardwarePropertyRunLoop property
+- * to null tells the OSX to use a separate thread for that.
+- *
+- * This has to be called only once per process, so it is in a separate header
+- * for easy integration in other code bases.  */
+-#if defined(__cplusplus)
+-extern "C" {
+-#endif
+-
+-void cubeb_set_coreaudio_notification_runloop();
+-
+-#if defined(__cplusplus)
+-}
+-#endif
+--- b/platform/media/libcubeb/src/moz.build
++++ a/platform/media/libcubeb/src/moz.build
+@@ -55,10 +55,6 @@
+         'cubeb_audiounit.cpp',
+         'cubeb_resampler.cpp'
+     ]
+-    if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'cocoa':
+-        SOURCES += [
+-            'cubeb_osx_run_loop.c',
+-        ]
+     DEFINES['USE_AUDIOUNIT'] = True
+ 
+ if CONFIG['OS_TARGET'] == 'WINNT':
