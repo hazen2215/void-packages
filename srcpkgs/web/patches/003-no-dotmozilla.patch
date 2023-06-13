@@ -1,0 +1,62 @@
+diff --git a/platform/toolkit/xre/nsXREDirProvider.cpp b/platform/toolkit/xre/nsXREDirProvider.cpp
+index e38cc4f35b..9392f463a3 100644
+--- a/platform/toolkit/xre/nsXREDirProvider.cpp
++++ b/platform/toolkit/xre/nsXREDirProvider.cpp
+@@ -379,7 +379,7 @@ nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
+         rv = localDir->AppendNative(NS_LITERAL_CSTRING("NativeMessagingHosts"));
+       }
+ #else
+-      rv = localDir->AppendNative(NS_LITERAL_CSTRING(".mozilla"));
++      rv = localDir->AppendNative(NS_LITERAL_CSTRING(".local"));
+       if (NS_SUCCEEDED(rv)) {
+         rv = localDir->AppendNative(NS_LITERAL_CSTRING("native-messaging-hosts"));
+       }
+@@ -1381,7 +1381,7 @@ nsXREDirProvider::GetSystemExtensionsDirectory(nsIFile** aFile)
+ #if defined(XP_MACOSX)
+                              "Extensions"
+ #else
+-                             "extensions"
++                             "web"
+ #endif
+                              );
+ 
+@@ -1461,11 +1461,11 @@ nsXREDirProvider::AppendSysUserExtensionPath(nsIFile* aFile)
+ 
+ #elif defined(XP_UNIX)
+ 
+-  static const char* const sXR = ".mozilla";
++  static const char* const sXR = ".local";
+   rv = aFile->AppendNative(nsDependentCString(sXR));
+   NS_ENSURE_SUCCESS(rv, rv);
+ 
+-  static const char* const sExtensions = "extensions";
++  static const char* const sExtensions = "web";
+   rv = aFile->AppendNative(nsDependentCString(sExtensions));
+   NS_ENSURE_SUCCESS(rv, rv);
+ 
+diff --git a/platform/js/src/old-configure.in b/platform/js/src/old-configure.in
+index 62a01a9e3b..9c81f9c467 100644
+--- a/platform/js/src/old-configure.in
++++ b/platform/js/src/old-configure.in
+@@ -431,7 +431,7 @@ OBJ_SUFFIX=o
+ LIB_SUFFIX=a
+ IMPORT_LIB_SUFFIX=
+ DIRENT_INO=d_ino
+-MOZ_USER_DIR=".mozilla"
++MOZ_USER_DIR=".local"
+ MOZ_DEVTOOLS_SERVER=1
+ 
+ MOZ_FIX_LINK_PATHS="-Wl,-rpath-link,${DIST}/bin -Wl,-rpath-link,${prefix}/lib"
+diff --git a/platform/old-configure.in b/platform/old-configure.in
+index e2da8b8f6c..e2b3af5229 100644
+--- a/platform/old-configure.in
++++ b/platform/old-configure.in
+@@ -457,7 +457,7 @@ OBJ_SUFFIX=o
+ LIB_SUFFIX=a
+ IMPORT_LIB_SUFFIX=
+ DIRENT_INO=d_ino
+-MOZ_USER_DIR=".mozilla"
++MOZ_USER_DIR=".local"
+ 
+ MOZ_FIX_LINK_PATHS="-Wl,-rpath-link,${DIST}/bin -Wl,-rpath-link,${prefix}/lib"
+ 
