@@ -1,0 +1,19 @@
+# Template file for 'kefir'
+pkgname=kefir
+version=0.1
+revision=1
+build_style=gnu-makefile
+make_build_target="all"
+short_desc="C17 compiler implementation from scratch"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://sr.ht/~jprotopopov/kefir/"
+changelog="https://git.sr.ht/~jprotopopov/kefir/blob/develop/CHANGELOG"
+distfiles="https://git.sr.ht/~jprotopopov/kefir/archive/v${version}.tar.gz"
+checksum=cc5bbd50801169107ea88bf379e953dd3a1d2974fcd9faae9c4e6a998a5349b7
+
+CFLAGS=-fPIC
+
+do_install() {
+	make DESTDIR=${DESTDIR}/usr install
+}
