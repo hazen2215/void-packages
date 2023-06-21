@@ -4272,3 +4272,8 @@ libplayerctl.so.2 playerctl-2.4.1_1
 libwireplumber-0.4.so.0 wireplumber-0.4.14_1
 libjodycode.so.2 libjodycode-2.0.1_1
 libgsoapssl++-2.8.124.so gsoap-2.8.124_1
+librnd-hid.so.4 librnd-4.0.1_1
+librnd-font.so.4 librnd-4.0.1_1
+librnd-poly.so.4 librnd-4.0.1_1
+librnd-core.so.4 librnd-4.0.1_1
+librnd-3rd.so.4 librnd-4.0.1_1

@@ -1,0 +1,27 @@
+# Template file for 'librnd'
+pkgname=librnd
+version=4.0.1
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+hostmakedepends="pkg-config"
+makedepends="gtk+-devel"
+short_desc="Free/open source, flexible, modular two-dimensional CAD engine"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://www.repo.hu/projects/librnd/"
+changelog="http://www.repo.hu/projects/librnd/releases/changelog-${version}.txt"
+distfiles="http://www.repo.hu/projects/librnd/releases/librnd-${version}.tar.gz"
+checksum=f27239822a3ea3c275ab2ffdc3b602eb5ccf7d5b8464e2b669b34300dab5be31
+
+librnd-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision} gtk+-devel"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/librnd4/scconfig
+		vmove "usr/lib/*.a"
+		vmove "usr/lib/*.so"
+		vmove usr/share
+	}
+}
