@@ -1,0 +1,25 @@
+# Template file for 'scconfig'
+pkgname=scconfig
+version=1.0.1
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+short_desc="Generic modular ./configure in ANSI C"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.1-or-later, Public Domain"
+homepage="http://repo.hu/projects/scconfig/"
+changelog="http://repo.hu/projects/scconfig/releases/changelog-1.0.1.txt"
+distfiles="http://repo.hu/projects/scconfig/releases/scconfig-${version}.tar.gz"
+checksum=715a8cd20c025fa27a83947b0ec4d9666c688f231ae4895b85f13870d2542cb0
+
+post_patch() {
+	mv Makefile{.regression,}
+}
+
+do_build() {
+	make ${makejobs} USER_CFLAGS="$CFLAGS" USER_LDFLAGS="$LDFLAGS"
+}
+
+do_install() {
+	vbin regression/configure
+}

@@ -1,0 +1,13 @@
+diff --git a/Makefile.regression b/Makefile.regression
+index e4b7e98d21..91e8a05ffc 100644
+--- a/Makefile.regression
++++ b/Makefile.regression
+@@ -40,7 +40,7 @@ CFLAGS = $(USER_CFLAGS) $(DEFAULT_CFLAGS) $(SCRIPT_CFLAGS) $(GENERATOR_CFLAGS) $
+ LDFLAGS = $(USER_LDFLAGS) $(DEFAULT_LDFLAGS) $(SCRIPT_LDFLAGS) $(GENERATOR_LDFLAGS) $(C99_LDFLAGS) $(PARSGEN_LDFLAGS) $(MATH_LDFLAGS)
+ 
+ regression/configure: $(OBJS)
+-	$(CC) -o regression/configure $(OBJS)
++	$(CC) -o regression/configure $(CFLAGS) $(LDFLAGS) $(OBJS)
+ 
+ regression/hooks.o: regression/hooks.c
+ 	$(CC) -c $(CFLAGS) regression/hooks.c -o regression/hooks.o
