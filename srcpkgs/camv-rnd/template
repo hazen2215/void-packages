@@ -1,0 +1,15 @@
+# Template file for 'camv-rnd'
+pkgname=camv-rnd
+version=1.1.2
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+hostmakedepends="pkg-config"
+makedepends="librnd-devel freetype-devel"
+short_desc="Small, flexible viewer for PCB-related CAM file formats"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://www.repo.hu/projects/camv-rnd/"
+changelog="http://www.repo.hu/projects/camv-rnd/releases/changelog-${version}.txt"
+distfiles="http://www.repo.hu/projects/camv-rnd/releases/camv-rnd-${version}.tar.gz"
+checksum=4c4d7fc6d4a89a62e1958d8fc772c8da56a997fe78f023503324bafbc0529d03
