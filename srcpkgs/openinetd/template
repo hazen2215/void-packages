@@ -1,0 +1,26 @@
+# Template file for 'openinetd'
+pkgname=openinetd
+version=0.0.20230503
+revision=1
+_commit=ddbe59e39ca55da945118aabc51d8bf3e04ed090
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="libbsd-devel libevent-devel libtirpc-devel"
+short_desc="Portable fork of OpenBSD's inetd(8)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause"
+homepage="https://github.com/takusuman/openinetd"
+distfiles="https://github.com/takusuman/openinetd/archive/${_commit}.tar.gz"
+checksum=a0c1d6e947e99c7a63b5a3aa2b31a82e9af2056b205403cc9ab6712479f84fdf
+
+conflicts="inetutils-inetd"
+
+post_patch() {
+	cp ${FILESDIR}/Makefile .
+}
+
+do_install() {
+	vbin inetd
+	vman inetd.8
+	vlicense LICENCE
+}
