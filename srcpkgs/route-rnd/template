@@ -1,0 +1,23 @@
+# Template file for 'route-rnd'
+pkgname=route-rnd
+version=0.9.2
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+hostmakedepends="pkg-config"
+makedepends="librnd-devel libxml2-devel"
+short_desc="Flexible, modular autorouter for Printed Circuit Boards"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://www.repo.hu/projects/route-rnd/"
+changelog="http://www.repo.hu/projects/route-rnd/releases/changelog-${version}.txt"
+distfiles="http://www.repo.hu/projects/route-rnd/releases/route-rnd-${version}.tar.gz"
+checksum=786b17210a4af88b31a6cc73c73e4f516bbf6ffb23a34ea509f1e074bf8e3c3f
+
+post_configure() {
+	cat <<-! >>Makefile.conf
+	PREFIX = /usr
+	CFLAGS_CFG = $CFLAGS
+	LDFLAGS_CFG = $LDFLAGS
+	!
+}
