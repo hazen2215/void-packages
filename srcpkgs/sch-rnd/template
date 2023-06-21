@@ -1,0 +1,15 @@
+# Template file for 'sch-rnd'
+pkgname=sch-rnd
+version=1.0.0
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+hostmakedepends="pkg-config"
+makedepends="librnd-devel libxml2-devel"
+short_desc="Simple, modular, scriptable schematics editor"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://www.repo.hu/projects/sch-rnd/"
+changelog="http://www.repo.hu/projects/sch-rnd/releases/changelog-${version}.txt"
+distfiles="http://www.repo.hu/projects/sch-rnd/releases/sch-rnd-${version}.tar.gz"
+checksum=e459b8c5515eb98baa087cea744dc6339641f2aadbc5196fbd8c5d52802fe15f
