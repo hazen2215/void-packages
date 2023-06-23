@@ -1,0 +1,23 @@
+# Template file for 'go-findimagedupes'
+pkgname=go-findimagedupes
+version=0.0.20230314
+revision=1
+_commit=bc6c4c310f102eb04a4ac3610e2ca0ae72746bbe
+build_style=go
+go_import_path=gitlab.com/opennota/findimagedupes
+makedepends="file-devel libjpeg-turbo-devel libpng-devel tiff-devel
+ libheif-devel"
+short_desc="Find visually similar or duplicate images"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://gitlab.com/opennota/findimagedupes"
+distfiles="https://gitlab.com/opennota/findimagedupes/-/archive/${_commit}.tar.gz"
+checksum=f0c60536c6dfbb884e96b56f6798d52ac2083f2da14e2cef790558c854040ceb
+
+pre_build() {
+	go install -p "$XBPS_MAKEJOBS" -mod="${go_mod_mode}" -modcacherw -x -tags "${go_build_tags}" -ldflags "${go_ldflags}" ${go_import_path} || :
+
+	find . -type f -exec sed -i {} \
+		-e 's,sys/sysctl,linux/sysctl,g' \
+		-e 's,__GLIBC__,__linux__,g' \;
+}
