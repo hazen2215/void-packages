@@ -17,6 +17,10 @@ checksum=bbed26ca1f3762138a6bcc08b8f5673bb90ab6c06418661adb84f652b08b7ff3
 restricted=yes
 repository=nonfree
 
+archs+=" x86_64-musl"
+makedepends+=" gcompat"
+export LIBS=-l:libgcompat.so.0
+
 post_install() {
 	vlicense COPYING
 	vlicense COPYING.EPSON
