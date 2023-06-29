@@ -1,0 +1,16 @@
+# Template file for 'json2tsv'
+pkgname=json2tsv
+version=1.1
+revision=1
+build_style=gnu-makefile
+make_install_args="MANPREFIX=/usr/share/man DOC=README"
+short_desc="JSON to TSV converter"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://git.codemadness.org/json2tsv"
+distfiles="https://codemadness.org/releases/json2tsv/json2tsv-${version}.tar.gz"
+checksum=eebe7e6286558af0aa0db7c552a4c1ff1e350eb662ec665155c2611990a9c34a
+
+post_install() {
+	vlicense LICENSE
+}
