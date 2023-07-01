@@ -1,0 +1,17 @@
+# Template file for 'vsound'
+pkgname=vsound
+version=0.6
+revision=1
+build_style=gnu-configure
+hostmakedepends="autoconf automake libtool"
+makedepends="sox-devel oss-devel"
+short_desc="Utility for capturing audio streams from programs with OSS output"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://www.vsound.org/"
+distfiles="http://freebsd.nsu.ru/distfiles/vsound-${version}.tar.gz"
+checksum=80711f2495f0faffd8b2d46afbdc3623e6701fcc20e6b85be82b6c4fdf467197
+
+pre_configure() {
+	autoreconf -fi
+}
