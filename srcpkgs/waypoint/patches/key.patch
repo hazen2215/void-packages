@@ -1,0 +1,15 @@
+diff --git a/src/waypoint.c b/src/waypoint.c
+index 725143d14c..2a990f5311 100644
+--- a/src/waypoint.c
++++ b/src/waypoint.c
+@@ -246,6 +246,10 @@ static void wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
+     case XKB_KEY_L:
+         move_right(seat->state, 0.5);
+         break;
++    case XKB_KEY_space:
++        update_pointer(seat->state);
++        click(seat->state);
++        break;
+     case XKB_KEY_Return:
+         update_pointer(seat->state);
+         click(seat->state);
