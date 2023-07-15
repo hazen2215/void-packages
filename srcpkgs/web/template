@@ -1,8 +1,8 @@
 # Template file for 'web'
 pkgname=web
-version=32.2.1
+version=32.3.1
 revision=1
-_UXP_version=RB_20230613
+_UXP_version=RB_20230715
 create_wrksrc=yes
 build_wrksrc="pale-moon"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
@@ -17,9 +17,12 @@ license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
-checksum="d038a595e02d799a0d5c08ac6fde875b751dab3e87a32dc21d20d6acf6fde54e
- 8d8031d1eccd8c2041d11e3fb026d9b1d44eb9a3745fba37b8b5720b28fe95de"
+checksum="c5b36a91df4d490197a6a3ab07cc66f36e95e8902a35b830f9747598a14565d3
+ c8c74dd99f62c7dc103c3720a6979efa22c31574f8366466a868e75d9deb53a2"
 patch_args="-Np1 --directory=${build_wrksrc}"
+
+CFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
+CXXFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
 
 build_options="alsa jack dbus pulseaudio oss xscreensaver sndio gtk3"
 build_options_default="alsa oss xscreensaver"
