@@ -1,0 +1,22 @@
+# Template file for 'ladybird'
+pkgname=ladybird
+version=0.0.20230628
+revision=1
+_commit=8ac4a5315b13d9aa9073ebda0df78c8de606540b
+build_wrksrc=Ladybird
+build_style=cmake
+configure_args="-DCMAKE_BUILD_TYPE=Release -Wno-dev -GNinja"
+hostmakedepends="qt6-tools unzip"
+makedepends="brotli-devel glu-devel qt6-base-devel qt6-multimedia-devel
+ qt6-svg-devel qt6-wayland-devel"
+short_desc="Web browser built from scratch using the SerenityOS LibWeb engine"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause"
+homepage="https://github.com/SerenityOS/serenity"
+distfiles="https://github.com/SerenityOS/serenity/archive/${_commit}.tar.gz"
+checksum=800572387f67b927d37b1dc96f5d2f16262138b021e3a5c95a91bea504ed141c
+make_check=no
+
+post_install() {
+	vlicense ../LICENSE
+}
