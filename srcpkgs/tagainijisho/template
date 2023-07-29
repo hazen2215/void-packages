@@ -1,0 +1,12 @@
+# Template file for 'tagainijisho'
+pkgname=tagainijisho
+version=1.2.2
+revision=1
+build_style=cmake
+makedepends="qt5-devel qt5-tools-devel"
+short_desc="Free software Japanese dictionary and learning assistant"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://www.tagaini.net"
+distfiles="https://github.com/Gnurou/tagainijisho/releases/download/${version}/tagainijisho-${version}.tar.gz"
+checksum=10fa6aa3a2e0eea0f4456236ac3020db73c76f65cb31a76ad74a107b2d739003
