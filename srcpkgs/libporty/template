@@ -1,0 +1,20 @@
+# Template file for 'libporty'
+pkgname=libporty
+version=1.0.1
+revision=1
+build_style=configure
+configure_args="--prefix=/usr"
+short_desc="Minimalistic portability library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-3-Clause, GPL-2.0-or-later, LGPL-2.0-or-later, Public Domain"
+homepage="http://repo.hu/projects/libporty/"
+changelog="http://repo.hu/projects/libporty/releases/changelog-${version}.txt"
+distfiles="http://repo.hu/projects/libporty/releases/libporty-${version}.tar.gz"
+checksum=f5e26032cfc552a7ca3c132884f1c825ce25a7b5b8295fff31852e428f50a2e3
+
+post_install() {
+	sed -n '/Copyright (c) 2003 /,/THIS/p' src/porty/c99tree-cc/cgram.y \
+		>LICENSE.3BSD
+	vlicense LICENSE.3BSD
+	rm ${DESTDIR}/usr/lib64
+}
