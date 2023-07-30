@@ -1,0 +1,14 @@
+# Template file for 'minetd'
+pkgname=minetd
+version=1.0.0
+revision=1
+build_style=gnu-makefile
+build_wrksrc=src
+makedepends="libporty"
+short_desc="minimalistic inetd(1) implementation"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="http://repo.hu/projects/minetd/"
+changelog="http://repo.hu/projects/minetd/releases/changelog-${version}.txt"
+distfiles="http://repo.hu/projects/minetd/releases/minetd-${version}.tar.gz"
+checksum=bcfe9a07132c8b422e1c3eac399ac03b847458f008312f3af22857c0bd7ad793
