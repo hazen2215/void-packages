@@ -7,6 +7,15 @@ hostmakedepends="libxslt docbook-xsl pkg-config"
 makedepends="libcap-devel"
 short_desc="Unprivileged sandboxing tool"
 maintainer="Duncaen <duncaen@voidlinux.org>"
+if [ "$build_option_static" ]; then
+	LDFLAGS="-static"
+	post_patch() {
+		vsed -i meson.build \
+			-e "s/'libcap', required : true/&,static:true/"
+	}
+fi
+build_options="static"
+build_options_default="static"
 license="LGPL-2.0-or-later"
 homepage="https://github.com/containers/bubblewrap"
 changelog="https://github.com/containers/bubblewrap/releases"
