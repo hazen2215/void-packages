@@ -1,0 +1,22 @@
+# Template file for 'GSL'
+pkgname=GSL
+version=4.0.0
+revision=1
+build_style=cmake
+hostmakedepends="pkg-config"
+checkdepends="gtest-devel"
+short_desc="Guidelines Support Library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/microsoft/GSL"
+changelog="https://github.com/microsoft/GSL/releases"
+distfiles="https://github.com/microsoft/GSL/archive/refs/tags/v${version}.tar.gz"
+checksum=f0e32cb10654fea91ad56bde89170d78cfbf4363ee0b01d8f097de2ba49f6ce9
+
+if [ -z "${XBPS_CHECK_PKGS}" ]; then
+	configure_args+=" -DGSL_TEST=OFF"
+fi
+
+post_install() {
+	vlicense LICENSE
+}
