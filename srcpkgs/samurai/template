@@ -12,4 +12,8 @@ checksum=37a2d9f35f338c53387eba210bab7e5d8abe033492664984704ad84f91b71bac
 
 post_install() {
 	vlicense LICENSE
+	ln -s samu ${DESTDIR}/usr/bin/ninja
+	ln -s samu.1 ${DESTDIR}/usr/share/man/man1/ninja.1
 }
+provides="ninja-0_1"
+conflicts="ninja"
