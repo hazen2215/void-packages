@@ -1,7 +1,7 @@
 # Template file for 'oss'
 pkgname=oss
 version=4.2+build2020
-revision=1
+revision=2
 build_wrksrc=build
 build_style=configure
 configure_script="../configure"

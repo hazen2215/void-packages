@@ -1,0 +1,186 @@
+commit 0f476a4cef8a97512cdc7018004d7151eb7c8c00
+Author: hazen2215 <haz@disroot.org>
+Date:   Wed Aug 16 03:36:25 2023 +0900
+
+    wip
+
+diff --git a/kernel/drv/oss_hdaudio/oss_hdaudio.c b/kernel/drv/oss_hdaudio/oss_hdaudio.c
+index ccc161d..c9164cb 100644
+--- a/kernel/drv/oss_hdaudio/oss_hdaudio.c
++++ b/kernel/drv/oss_hdaudio/oss_hdaudio.c
+@@ -1980,3 +1980,31 @@ oss_hdaudio_detach (oss_device_t * osdev)
+   oss_unregister_device (devc->osdev);
+   return 1;
+ }
++
++int oss_hdaudio_suspend(oss_device_t *osdev)
++{
++	hda_devc_t *devc = (hda_devc_t *) osdev->devc;
++
++	/* TODO power down the widgets */
++
++	PCI_WRITEL (devc->osdev, devc->azbar + HDA_INTSTS, 0xc0000000);	/* ack pending ints */
++
++	PCI_WRITEL (devc->osdev, devc->azbar + HDA_INTCTL, 0);	/* Intr disable */
++	PCI_WRITEL (devc->osdev, devc->azbar + HDA_STATESTS, 0x7);	/* Intr disable */
++	PCI_WRITEL (devc->osdev, devc->azbar + HDA_RIRBSTS, 0x5);	/* Intr disable */
++	PCI_WRITEB (devc->osdev, devc->azbar + HDA_RIRBCTL, 0);	/* Stop */
++	PCI_WRITEB (devc->osdev, devc->azbar + HDA_CORBCTL, 0);	/* Stop */
++
++	/* halt pci*/
++	return 0;
++}
++
++int oss_hdaudio_resume(oss_device_t *osdev)
++{
++	/* get up pci */
++
++
++	/* power up the widgets */
++
++	return init_HDA(osdev->devc);
++}
+diff --git a/setup/Linux/oss/build/module.inc b/setup/Linux/oss/build/module.inc
+index 471c003..37e24e7 100644
+--- a/setup/Linux/oss/build/module.inc
++++ b/setup/Linux/oss/build/module.inc
+@@ -19,6 +19,7 @@
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
++#include <linux/pm.h>
+ #include "timestamp.h"
+ #include "oss_exports.h"
+ #include "wrap.h"
+@@ -38,6 +39,8 @@ MODULE_AUTHOR ("4Front Technologies (support@opensound.com)");
+ 
+ extern int DRIVER_ATTACH (oss_device_t * osdev);
+ extern int DRIVER_DETACH (oss_device_t * osdev);
++extern int DRIVER_SUSPEND (oss_device_t * osdev);
++extern int DRIVER_RESUME (oss_device_t * osdev);
+ 
+ #if DRIVER_TYPE==DRV_PCI
+ #define DRIVER_TYPE_OK
+@@ -49,7 +52,10 @@ static struct pci_driver osspci_driver = {
+   .name = DRIVER_NICK,
+   .id_table = id_table,
+   .probe = osspci_probe,
+-  .remove = osspci_remove
++  .remove = osspci_remove,
++  .driver = {
++    .pm = &osspci_pm,
++  },
+ };
+ 
+ static int __init
+diff --git a/setup/Linux/oss/build/pci_wrapper.inc b/setup/Linux/oss/build/pci_wrapper.inc
+index 370ed5b..94b72ae 100644
+--- a/setup/Linux/oss/build/pci_wrapper.inc
++++ b/setup/Linux/oss/build/pci_wrapper.inc
+@@ -69,6 +69,18 @@ osspci_probe (struct pci_dev *pcidev, const struct pci_device_id *pciid)
+   return 0;
+ }
+ 
++static oss_device_t *from_pci_dev(struct pci_dev *pcidev)
++{
++	int i;
++
++	for (i = 0; i < n_devmap; ++i) {
++		if (dev_map[i].pcidev == pcidev) {
++			return dev_map[i].osdev;
++		}
++	}
++	return 0;
++}
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+  static int __devexit
+ #elif LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+@@ -78,26 +90,24 @@ osspci_probe (struct pci_dev *pcidev, const struct pci_device_id *pciid)
+ #endif
+ osspci_remove (struct pci_dev *pcidev)
+ {
+-  int i;
+-  oss_device_t *osdev;
+-
+-  for (i = 0; i < n_devmap; i++)
+-    if (dev_map[i].pcidev == pcidev)
+-      {
+-	osdev = dev_map[i].osdev;
+-	if (!DRIVER_DETACH (osdev))
+-	  printk (KERN_ALERT DRIVER_NICK ": Unloading busy device\n");
+-	pci_disable_device (dev_map[i].pcidev);
+-	osdev_delete (osdev);
++	int i;
++	oss_device_t *osdev = from_pci_dev(pcidev);
++
++	if (osdev) {
++		if (!DRIVER_DETACH (osdev))
++			printk(KERN_ALERT DRIVER_NICK ": Unloading busy device\n");
++		pci_disable_device(pcidev);
++		osdev_delete(osdev);
++	} else {
++		printk(KERN_ALERT DRIVER_NICK ": Can't find the PCI device to detach\n");
++	}
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+ 	return 0;
+ #else
+ 	return;
+ #endif
+-      }
+ 
+-  printk (KERN_ALERT DRIVER_NICK ": Can't find the PCI device to detach\n");
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+   return -EIO;
+ #else
+@@ -110,3 +120,36 @@ oss_pcie_init (oss_device_t * osdev, int flags)
+ {
+ 	/* TODO: Do we need to do something here? */
+ }
++
++static int osspci_suspend(struct device *dev)
++{
++  struct pci_dev *pci = to_pci_dev(dev);
++  return DRIVER_SUSPEND(from_pci_dev(pci));
++
++/*
++  pci_disable_device(pci);
++  pci_save_state(pci);
++  pci_set_power_state(pci, PCI_D3hot);
++
++  return 0;
++  */
++}
++
++static int osspci_resume(struct device *dev)
++{
++  struct pci_dev *pci = to_pci_dev(dev);
++  return DRIVER_RESUME(from_pci_dev(pci));
++
++/*
++  pci_set_power_state(pci, PCI_D0);
++  pci_restore_state(pci);
++  if (pci_enable_device(pci) < 0) {
++    printk(KERN_ERR "pci_enable_device failed\n");
++    return -EIO;
++  }
++
++  return 0;
++  */
++}
++
++SIMPLE_DEV_PM_OPS(osspci_pm, osspci_suspend, osspci_resume);
+diff --git a/setup/gen_driver_linux.inc b/setup/gen_driver_linux.inc
+index aa8c1b7..babbc00 100644
+--- a/setup/gen_driver_linux.inc
++++ b/setup/gen_driver_linux.inc
+@@ -29,6 +29,8 @@ generate_driver (char *name, conf_t * conf, char *cfg_name, char *cfg_header,
+   fprintf (src, "#define DRIVER_STR_INFO\t%s_str_info\n", name);
+   fprintf (src, "#define DRIVER_ATTACH\t%s_attach\n", name);
+   fprintf (src, "#define DRIVER_DETACH\t%s_detach\n", name);
++  fprintf (src, "#define DRIVER_SUSPEND\t%s_suspend\n", name);
++  fprintf (src, "#define DRIVER_RESUME\t%s_resume\n", name);
+   fprintf (src, "#define DRIVER_TYPE\tDRV_%s\n", conf->bus);
+   fprintf (src, "\n");
+ 
