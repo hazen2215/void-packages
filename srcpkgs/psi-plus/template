@@ -1,0 +1,20 @@
+# Template file for 'psi-plus'
+pkgname=psi-plus
+version=1.5.1650
+revision=1
+build_style=cmake
+configure_args="-DBUNDLED_QCA=ON -DBUNDLED_USRSCTP=ON -DJINGLE_SCTP=ON
+ -DENABLE_PLUGINS=ON -DUSE_ASPELL=OFF -DUSE_HUNSPELL=OFF"
+# hostmakedepends="git"
+makedepends="libXScrnSaver-devel libgcrypt-devel libidn-devel libotr-devel
+ libsignal-protocol-c-devel libtidy5-devel minizip-devel phonon-qt5-devel
+ qca-qt5-devel qt5-multimedia-devel qt5-plugin-mysql qt5-plugin-odbc
+ qt5-plugin-pgsql qt5-plugin-sqlite qt5-plugin-tds qt5-svg-devel
+ qt5-x11extras-devel zlib-devel"
+depends="qt5-translations qca-qt5-ossl gpgmeqt"
+short_desc="Psi+ Jabber/XMPP client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://www.psi-plus.com/"
+distfiles="https://github.com/psi-plus/psi-plus-snapshots/archive/${version}.tar.gz"
+checksum=dc8bb68eea727fd37c6d3295517db79a18dba8149a3884216fb37a6174c20444
