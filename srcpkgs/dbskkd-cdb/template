@@ -1,0 +1,32 @@
+# Template file for 'dbskkd-cdb'
+pkgname=dbskkd-cdb
+version=3.00
+revision=1
+build_style=gnu-makefile
+make_build_args="CDBLIB=${XBPS_CROSS_BASE}/usr/lib/libcdb.a"
+makedepends="tinycdb-devel"
+depends="tinycdb ucspi-tcp"
+short_desc="SKK dictionary server based on cdb"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/jj1bdx/dbskkd-cdb"
+changelog="https://raw.githubusercontent.com/jj1bdx/dbskkd-cdb/master/CHANGES.md"
+distfiles="https://github.com/jj1bdx/dbskkd-cdb/archive/refs/tags/${version}.tar.gz"
+checksum=e92ef7162c2c50a441dd864dbf21510d746174b9f1f484bfbbdca1b31c055286
+
+system_accounts=_dbskkd
+
+post_patch() {
+	echo 'PRIVATE = $(CFLAGS) $(LDFLAGS)' >>Makefile
+	vsed -i makeskkcdb.sh -e 's,^./,,'
+}
+
+do_install() {
+	vbin dbskkd-cdb
+	vbin makeskkcdb.sh
+	vbin skktocdbm.sh
+	vdoc examples.md
+	vdoc skk-server-protocol.md
+	vsv dbskkd-cdb
+	vlicense LICENSE
+}

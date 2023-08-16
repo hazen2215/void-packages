@@ -1,0 +1,5 @@
+#!/bin/sh
+exec 2>&1
+exec chpst -u _dbskkd -d100000 \
+	tcpserver -x ./tcprules.cdb -vDRH -l localhost 127.0.0.1 1178 \
+	/usr/bin/dbskkd-cdb
