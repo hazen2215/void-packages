@@ -1,29 +1,34 @@
 # Template file for 'ebview'
 pkgname=ebview
-version=0.3.5.20181113
+version=0.3.6
 revision=1
-_githash=390e6ed8eebdce6cd1b0edb9a9791707768db6ad
+_githash=77519e5c5c77616b75655dcf023bfca6caf8298a
 build_style=gnu-configure
 hostmakedepends="automake libtool gettext-devel pkg-config glib-devel"
-makedepends="gtk+-devel pango-devel $(vopt_if utf8 ebu eb)
- $(vopt_if utf8 libebu-devel libeb-devel)"
+makedepends=" $(vopt_if utf8 'ebu libebu-devel' 'eb libeb-devel')
+ gtk+-devel pango-devel"
 short_desc="GTK2 based EPWING dictionary viewer"
 maintainer="hazen2215 <haz@disroot.org>"
 license="GPL-2.0-or-later"
 homepage="http://ebview.sourceforge.net/"
-changelog="https://raw.githubusercontent.com/fujii/ebview/master/ChangeLog"
-distfiles="https://github.com/fujii/ebview/archive/${_githash}.tar.gz"
-checksum=4492d8c2b32e5d1d2035e933d467d28cd4549ad96f70343b2027df48ac40ce6a
+changelog="https://raw.githubusercontent.com/sina-ht/ebview/master/ChangeLog"
+distfiles="https://github.com/sina-ht/ebview/archive/${_githash}.tar.gz"
+checksum=955b9681914066649cd353080c28249383eadb28e44f86ce737e70d9c140efbd
 build_options="utf8"
 build_options_default="utf8"
 desc_option_utf8="Enable support for UTF-8"
 
 CFLAGS="-D_FILE_OFFSET_BITS=64"
 
+export LIBS=-lX11
+
 post_patch() {
 	if [ "$build_option_utf8" ]; then
-		vsed -i -e 's,eb/eb\.h,ebu/eb.h,' -e 's/eb_LIB_EB4/eb_LIB_EBU/' configure.ac
-		vsed -i -e 's,#include <eb/,#include <ebu/,' src/defs.h util/ebdump.c
+		vsed -i configure.in \
+			-e 's,eb/eb\.h,ebu/eb.h,' \
+			-e 's/eb_LIB_EB4/eb_LIB_EBU/'
+		vsed -i src/defs.h util/ebdump.c \
+			-e 's,#include <eb/,#include <ebu/,'
 	fi
 }
 
@@ -31,9 +36,13 @@ pre_configure() {
 	./autogen.sh
 }
 
+pre_install() {
+	ln -s /usr/share/automake-1.16/mkinstalldirs .
+}
+
 post_install() {
-		# move locales to /usr/share/locale (needed for musl libc)
-		if [ -d ${DESTDIR}/usr/lib/locale ]; then
-			mv ${DESTDIR}/usr/lib/locale ${DESTDIR}/usr/share
-		fi
+	# move locales to /usr/share/locale (needed for musl libc)
+	if [ -d ${DESTDIR}/usr/lib/locale ]; then
+		mv ${DESTDIR}/usr/lib/locale ${DESTDIR}/usr/share
+	fi
 }
