@@ -1,0 +1,21 @@
+# Template file for 'tinycdb'
+pkgname=tinycdb
+version=0.78
+revision=1
+build_style=gnu-makefile
+short_desc="Constant Database"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Public Domain"
+homepage="https://www.corpit.ru/mjt/tinycdb.html"
+distfiles="https://www.corpit.ru/mjt/tinycdb/tinycdb-${version}.tar.gz"
+checksum=50678f432d8ada8d69f728ec11c3140e151813a7847cf30a62d86f3a720ed63c
+
+tinycdb-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.a"
+		vmove usr/share/man/man3
+	}
+}

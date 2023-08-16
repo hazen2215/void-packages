@@ -1,0 +1,33 @@
+diff --git a/Makefile b/Makefile
+index 42c8d6f904..2f8cbf432a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,14 +6,14 @@
+
+ VERSION = 0.78
+
+-prefix=/usr/local
++prefix=/usr
+ exec_prefix=$(prefix)
+ bindir=$(exec_prefix)/bin
+ libdir=$(exec_prefix)/lib
+ syslibdir=$(libdir)
+ sysconfdir=/etc
+ includedir=$(prefix)/include
+-mandir=$(prefix)/man
++mandir=$(prefix)/share/man
+ NSSCDB_DIR = $(sysconfdir)
+ DESTDIR=
+
+@@ -91,9 +91,9 @@ $(SHAREDLIB): $(LIB_OBJS_PIC) $(LIBMAP)
+ 	 $(LIB_OBJS_PIC)
+
+ cdb: cdb.o $(CDB_USELIB)
+-	$(LD) $(LDFLAGS) -o $@ cdb.o $(CDB_USELIB)
++	$(CC) $(LDFLAGS) -o $@ cdb.o $(CDB_USELIB)
+ cdb-shared: cdb.o $(SHAREDLIB)
+-	$(LD) $(LDFLAGS) -o $@ cdb.o $(SHAREDLIB)
++	$(CC) $(LDFLAGS) -o $@ cdb.o $(SHAREDLIB)
+
+ $(NSS_CDB): $(NSS_OBJS) $(NSS_USELIB) $(NSSMAP)
+ 	$(LD) $(LDFLAGS) $(LDFLAGS_SHARED) -o $@ \
