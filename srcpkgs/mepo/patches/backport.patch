@@ -1,0 +1,3457 @@
+diff --git a/README.md b/README.md
+index 30cb893..e352872 100644
+--- a/README.md
++++ b/README.md
+@@ -68,219 +68,21 @@ bookmarks, and more.
+ ## **Documentation Website**
+ Mepo has a documentation website which lives at: [mepo.milesalan.com](http://mepo.milesalan.com)
+ 
++## **Releases**
++The most current release is 1.1.2 which builds against zig 0.10.1.
+ 
+-## **Roadmap to 1.0 release**
+-
+-- **Milestone 1: Overall Stability** (Complete: 10/31/2021, tag: 0.1)
+-  - **Done:**
+-    - Improve current stability of the application and resolve intermittent
+-      crashes related to tile downloading.
+-    - Implement tile downloading retry logic and handle case where user is
+-      offline gracefully
+-    - Error check invalid PNG tile data received from tile servers & loaded
+-      from filesystem.
+-    - Rework consistency of allocator passing (e.g. remove ad hoc allocators,
+-      ensure all allocations based on using top-level allocator via arena
+-      allocation).
+-    - Rework blitting logic to be more intelligent about not drawing off-screen
+-      entities & pins.
+-    - Implement LIFO for downloading queue: viewport tiles should always take
+-      priority before long-queued off-screen tiles.
+-    - Refactor error handling logic & use utility function rather than zig
+-      dbg.
+-    - Implement togglable text debug message overlay to provide user feedback
+-      right in UI when operations like shell pipe fail.
+-    - Add togglable help text overlay to show current results of bind_key
+-      (keybindings table) mapping in UI.
+-    - Fix bug where negative latitude values fail to round-trip between
+-      lat-to-y / y-to-lat conversion functions.
+-    - Implement debug mode preference or similar to control verbosity of
+-      debugging STDERR messages.
+-    - Resolve existing memory leaks in the application.
+-    - Provide an initial tag for package maintainers (0.1).
+-- **Milestone 2: Offline Mode & Non-Interactive Downloading**
+-  (Complete: 12/06/2021, tag: 0.2)
+-  - **Done:**
+-    - Add error handling logic to existing bounding-box based Mepolang download
+-      command to ensure valid bounding-box provided by user.
+-    - Rework main application / boot logic to enable fully non-interactive mode
+-      (free of SDL/Video context) to allow for CLI-based downloading of tiles.
+-    - Remove SDL delay from TileCache downloading logic / properly wait on file
+-      descriptors instead using curl_multi_wait.
+-    - Add a shell script to allow downloading either interactively or
+-      non-interactively based on Nominatim search query result so you can say
+-      download an entire city for example.
+-    - Parameterize max number of concurrent downloads as a setting accessible
+-      via prefset.
+-    - Add configuration parameter to set an offline mode; when set to true
+-      all tile downloading logic should no-operation for the privacy and
+-      bandwidth conscience.
+-    - Rework UI logic to adjust downloading bar to not overlap with pin details
+-      overlay.
+-    - Create Mepolang command to selectively clear download cache so
+-      tiles can be updated if outdated. (Note: decided to implemented expiry
+-      seconds preference instead)
+-    - Add radius-based download command allowing user to download tiles based on
+-      coordinate with a given radius (km distance) for specified zoom-levels.
+-    - Add distance to lat-lon conversion functions to assist in above (along
+-      with unit tests) and to later be used for measuring distance between
+-      pins in ordered groups.
+-- **Milestone 3: Powerful, Robust Pin API** (Complete: 01/30/2022, tag: 0.3)
+-  - **Done:**
+-    - Correct pin-selection mode cycling to properly respect delta values.
+-    - Allow ability to associate metadata with pins.
+-    - Fix existing pin bugs (e.g. title not showing properly & brittleness).
+-    - Allow pin groups to be either ordered or unordered, ordered pin groups
+-      show in UI with connecting lines (thus enabling lightweight navigation).
+-    - Implement distinction between structural pins and informational pins for
+-      ordered pin groups wherein structural pins are the nodes in a way and
+-      informational pins can be used for navigational cues.
+-    - Add script to add pins based on Nominatim bounding box results in
+-      addition to the existing Overpass pin script.
+-    - Implement bind_click Mepolang API command to run arbitrary Mepolang
+-      on clicking specific button (left, right click) 1-n times. Will enable
+-      more sophisticated scripts (e.g. such as click to define points in
+-      custom route / ordered pin group) in future.
+-    - Add support for click pin to activate.
+-    - Add pin groups and extend API as such so user can visually distinguish
+-      groups; for example one pin group may be bookmarks, another for a search,
+-      another for current location.
+-    - Implement command for removing specific pins based on handle.
+-    - Add ability to cycle through pins based on both: viewport visible pins
+-      and all pins.
+-    - Add script to convert XML Relation & Way from OSM API into ordered
+-      pin group(s) for testing purposes. Also should help for transit-specific
+-      and other overlays etc. (Implemented as overpass relation lookup instead
+-      as XML response doesn't have coordinates for each node entry - effect is
+-      same)
+-- **Milestone 4: Wayland & Mobile Support** (Complete: 3/22/2022, tag: 0.4)
+-  - **Done:**
+-    - Improve support for pinch-to-zoom using SDL multitouch gesture API to be
+-      more reliable and test on PinePhone & mobile devices.
+-    - Rework pinch-to-zoom to not be hardcoded but to instead use new Mepolang
+-      command (bind_gesture).
+-    - Add support for rotate gesture via SDL multitouch gesture API and expose
+-      as part of bind_gesture command.
+-    - Currently scripts for location search, bounding-box search,
+-      and similar use dmenu (X-based); integrate wofi, bemenu, or a similar
+-      tool for Wayland. Dynamically determine which menuing system to use
+-      in scripts.
+-    - Allow binding left hand/right hand side of pin overlay via new
+-      (bind_button) command and set to pin_cycle by default. Thus enabling
+-      touch-based pin-cycling for navigation. (Implemented buttons as
+-      arbitrary used-defined bar on bottom right corner)
+-    - Build out context-menu to be used in mobile-context allowing functionality
+-      triggered on desktop via keybindings for search etc. to be simply triggered
+-      on mobile.
+-    - Add to default Mepolang configuration trigger to open context-menu either
+-      via bind_gesture or bind_click.
+-    - Perform testing and make fixes as necessary on most common UIs on
+-      postmarketOS. Primarily test and ensure compatibility with Phosh
+-      (mobile Wayland), Swmo (mobile Wayland), Sxmo (mobile X), Sway
+-      (desktop Wayland), and i3 (desktop X) as these 5 environments encompass
+-      large userbases and represent the 4 different combinations of
+-      mobile/desktop & X/Wayland that should all have first-class support.
+-    - Rework SDL defaults (window expose, winch, default sizing etc.) to ensure
+-      greatest cross-compatibility between environments.
+-- **Milestone 5: UI Niceties** (Complete: 8/15/2022, tag: 0.5)
+-  - **Done:**
+-    - Add visual per-tile-downloading progress-indicators.
+-    - Add support for pasting / copying current coordinates from the system
+-      clipboard and ensure compatibility in both Wayland & X.
+-    - Rework main application event loop to handle STDIN file descriptor in
+-      parallel to current SDL events processing. So commandline of application
+-      can thus be used non-interactively / scripted. Also helpful for debugging.
+-    - Gracefully handle switching tile sources (e.g. purge cache & reload).
+-      Should be able to switch between OSM/bikemaps/stamen etc. without
+-      glitches.
+-    - Add routing script based on GraphHopper, OpenRouteService, or similar
+-      to parse GeoJSON LineString API response into an ordered pin group. Thus
+-      allowing for point-to-point navigation.
+-    - Implement save state / restore state Mepolang API command that dumps
+-      current state to file (as Mepolang) / and can restore via loading file.
+-    - Make shell pipe non-blocking (e.g. don't freeze UI while waiting for
+-      result) or otherwise implement timeout so that runaway scripts don't
+-      freeze application.
+-    - Refine existing Overpass search script (provide better recommendations
+-      illustrating OSM tag-based flexibility).
+-    - Add example bookmarking script based on pin API.
+-    - Improve bottom status bar display to show bandwidth usage / download of
+-      tiles, disk, and memory usage.
+-    - Finalize Mepolang 1.0 API and add error checking so things don't crash
+-      when accessing invalid union tag etc (improve robustness of mepolang
+-      parser).
+-    - Integrate gpsd into a script to update user's current location pin and
+-      fallback to geoclue2 as needed.
+-    - Autoupdate user current location either through introducing
+-      bind_interval command or continously running async_shellpipe script.
+-- **Milestone 6: Documentation & Packaging** (Complete: 9/29/2022, tag: 1.0)
+-  - **Done:**
+-    - Add manpage documenting Mepolang commands and basic usage.
+-    - Add markdown-based documentation to explain mepolang commands, usage
+-      in parity with man page.
+-    - Add prefs documentation to manpage
+-    - Modify internals of prefset / preferences table to automatically generate
+-      documentation directly from code / structs.
+-    - Modify internals of Mepolang to include documentation directly in
+-      structs so that Mepolang API documentation can be automatically generated
+-      as a webpage for end-users.
+-    - Document existing scripts used for search, routing, etc. and add notes
+-      about how these scripts could be used offline by running Nominatim,
+-      Overpass, GraphHopper, etc. locally.
+-    - Document examples on how to write custom scripts interfacing with
+-      mepolang.
+-    - Create Alpine package and add to pmOS postmarketos-ui-* frontends.
+-      (Note: depends on zig which is in testing , so cannot be directly
+-      added at the moment and is more of a pmOS admin decision)
+-    - Work with maintainers of mobile Linux (& PinePhone) UIs to get
+-      Mepo integrated properly.
+-    - Tag 1.0 release.
+-    - Package-split current `scripts/` directory to allow separate packages
+-      for mepo and mepo-scripts. The former only will contain the base
+-      application (Zig) executable; the latter will contain auxiliary scripts.
+-- **Milestone 7: Documentation Website** (Complete: 9/30/2022)
+-  - **Done:**
+-    - Development of a documentation website
+-    - Docs section: highlighting the various end-user documentation guides &
+-      tutorials (such as the installation guide, userguide, scripting guide,
+-      mepolang documentation etc.).
+-    - Contribute section: information on how to contribute,
+-      links to repository, bug tracker, mailing list, IRC, and details on
+-      how to get involved.
+-    - Videos section: to demonstrate both end-user functionality (such as with
+-      the [video created for 0.4](https://media.lrdu.org/mepo_demos/mepo_demo_0.4.webm)),
+-      and additionally this section could host new screencasts showing how to
+-      hack on mepo (e.g. examples of showing editing mepolang configuration
+-      and showing the end result; rather then just 'end-user' functionality
+-      as was the target with the 0.4 demo video).
+-    - Screencasts for userconfig/scripts
+-    - General QA pass on entire website typos/links/etc
+-- **Milestone 8: Additional Mobile Enviroments Compatibility - PlaMo & Lomiri** (Complete: 9/29/2022)
+-  - **Done:**
+-    - Add support for PlaMo (investigate bemenu compatbility, if unavailable something.
+-      like zenity or another window-based input method may be used). Note: integrated
+-      via zenity
+-    - Investigate & possibly add Flatpak compatability as this will likely
+-      be the simplest packaging route for Ubuntu Touch etc. Note: Flatpak created
+-      and added to Flathub.
+-    - Add support for Lomiri (Note: cut support due to incompatbilites with Mir, see mailing list note
+-      for more details)
++Details on releases are available at: [releases page](https://git.sr.ht/~mil/mepo/refs).
+     
+ 
+ ## **Funding**
+-[NLnet](https://nlnet.nl) has kindly awarded a grant to support Mepo's
+-development efforts as part of the NGI0 Discovery Fund under grant
+-agreement No 825322.  This funding will enable the financial support
+-for implementing of the roadmap to reach 1.0 as seen above. We are
+-very thankful to NLnet for accepting our application and making this
+-development possible!
+-
+-## **Icon**
+-The app icon used in Phosh and by the `.desktop` file was designed by
+-[iccqton](https://www.twitter.com/iccqton).
++Between October 2021 and October 2022, [NLnet](https://nlnet.nl) kindly
++awarded a grant to support Mepo's development efforts as part of the NGI0
++Discovery Fund under grant agreement No 825322.  This funding enabled the
++financial support for implementing of the roadmap to reach 1.0 as seen in
++[this document](./doc/mepo_1.0_roadmap_archived.md). We are very thankful to
++NLnet for accepting our application and making this development possible!
+ 
+ ## **Contributing**
+-
+ Mepo is surely welcome to contributors who have experience or interest
+ in mobile Linux, OSM, and/or Zig.
+ 
+diff --git a/doc/mepo_1.0_roadmap_archived.md b/doc/mepo_1.0_roadmap_archived.md
+new file mode 100644
+index 0000000..8c9ae66
+--- /dev/null
++++ b/doc/mepo_1.0_roadmap_archived.md
+@@ -0,0 +1,196 @@
++## **Roadmap to 1.0 release**
++
++- **Milestone 1: Overall Stability** (Complete: 10/31/2021, tag: 0.1)
++  - **Done:**
++    - Improve current stability of the application and resolve intermittent
++      crashes related to tile downloading.
++    - Implement tile downloading retry logic and handle case where user is
++      offline gracefully
++    - Error check invalid PNG tile data received from tile servers & loaded
++      from filesystem.
++    - Rework consistency of allocator passing (e.g. remove ad hoc allocators,
++      ensure all allocations based on using top-level allocator via arena
++      allocation).
++    - Rework blitting logic to be more intelligent about not drawing off-screen
++      entities & pins.
++    - Implement LIFO for downloading queue: viewport tiles should always take
++      priority before long-queued off-screen tiles.
++    - Refactor error handling logic & use utility function rather than zig
++      dbg.
++    - Implement togglable text debug message overlay to provide user feedback
++      right in UI when operations like shell pipe fail.
++    - Add togglable help text overlay to show current results of bind_key
++      (keybindings table) mapping in UI.
++    - Fix bug where negative latitude values fail to round-trip between
++      lat-to-y / y-to-lat conversion functions.
++    - Implement debug mode preference or similar to control verbosity of
++      debugging STDERR messages.
++    - Resolve existing memory leaks in the application.
++    - Provide an initial tag for package maintainers (0.1).
++- **Milestone 2: Offline Mode & Non-Interactive Downloading**
++  (Complete: 12/06/2021, tag: 0.2)
++  - **Done:**
++    - Add error handling logic to existing bounding-box based Mepolang download
++      command to ensure valid bounding-box provided by user.
++    - Rework main application / boot logic to enable fully non-interactive mode
++      (free of SDL/Video context) to allow for CLI-based downloading of tiles.
++    - Remove SDL delay from TileCache downloading logic / properly wait on file
++      descriptors instead using curl_multi_wait.
++    - Add a shell script to allow downloading either interactively or
++      non-interactively based on Nominatim search query result so you can say
++      download an entire city for example.
++    - Parameterize max number of concurrent downloads as a setting accessible
++      via prefset.
++    - Add configuration parameter to set an offline mode; when set to true
++      all tile downloading logic should no-operation for the privacy and
++      bandwidth conscience.
++    - Rework UI logic to adjust downloading bar to not overlap with pin details
++      overlay.
++    - Create Mepolang command to selectively clear download cache so
++      tiles can be updated if outdated. (Note: decided to implemented expiry
++      seconds preference instead)
++    - Add radius-based download command allowing user to download tiles based on
++      coordinate with a given radius (km distance) for specified zoom-levels.
++    - Add distance to lat-lon conversion functions to assist in above (along
++      with unit tests) and to later be used for measuring distance between
++      pins in ordered groups.
++- **Milestone 3: Powerful, Robust Pin API** (Complete: 01/30/2022, tag: 0.3)
++  - **Done:**
++    - Correct pin-selection mode cycling to properly respect delta values.
++    - Allow ability to associate metadata with pins.
++    - Fix existing pin bugs (e.g. title not showing properly & brittleness).
++    - Allow pin groups to be either ordered or unordered, ordered pin groups
++      show in UI with connecting lines (thus enabling lightweight navigation).
++    - Implement distinction between structural pins and informational pins for
++      ordered pin groups wherein structural pins are the nodes in a way and
++      informational pins can be used for navigational cues.
++    - Add script to add pins based on Nominatim bounding box results in
++      addition to the existing Overpass pin script.
++    - Implement bind_click Mepolang API command to run arbitrary Mepolang
++      on clicking specific button (left, right click) 1-n times. Will enable
++      more sophisticated scripts (e.g. such as click to define points in
++      custom route / ordered pin group) in future.
++    - Add support for click pin to activate.
++    - Add pin groups and extend API as such so user can visually distinguish
++      groups; for example one pin group may be bookmarks, another for a search,
++      another for current location.
++    - Implement command for removing specific pins based on handle.
++    - Add ability to cycle through pins based on both: viewport visible pins
++      and all pins.
++    - Add script to convert XML Relation & Way from OSM API into ordered
++      pin group(s) for testing purposes. Also should help for transit-specific
++      and other overlays etc. (Implemented as overpass relation lookup instead
++      as XML response doesn't have coordinates for each node entry - effect is
++      same)
++- **Milestone 4: Wayland & Mobile Support** (Complete: 3/22/2022, tag: 0.4)
++  - **Done:**
++    - Improve support for pinch-to-zoom using SDL multitouch gesture API to be
++      more reliable and test on PinePhone & mobile devices.
++    - Rework pinch-to-zoom to not be hardcoded but to instead use new Mepolang
++      command (bind_gesture).
++    - Add support for rotate gesture via SDL multitouch gesture API and expose
++      as part of bind_gesture command.
++    - Currently scripts for location search, bounding-box search,
++      and similar use dmenu (X-based); integrate wofi, bemenu, or a similar
++      tool for Wayland. Dynamically determine which menuing system to use
++      in scripts.
++    - Allow binding left hand/right hand side of pin overlay via new
++      (bind_button) command and set to pin_cycle by default. Thus enabling
++      touch-based pin-cycling for navigation. (Implemented buttons as
++      arbitrary used-defined bar on bottom right corner)
++    - Build out context-menu to be used in mobile-context allowing functionality
++      triggered on desktop via keybindings for search etc. to be simply triggered
++      on mobile.
++    - Add to default Mepolang configuration trigger to open context-menu either
++      via bind_gesture or bind_click.
++    - Perform testing and make fixes as necessary on most common UIs on
++      postmarketOS. Primarily test and ensure compatibility with Phosh
++      (mobile Wayland), Swmo (mobile Wayland), Sxmo (mobile X), Sway
++      (desktop Wayland), and i3 (desktop X) as these 5 environments encompass
++      large userbases and represent the 4 different combinations of
++      mobile/desktop & X/Wayland that should all have first-class support.
++    - Rework SDL defaults (window expose, winch, default sizing etc.) to ensure
++      greatest cross-compatibility between environments.
++- **Milestone 5: UI Niceties** (Complete: 8/15/2022, tag: 0.5)
++  - **Done:**
++    - Add visual per-tile-downloading progress-indicators.
++    - Add support for pasting / copying current coordinates from the system
++      clipboard and ensure compatibility in both Wayland & X.
++    - Rework main application event loop to handle STDIN file descriptor in
++      parallel to current SDL events processing. So commandline of application
++      can thus be used non-interactively / scripted. Also helpful for debugging.
++    - Gracefully handle switching tile sources (e.g. purge cache & reload).
++      Should be able to switch between OSM/bikemaps/stamen etc. without
++      glitches.
++    - Add routing script based on GraphHopper, OpenRouteService, or similar
++      to parse GeoJSON LineString API response into an ordered pin group. Thus
++      allowing for point-to-point navigation.
++    - Implement save state / restore state Mepolang API command that dumps
++      current state to file (as Mepolang) / and can restore via loading file.
++    - Make shell pipe non-blocking (e.g. don't freeze UI while waiting for
++      result) or otherwise implement timeout so that runaway scripts don't
++      freeze application.
++    - Refine existing Overpass search script (provide better recommendations
++      illustrating OSM tag-based flexibility).
++    - Add example bookmarking script based on pin API.
++    - Improve bottom status bar display to show bandwidth usage / download of
++      tiles, disk, and memory usage.
++    - Finalize Mepolang 1.0 API and add error checking so things don't crash
++      when accessing invalid union tag etc (improve robustness of mepolang
++      parser).
++    - Integrate gpsd into a script to update user's current location pin and
++      fallback to geoclue2 as needed.
++    - Autoupdate user current location either through introducing
++      bind_interval command or continously running async_shellpipe script.
++- **Milestone 6: Documentation & Packaging** (Complete: 9/29/2022, tag: 1.0)
++  - **Done:**
++    - Add manpage documenting Mepolang commands and basic usage.
++    - Add markdown-based documentation to explain mepolang commands, usage
++      in parity with man page.
++    - Add prefs documentation to manpage
++    - Modify internals of prefset / preferences table to automatically generate
++      documentation directly from code / structs.
++    - Modify internals of Mepolang to include documentation directly in
++      structs so that Mepolang API documentation can be automatically generated
++      as a webpage for end-users.
++    - Document existing scripts used for search, routing, etc. and add notes
++      about how these scripts could be used offline by running Nominatim,
++      Overpass, GraphHopper, etc. locally.
++    - Document examples on how to write custom scripts interfacing with
++      mepolang.
++    - Create Alpine package and add to pmOS postmarketos-ui-* frontends.
++      (Note: depends on zig which is in testing , so cannot be directly
++      added at the moment and is more of a pmOS admin decision)
++    - Work with maintainers of mobile Linux (& PinePhone) UIs to get
++      Mepo integrated properly.
++    - Tag 1.0 release.
++    - Package-split current `scripts/` directory to allow separate packages
++      for mepo and mepo-scripts. The former only will contain the base
++      application (Zig) executable; the latter will contain auxiliary scripts.
++- **Milestone 7: Documentation Website** (Complete: 9/30/2022)
++  - **Done:**
++    - Development of a documentation website
++    - Docs section: highlighting the various end-user documentation guides &
++      tutorials (such as the installation guide, userguide, scripting guide,
++      mepolang documentation etc.).
++    - Contribute section: information on how to contribute,
++      links to repository, bug tracker, mailing list, IRC, and details on
++      how to get involved.
++    - Videos section: to demonstrate both end-user functionality (such as with
++      the [video created for 0.4](https://media.lrdu.org/mepo_demos/mepo_demo_0.4.webm)),
++      and additionally this section could host new screencasts showing how to
++      hack on mepo (e.g. examples of showing editing mepolang configuration
++      and showing the end result; rather then just 'end-user' functionality
++      as was the target with the 0.4 demo video).
++    - Screencasts for userconfig/scripts
++    - General QA pass on entire website typos/links/etc
++- **Milestone 8: Additional Mobile Enviroments Compatibility - PlaMo & Lomiri** (Complete: 9/29/2022)
++  - **Done:**
++    - Add support for PlaMo (investigate bemenu compatbility, if unavailable something.
++      like zenity or another window-based input method may be used). Note: integrated
++      via zenity
++    - Investigate & possibly add Flatpak compatability as this will likely
++      be the simplest packaging route for Ubuntu Touch etc. Note: Flatpak created
++      and added to Flathub.
++    - Add support for Lomiri (Note: cut support due to incompatbilites with Mir, see mailing list note
++      for more details)
+diff --git a/scripts/mepo_ui_helper_menu.sh b/scripts/mepo_ui_helper_menu.sh
+index f72236b..55f1047 100755
+--- a/scripts/mepo_ui_helper_menu.sh
++++ b/scripts/mepo_ui_helper_menu.sh
+@@ -46,7 +46,7 @@ inputzenity() {
+     OPTS="$(printf %b "$OPTS" | tr -d \" | awk NF)"
+     RESULT="$(
+       echo "$OPTS" |
+-      xargs -d$'\n' zenity $(zenitydims 0.8 0.8) --title "Select an entry" --list --column=Selection --text "$PROMPT"
++      xargs -d"\\n" zenity $(zenitydims 0.8 0.8) --title "Select an entry" --list --column=Selection --text "$PROMPT"
+     )"
+     if [ "$RESULT" = "Type Custom" ]; then
+       TEXTINPUT=1 inputzenity
+diff --git a/scripts/mepo_ui_menu_route_graphhopper.sh b/scripts/mepo_ui_menu_route_graphhopper.sh
+index 04bd3da..a523c4b 100755
+--- a/scripts/mepo_ui_menu_route_graphhopper.sh
++++ b/scripts/mepo_ui_menu_route_graphhopper.sh
+@@ -36,7 +36,7 @@ nominatimquerytargetmenu() {
+ 
+     VIEWBOX="$MEPO_TL_LON,$MEPO_TL_LAT,$MEPO_BR_LON,$MEPO_BR_LAT"
+     RESULT="$(
+-      curl "https://nominatim.openstreetmap.org/search?format=json&q=$QUERY&viewbox=$VIEWBOX&bounded=1&limit=50" |
++      curl "${MEPO_ENDPOINT_NOMINATIM_SEARCH}?format=json&q=$QUERY&viewbox=$VIEWBOX&bounded=1&limit=50" |
+         jq '.[] | "\(.display_name) \(.lat) \(.lon)" '
+     )"
+ 
+diff --git a/scripts/mepo_ui_menu_search_overpass.sh b/scripts/mepo_ui_menu_search_overpass.sh
+index 4fb864d..16b88f8 100755
+--- a/scripts/mepo_ui_menu_search_overpass.sh
++++ b/scripts/mepo_ui_menu_search_overpass.sh
+@@ -9,6 +9,51 @@ DOC='
+ '
+ [ -z "$MEPO_ENDPOINT_OVERPASS" ] && MEPO_ENDPOINT_OVERPASS="https://lz4.overpass-api.de/api/interpreter"
+ 
++curloverpass() {
++  SCOPE="$(echo "$SCOPE" | cut -d: -f1 | tr '\n' ' ')"
++  BBOX="$MEPO_BR_LAT,$MEPO_TL_LON,$MEPO_TL_LAT,$MEPO_BR_LON"
++  curl "$MEPO_ENDPOINT_OVERPASS" --data-raw "data=
++      [out:json][timeout:25];
++      (
++        node${SCOPE}(${BBOX});
++        way${SCOPE}(${BBOX});
++        relation${SCOPE}(${BBOX});
++      );
++      out+body 100;
++      >;
++      out+skel+qt;
++  "
++}
++
++mapoverpassjsontopins() {
++  JSON_RESULTS="$1"
++  UNTITLED_LABEL="$2"
++
++  # E.g. label set to 'tags.name (id)'
++  # when tags.name unset; label will appear just as '$UNTITLED_LABEL (id)'
++  PINHANDLEJQ='if .tags.name then .tags.name else "'${UNTITLED_LABEL}'" end + " (" + (.id|tostring) + ")"'
++
++  # Add pin
++  echo "$JSON_RESULTS" | jq '
++    .elements | .[] | select(.lat != null and .lon != null) |
++    "pin_add -1 0 \(.lat) \(.lon) [\('"$PINHANDLEJQ"')];"
++  ' | tr -d ',"'
++
++
++  # Add pin metadata
++  echo "$JSON_RESULTS" | jq '
++    .elements | .[] | select(.lat != null and .lon != null) |
++    ('"$PINHANDLEJQ"') as $handle |
++    [.tags] |
++    map(
++      to_entries |
++      map("pin_meta -1 [" + $handle + "] [" + .key + "] [" + .value + "];")
++    ) |
++    flatten(3) |
++    .[]
++  ' | tr -d ',"'
++}
++
+ main() {
+   OPTIONS="$(mepo_generated_osmtags.sh)"
+   SCOPE="$(
+@@ -24,46 +69,13 @@ main() {
+     exit 1
+   fi
+ 
+-  SCOPE="$(echo "$SCOPE" | cut -d: -f1 | tr '\n' ' ')"
+-  BBOX="$MEPO_BR_LAT,$MEPO_TL_LON,$MEPO_TL_LAT,$MEPO_BR_LON"
+-  JSON_RESULTS="$(
+-    curl "$MEPO_ENDPOINT_OVERPASS" --data-raw "data=
+-        [out:json][timeout:25];
+-        (
+-          node${SCOPE}(${BBOX});
+-          way${SCOPE}(${BBOX});
+-          relation${SCOPE}(${BBOX});
+-        );
+-        out+body 100;
+-        >;
+-        out+skel+qt;
+-    "
+-  )"
+-
++  JSON_RESULTS="$(curloverpass "$SCOPE")"
+   echo "
+     prefset_n pingroup_0_ordered 0;
+     pin_groupactivate 0;
+     pin_purge;
+   "
+-
+-  echo "$JSON_RESULTS" | jq '
+-    .elements |
+-    .[] |
+-    select(.lat != null and .lon != null and .tags.name != null) |
+-    "pin_add -1 0 \(.lat) \(.lon) [\(.tags.name)];"
+-  ' | tr -d ',"'
+-
+-  # Add pin metadata
+-  echo "$JSON_RESULTS" | jq '
+-    [.elements | .[] | .tags | select(. != null and .name != null)] | 
+-    map(
+-      .name as $handle | 
+-      to_entries |  
+-      map("pin_meta -1 [" + $handle + "] [" + .key + "] [" + .value + "];")
+-    ) | 
+-    flatten(3) |
+-    .[]
+-  ' | tr -d ',"'
++  mapoverpassjsontopins "$JSON_RESULTS" "$(echo "$SCOPE" | cut -d: -f1 | tr -d '[]')"
+ }
+ 
+ if [ -n "$1" ]; then "$@"; else main; fi
+diff --git a/scripts/mepo_ui_menu_user_pin_updater.sh b/scripts/mepo_ui_menu_user_pin_updater.sh
+index 2cb56b3..e6c2031 100755
+--- a/scripts/mepo_ui_menu_user_pin_updater.sh
++++ b/scripts/mepo_ui_menu_user_pin_updater.sh
+@@ -72,15 +72,15 @@ getcoords() {
+ 
+ droppin() {
+   SOURCEANDCOORDS="$(getcoords)"
+-  [ $? == 1 ] && return
++  [ $? = 1 ] && return
+   SOURCE="$(echo "$SOURCEANDCOORDS" | cut -d ' ' -f1)"
+   COORDS="$(echo "$SOURCEANDCOORDS" | cut -d ' ' -f2-3)"
+-  LAT="$(echo $SOURCE | cut -d " " -f1)"
+-  LON="$(echo $SOURCE | cut -d " " -f2)"
++  LAT="$(echo "$COORDS" | cut -d " " -f1)"
++  LON="$(echo "$COORDS" | cut -d " " -f2)"
+ 
+   echo "pin_add 6 0 $COORDS user_location;"
+-  echo "pin_meta 6 user_location lat $LAT;"
+-  echo "pin_meta 6 user_location lat $LON;"
++  echo "pin_meta 6 user_location lat [$LAT];"
++  echo "pin_meta 6 user_location lon [$LON];"
+   echo "pin_meta 6 user_location source $SOURCE;"
+   echo "pin_meta 6 user_location updated_at [$(date)];"
+ }
+diff --git a/src/Docs.zig b/src/Docs.zig
+index 00b338a..2456ce1 100644
+--- a/src/Docs.zig
++++ b/src/Docs.zig
+@@ -3,7 +3,7 @@ const FnTable = @import("./api/_FnTable.zig");
+ const config = @import("./config.zig");
+ const utilprefs = @import("./util/utilprefs.zig");
+ 
+-pub const CliFlags = &[_]struct{
++pub const CliFlags = &[_]struct {
+     flag: []const u8,
+     param: ?[]const u8 = null,
+     desc: []const u8,
+@@ -13,13 +13,15 @@ pub const CliFlags = &[_]struct{
+     .{ .flag = "-i", .desc = "Read mepolang from STDIN continually. Can be used for interactive debugging or scripting via: `tee | mepo -i` or `./myscript | mepo -i`." },
+     .{ .flag = "-e", .desc = "Enable debug mode to log messages to STDERR." },
+     .{ .flag = "-ndc", .desc = "Disable default/base config, this is useful if you have a custom config and don't wish to use the default bindings, etc.. for example: `cat my_config | mepo -ndc -i`." },
+-    .{ .flag = "-sw", .desc = "Use software renderer rather then default GPU/hardware based renderer." },
++    .{ .flag = "-hw", .desc = "Force using hardware renderer rather then default auto (HW/SW) renderer." },
++    .{ .flag = "-sw", .desc = "Force using software renderer rather then default auto (HW/SW) renderer." },
++    .{ .flag = "-tx", .desc = "Number of textures to load to (GPU) memory for both OSM & pile tile layer cache (defaults to 200).", .param = "#" },
+     .{ .flag = "-v", .desc = "Print version number." },
+     .{ .flag = "-h", .desc = "Print this help text." },
+     .{ .flag = "-d", .desc = "Non-interactively download tiles for given range.", .param = "lat_a,lon_a,lat_b,lon_b,zoom_min,zoom_max" },
+ };
+ 
+-const PrefsIntro = 
++const PrefsIntro =
+     \\Internally mepo keeps track of a number of preferences which control all
+     \\state for the application. These preferences can be set with the commands
+     \\`preset_n` for numerical preferences and `prefset_t` for textual preferences.
+@@ -27,7 +29,7 @@ const PrefsIntro =
+     \\
+     \\Below is an exhaustive list of all available preferences:
+     \\
+-  ;
++;
+ 
+ const MepolangIntro =
+     \\Mepolang is mepo's command language for runtime IPC and configuration. It
+@@ -59,9 +61,9 @@ const MepolangIntro =
+     \\and detailed practical examples of using mepolang may be viewed in
+     \\the [scripting guide](/scriptingguide.html) which should be seen as
+     \\a supplement to this document.
+-    ;
++;
+ 
+-const MepolangSyntax = 
++const MepolangSyntax =
+     \\Syntax rules are as follows:
+     \\
+     \\- Mepolang syntax is composed of statements.
+@@ -85,9 +87,9 @@ const MepolangSyntax =
+     \\commandname2 arg 8.373 anothertextarg;
+     \\```
+     \\
+-    ;
++;
+ 
+-const DocEnvVarsShellpipe = 
++const DocEnvVarsShellpipe =
+     \\Both `shellpipe_sync` and `shellpipe_async` expose a number of ENV
+     \\variables to the target script called. See below for the accessible
+     \\ENV variables exposed.
+@@ -103,7 +105,7 @@ const DocEnvVarsShellpipe =
+     \\- `MEPO_BR_LON`: Longitude of the bottom right point on the screen
+     \\- `MEPO_CURSOR_LAT`: Latitude of the cursor position
+     \\- `MEPO_CURSOR_LON`: Longitude of the cursor position
+-    ;
++;
+ 
+ const DocBaseConfigIntro =
+     \\The following base configuration was built into Mepo as of
+@@ -112,13 +114,9 @@ const DocBaseConfigIntro =
+     \\`prefset_t`. While there are not unbinding commands currently
+     \\supported, you can forgo the default configuration by using
+     \\the `-ndc` commandline flag.
+-    ;
++;
+ 
+-
+-
+-
+-
+-pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !void {
++pub fn generate(allocator: std.mem.Allocator, format: enum { Markdown, Manpage }) !void {
+     const stdout = std.io.getStdOut().writer();
+ 
+     switch (format) {
+@@ -162,9 +160,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\
+                 \\## API
+                 \\
+-                ,
+-                .{MepolangIntro, MepolangSyntax, config.Version}
+-            );
++            , .{ MepolangIntro, MepolangSyntax, config.Version });
+ 
+             // API Section
+             for (FnTable.fn_specs) |fnc| {
+@@ -182,64 +178,59 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 try stdout.print("\n---\n\n", .{});
+             }
+ 
+-
+             // Prefs Section
+             try stdout.print(
+                 \\## Preferences
+                 \\
+                 \\ {s}
+                 \\
+-                ,
+-                .{ PrefsIntro },
++            ,
++                .{PrefsIntro},
+             );
+             try stdout.print(
+                 \\| **Name** | **Description** | **Datatype** | **Min** | **Max** | **Default Value** |
+                 \\| -------- | --------------- | ------------ | ------- | ------- | ----------------- |
+                 \\
+-                , 
+-                .{}
+-            );
++            , .{});
+             for (utilprefs.prefs_mapping) |pref| {
+-                const datatype = switch(pref.value) {
+-                    .b =>    "Number (bool)",
+-                    .t =>    "Text",
+-                    .f =>    "Number (float)",
+-                    .u =>    "Number (u8)",
+-                    .u24 =>  "Number (u24)",
++                const datatype = switch (pref.value) {
++                    .b => "Number (bool)",
++                    .t => "Text",
++                    .f => "Number (float)",
++                    .u => "Number (u8)",
++                    .u24 => "Number (u24)",
+                 };
+ 
+-                var value : []const u8 = "";
+-                switch(pref.value) {
+-                    .t =>    {
++                var value: []const u8 = "";
++                switch (pref.value) {
++                    .t => {
+                         const text = if (pref.value.t) |t| t else "";
+                         value = try std.fmt.allocPrint(allocator, "{s}", .{text});
+-                     },
+-                    .b =>    { 
++                    },
++                    .b => {
+                         if (pref.value.b) {
+                             value = try std.fmt.allocPrint(allocator, "{d}", .{1});
+                         } else {
+                             value = try std.fmt.allocPrint(allocator, "{d}", .{0});
+                         }
+                     },
+-                    .f =>    { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.f}); },
+-                    .u =>    { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u}); },
+-                    .u24 =>  { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u24}); },
++                    .f => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.f});
++                    },
++                    .u => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u});
++                    },
++                    .u24 => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u24});
++                    },
+                 }
+                 defer allocator.free(value);
+ 
+-
+                 if (pref.bounds) |bounds| {
+-                    try stdout.print(
+-                        "| {s} | {s} | {s} | {d} | {d} | {s} |\n",
+-                        .{ pref.name, pref.desc, datatype, bounds.min, bounds.max, value }
+-                    );
++                    try stdout.print("| {s} | {s} | {s} | {d} | {d} | {s} |\n", .{ pref.name, pref.desc, datatype, bounds.min, bounds.max, value });
+                 } else {
+-                    try stdout.print(
+-                        "| {s} | {s} | {s} |  |  | {s} |\n",
+-                        .{ pref.name, pref.desc, datatype, value }
+-                    );
++                    try stdout.print("| {s} | {s} | {s} |  |  | {s} |\n", .{ pref.name, pref.desc, datatype, value });
+                 }
+-
+             }
+ 
+             try stdout.print(
+@@ -259,26 +250,28 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\```sh
+                 \\{s}
+                 \\```
+-                ,
+-                .{DocEnvVarsShellpipe, DocBaseConfigIntro, config.DefaultBaseConfig},
++            ,
++                .{ DocEnvVarsShellpipe, DocBaseConfigIntro, config.DefaultBaseConfig },
+             );
+         },
+         .Manpage => {
+             try stdout.print(
+-              \\.TH Mepo 1
+-              \\
+-              \\.SH NAME
+-              \\mepo - fast, simple, and hackable OSM map viewer for desktop & mobile Linux
+-              \\
+-              \\.SH SYNOPSIS
+-              \\.B mepo
+-              \\[\fB\-i\fR]
+-              ,
+-              .{},
++                \\.TH Mepo 1
++                \\
++                \\.SH NAME
++                \\mepo - fast, simple, and hackable OSM map viewer for desktop & mobile Linux
++                \\
++                \\.SH SYNOPSIS
++                \\.B mepo
++                \\[\fB\-i\fR]
++            ,
++                .{},
+             );
+             for (CliFlags) |flag_spec| {
+                 if (flag_spec.param) |param| {
+-                    try stdout.print("[\\fB\\{s}\\fR \\fI{s}\\fR]", .{flag_spec.flag, param},
++                    try stdout.print(
++                        "[\\fB\\{s}\\fR \\fI{s}\\fR]",
++                        .{ flag_spec.flag, param },
+                     );
+                 } else {
+                     try stdout.print("[\\fB\\{s}]", .{flag_spec.flag});
+@@ -305,9 +298,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\
+                 \\.SH OPTIONS
+                 \\
+-                ,
+-                .{}
+-            );
++            , .{});
+             for (CliFlags) |flag_spec| {
+                 if (flag_spec.param) |param| {
+                     try stdout.print(
+@@ -315,8 +306,8 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                         \\.BR \{s} ", " \{s}\ {s}\fR
+                         \\{s}
+                         \\
+-                        , 
+-                        .{flag_spec.flag, flag_spec.flag, param, flag_spec.desc},
++                    ,
++                        .{ flag_spec.flag, flag_spec.flag, param, flag_spec.desc },
+                     );
+                 } else {
+                     try stdout.print(
+@@ -324,8 +315,8 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                         \\.BR \{s} \fR
+                         \\{s}
+                         \\
+-                        ,
+-                        .{flag_spec.flag, flag_spec.desc},
++                    ,
++                        .{ flag_spec.flag, flag_spec.desc },
+                     );
+                 }
+             }
+@@ -353,9 +344,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\.B
+                 \\~/.config/mepo/config
+                 \\.
+-                ,
+-                .{}
+-            );
++            , .{});
+ 
+             try stdout.print(
+                 \\
+@@ -397,9 +386,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\  commandname textarg [multi word arg] 2;
+                 \\  commandname2 arg 8.373 anothertextarg;
+                 \\
+-                ,
+-                .{}
+-            );
++            , .{});
+ 
+             try stdout.print(".SH MEPOLANG COMMANDS\n", .{});
+             for (FnTable.fn_specs) |fnc| {
+@@ -409,9 +396,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                     \\.br
+                     \\{s}
+                     \\
+-                    ,
+-                    .{fnc.name, fnc.desc}
+-                );
++                , .{ fnc.name, fnc.desc });
+                 if (fnc.args.len > 0) {
+                     try stdout.print(".br\n.br\nArguments:\n", .{});
+                     for (fnc.args) |arg| {
+@@ -425,31 +410,37 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+             try stdout.print(".SH PREFERENCES\n", .{});
+             try stdout.print("{s}\n", .{PrefsIntro});
+             for (utilprefs.prefs_mapping) |pref| {
+-                const datatype = switch(pref.value) {
+-                    .b =>    "Number (bool)",
+-                    .t =>    "Text",
+-                    .f =>    "Number (float)",
+-                    .u =>    "Number (u8)",
+-                    .u24 =>  "Number (u24)",
++                const datatype = switch (pref.value) {
++                    .b => "Number (bool)",
++                    .t => "Text",
++                    .f => "Number (float)",
++                    .u => "Number (u8)",
++                    .u24 => "Number (u24)",
+                 };
+ 
+-                var value : []const u8 = "";
+-                
+-                switch(pref.value) {
+-                    .t =>    { 
++                var value: []const u8 = "";
++
++                switch (pref.value) {
++                    .t => {
+                         const text = if (pref.value.t) |t| t else "";
+                         value = try std.fmt.allocPrint(allocator, "{s}", .{text});
+                     },
+-                    .b =>    { 
++                    .b => {
+                         if (pref.value.b) {
+                             value = try std.fmt.allocPrint(allocator, "{d}", .{1});
+                         } else {
+                             value = try std.fmt.allocPrint(allocator, "{d}", .{0});
+                         }
+                     },
+-                    .f =>    { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.f}); },
+-                    .u =>    { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u}); },
+-                    .u24 =>  { value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u24}); },
++                    .f => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.f});
++                    },
++                    .u => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u});
++                    },
++                    .u24 => {
++                        value = try std.fmt.allocPrint(allocator, "{d}", .{pref.value.u24});
++                    },
+                 }
+                 defer allocator.free(value);
+ 
+@@ -465,9 +456,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                         \\{s}
+                         \\
+                         \\
+-                        ,
+-                        .{ pref.name, datatype, value, bounds.min, bounds.max, pref.desc }
+-                    );
++                    , .{ pref.name, datatype, value, bounds.min, bounds.max, pref.desc });
+                 } else {
+                     try stdout.print(
+                         \\.PP
+@@ -480,13 +469,8 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                         \\{s}
+                         \\
+                         \\
+-                        ,
+-                        .{ pref.name, datatype, value, pref.desc }
+-                    );
+-
++                    , .{ pref.name, datatype, value, pref.desc });
+                 }
+-
+-
+             }
+ 
+             try stdout.print(
+@@ -513,9 +497,7 @@ pub fn generate(allocator: std.mem.Allocator, format: enum{Markdown, Manpage}) !
+                 \\website at http://mepo.milesalan.com or mepo's project page
+                 \\on srht at http://sr.ht/~mil/mepo
+                 \\
+-                ,
+-                .{DocBaseConfigIntro, config.DefaultBaseConfig, config.Version}
+-            );
++            , .{ DocBaseConfigIntro, config.DefaultBaseConfig, config.Version });
+         },
+     }
+ }
+diff --git a/src/Mepo.zig b/src/Mepo.zig
+index 1cb8246..cd53231 100644
+--- a/src/Mepo.zig
++++ b/src/Mepo.zig
+@@ -4,6 +4,7 @@ const types = @import("./types.zig");
+ const config = @import("./config.zig");
+ const errors = @import("./errors.zig");
+ const TileCache = @import("./TileCache.zig");
++const blitfns = @import("./blit/blit.zig");
+ const utilconversion = @import("./util/utilconversion.zig");
+ const utilmepolang = @import("util/utilmepolang.zig");
+ const utilplatform = @import("util/utilplatform.zig");
+@@ -16,6 +17,7 @@ const FnTable = @import("./api/_FnTable.zig");
+ 
+ allocator: std.mem.Allocator,
+ async_shellpipe_threads: datastructure.QueueHashMap(i8, sdl.SDL_threadID),
++blit_pinlayer_cache: datastructure.EvictionHashMap(types.XYZ, *sdl.SDL_Texture, evict_texture, &config.MaxTextures),
+ config: []const u8,
+ debug_message: ?[]const u8 = null,
+ drag: ?struct {
+@@ -32,7 +34,7 @@ pin_group_active: u8 = 0,
+ pin_group_active_item: ?u32 = null,
+ pin_groups: [10]std.ArrayList(types.Pin) = undefined,
+ renderer: *sdl.SDL_Renderer = undefined,
+-renderer_sw: bool,
++renderer_type: types.RendererType = .Auto,
+ table_gestures: std.array_hash_map.AutoArrayHashMap(types.GestureInput, []const u8),
+ table_clicks: std.array_hash_map.AutoArrayHashMap(types.ClickInput, []const u8),
+ table_keybindings: std.array_hash_map.AutoArrayHashMap(types.KeyInput, []const u8),
+@@ -46,576 +48,6 @@ win_w: u32 = config.InitWindowW,
+ window: *sdl.SDL_Window = undefined,
+ quit_action: ?[]const u8 = null,
+ 
+-fn blit_crosshair(mepo: *@This()) errors.SDLError!void {
+-    try utilsdl.sdl_renderer_set_draw_color(mepo.renderer, .{ .value = 0x000000 });
+-    try utilsdl.errorcheck(sdl.SDL_RenderDrawLine(
+-        mepo.renderer,
+-        @intCast(c_int, mepo.win_w / 2 - (p.get(p.pref.crosshair_size).u / 2)),
+-        @intCast(c_int, mepo.win_h / 2),
+-        @intCast(c_int, mepo.win_w / 2 + (p.get(p.pref.crosshair_size).u / 2)),
+-        @intCast(c_int, mepo.win_h / 2),
+-    ));
+-    try utilsdl.errorcheck(sdl.SDL_RenderDrawLine(
+-        mepo.renderer,
+-        @intCast(c_int, mepo.win_w / 2),
+-        @intCast(c_int, mepo.win_h / 2 - (p.get(p.pref.crosshair_size).u / 2)),
+-        @intCast(c_int, mepo.win_w / 2),
+-        @intCast(c_int, mepo.win_h / 2 + (p.get(p.pref.crosshair_size).u / 2)),
+-    ));
+-}
+-
+-pub fn blit_tiles_all(mepo: *@This(), bbox: sdl.SDL_Rect, zoom: u8) !void {
+-    const vpx = utilconversion.lon_to_px_x(p.get(p.pref.lon).f, zoom) - @divTrunc(@intCast(i32, mepo.win_w), 2);
+-    const vpy = utilconversion.lat_to_px_y(p.get(p.pref.lat).f, zoom) - @divTrunc(@intCast(i32, mepo.win_h), 2);
+-    const begx = vpx - config.Tsize;
+-    const begy = vpy - config.Tsize;
+-    const endx = vpx + @intCast(i32, bbox.w) + config.Tsize;
+-    const endy = vpy + @intCast(i32, bbox.h) + config.Tsize;
+-
+-    var tilex: i32 = @intCast(i32, @divFloor(begx, config.Tsize));
+-    var tiley: i32 = @intCast(i32, @divFloor(begy, config.Tsize));
+-
+-    var x = begx;
+-    while (x < endx) {
+-        var y = begy;
+-        tiley = @intCast(i32, @divFloor(begy, config.Tsize));
+-        while (y < endy) {
+-            if (tilex >= 0 and tiley >= 0 and tilex <= std.math.pow(u32, 2, zoom) - 1 and tiley <= std.math.pow(u32, 2, zoom) - 1) {
+-                try mepo.blit_tile_surface(
+-                    @intCast(u32, tilex),
+-                    @intCast(u32, tiley),
+-                    zoom,
+-                    vpx,
+-                    vpy,
+-                    bbox,
+-                );
+-            }
+-            y += config.Tsize;
+-            tiley += 1;
+-        }
+-        x += config.Tsize;
+-        tilex += 1;
+-    }
+-}
+-
+-pub fn blit_tile_surface(mepo: *@This(), tile_x: u32, tile_y: u32, zoom: u8, x_off: i32, y_off: i32, bbox: sdl.SDL_Rect) !void {
+-    const rect_dest = sdl.SDL_Rect{
+-        .x = @intCast(i32, tile_x * config.Tsize) - x_off,
+-        .y = @intCast(i32, tile_y * config.Tsize) - y_off,
+-        .w = config.Tsize,
+-        .h = config.Tsize,
+-    };
+-
+-    var rect_intersect: sdl.SDL_Rect = undefined;
+-
+-    if (sdl.SDL_IntersectRect(&rect_dest, &bbox, &rect_intersect) == sdl.SDL_FALSE) return;
+-
+-    const rect_src = sdl.SDL_Rect{
+-        .x = if (rect_intersect.x > rect_dest.x) rect_dest.w - rect_intersect.w else 0,
+-        .y = if (rect_intersect.y > rect_dest.y) rect_dest.h - rect_intersect.h else 0,
+-        .w = rect_intersect.w,
+-        .h = rect_intersect.h,
+-    };
+-
+-    switch (try mepo.tile_cache.tile_ui_retreive_or_queue(.{ .x = tile_x, .y = tile_y, .z = zoom })) {
+-        .texture => |text| {
+-            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, &rect_src, &rect_intersect));
+-        },
+-        .queued_position => |_| {
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xffffff }, rect_intersect, .Fill);
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xebebeb }, rect_intersect, .Draw);
+-            try mepo.blit_multiline_text(
+-                0x000000,
+-                null,
+-                null,
+-                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
+-                @intCast(i32, tile_x * config.Tsize) - x_off,
+-                @intCast(i32, tile_y * config.Tsize) - y_off,
+-                20,
+-                "Queued",
+-                .{},
+-            );
+-        },
+-        .transfer_datum => |transfer_datum| {
+-            var dl_now_kb: f64 = 0;
+-            var dl_total_kb: f64 = 0;
+-            if (transfer_datum.progress_dl_now) |dln| dl_now_kb = @intToFloat(f64, dln) / 1000;
+-            if (transfer_datum.progress_dl_total) |dlt| dl_total_kb = @intToFloat(f64, dlt) / 1000;
+-            var percent: f64 = 0;
+-            if (dl_total_kb != 0) {
+-                percent = dl_now_kb / dl_total_kb;
+-            }
+-
+-            const color = c: {
+-                const r = @floatToInt(u24, 255 * percent);
+-                const g = @floatToInt(u24, 255 * percent);
+-                const b = @floatToInt(u24, 255 * percent);
+-                const color: u24 = (r << 16) | (g << 8) | (b << 0);
+-                break :c color;
+-            };
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = color }, rect_intersect, .Fill);
+-            try mepo.blit_multiline_text(
+-                0xffffff,
+-                null,
+-                null,
+-                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
+-                @intCast(i32, tile_x * config.Tsize) - x_off,
+-                @intCast(i32, tile_y * config.Tsize) - y_off,
+-                null,
+-                "{d:0.2}%\n{d:0.1}/{d:0.1}Kb",
+-                .{ percent * 100, dl_now_kb, dl_total_kb },
+-            );
+-        },
+-        .error_type => {
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xffdfd1 }, rect_intersect, .Fill);
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xebebeb }, rect_intersect, .Draw);
+-            try mepo.blit_multiline_text(
+-                0x000000,
+-                null,
+-                null,
+-                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
+-                @intCast(i32, tile_x * config.Tsize) - x_off,
+-                @intCast(i32, tile_y * config.Tsize) - y_off,
+-                20,
+-                "Offline",
+-                .{},
+-            );
+-        },
+-    }
+-}
+-
+-fn blit_overlay_pindetails(mepo: *@This()) !void {
+-    if (!p.get(p.pref.overlay_pindetails).b) return;
+-
+-    const d_unit_km = p.get(p.pref.distance_unit_tf_km_mi).b;
+-    const d_unit = if (d_unit_km) "km" else "mi";
+-
+-    var arena = std.heap.ArenaAllocator.init(mepo.allocator);
+-    defer arena.deinit();
+-
+-    var al = std.ArrayList([2][:0]const u8).init(arena.allocator());
+-    if (mepo.pin_group_active_item) |_| {
+-        const pin = mepo.pin_groups[mepo.pin_group_active].items[mepo.pin_group_active_item.?];
+-        const pin_coords_str = try std.fmt.allocPrintZ(arena.allocator(), "{d:.5} lat / {d:.5} lon", .{ pin.lat, pin.lon });
+-        const distance_str = try std.fmt.allocPrintZ(arena.allocator(), "{d:.2}{s} away", .{
+-            utilconversion.distance_haversine(
+-                if (d_unit_km) .Km else .Mi,
+-                p.get(p.pref.lat).f,
+-                p.get(p.pref.lon).f,
+-                pin.lat,
+-                pin.lon,
+-            ),
+-            d_unit,
+-        });
+-
+-        if (pin.handle != null) {
+-            try al.append(([_][:0]const u8{ "Handle:", pin.handle.? })[0..].*);
+-        }
+-        try al.append(([_][:0]const u8{ "Coords:", pin_coords_str })[0..].*);
+-        if (p.get(p.pref.overlay_pindetails_expanded).b) {
+-            try al.append(([_][:0]const u8{ try std.fmt.allocPrintZ(
+-                arena.allocator(),
+-                "Group {d}:",
+-                .{mepo.pin_group_active},
+-            ), try std.fmt.allocPrintZ(
+-                arena.allocator(),
+-                "{d} of {d} ",
+-                .{
+-                    mepo.pin_group_active_item.? + 1,
+-                    mepo.pin_groups[mepo.pin_group_active].items.len,
+-                },
+-            ) })[0..].*);
+-            try al.append(([_][:0]const u8{ "Dist:", distance_str })[0..].*);
+-            for (pin.metadata.keys()) |k| {
+-                const duped = try std.fmt.allocPrintZ(arena.allocator(), "{s}", .{k});
+-                try al.append(([_][:0]const u8{ duped, pin.metadata.get(k).? })[0..].*);
+-            }
+-        }
+-        const off_y = p.get(p.pref.fontsize_ui).u + 26;
+-        try mepo.blit_table(5, off_y, 5, al.items);
+-    }
+-}
+-
+-fn blit_debugmessage(mepo: *@This()) !void {
+-    if (p.get(p.pref.debug_message_enabled).b and mepo.debug_message != null) {
+-        const bottom_off: u32 = if (p.get(p.pref.overlay_debugbar).b) p.get(p.pref.fontsize_ui).u + 10 else 5;
+-        try mepo.blit_multiline_text(
+-            0xff0000,
+-            null,
+-            types.Color{ .value = 0xffffff, .opacity = 200 },
+-            .{ .h = mepo.win_h - bottom_off, .align_x = .Left, .align_y = .Bottom },
+-            0,
+-            5,
+-            null,
+-            "DEBUG: {s}",
+-            .{mepo.debug_message.?},
+-        );
+-    }
+-}
+-
+-fn blit_pin(mepo: *@This(), pin: types.Pin, prev_pin: ?types.Pin, pin_group: u8, is_active: bool, is_active_path: bool) !void {
+-    const size: i32 = 10;
+-    const x = mepo.convert_latlon_to_xy(.LonToX, pin.lon);
+-    const y = mepo.convert_latlon_to_xy(.LatToY, pin.lat);
+-    const prev_pin_x = if (prev_pin != null) mepo.convert_latlon_to_xy(.LonToX, prev_pin.?.lon) else undefined;
+-    const prev_pin_y = if (prev_pin != null) mepo.convert_latlon_to_xy(.LatToY, prev_pin.?.lat) else undefined;
+-    const pg_color = types.Color{ .value = p.get(p.pingroup_prop(pin_group, .Color)).u24 };
+-
+-    // Optimization to never drawoff-screen pins
+-    if ((x < 0 or x > mepo.win_w or y < 0 or y > mepo.win_h) and
+-        (prev_pin == null or (prev_pin_x < 0 or prev_pin_x > mepo.win_w or prev_pin_y < 0 or prev_pin_y > mepo.win_h))) return;
+-
+-    // Draw connecting line for ordered pin group
+-    if (p.get(p.pingroup_prop(pin_group, .Ordered)).b and prev_pin != null) {
+-        const connecting_line_color = if (is_active_path) 0xff0000ff else pg_color.to_u32();
+-        try utilsdl.errorcheck(sdl.aalineColor(
+-            mepo.renderer,
+-            @intCast(i16, prev_pin_x),
+-            @intCast(i16, prev_pin_y),
+-            @intCast(i16, x),
+-            @intCast(i16, y),
+-            connecting_line_color,
+-        ));
+-    }
+-
+-    // Draw Pin
+-    if (pin.category == .Instructive) {
+-        try utilsdl.sdl_renderer_rect(mepo.renderer, pg_color, sdl.SDL_Rect{
+-            .x = x - @divTrunc(size, 2),
+-            .y = y - @divTrunc(size, 2),
+-            .w = size,
+-            .h = size,
+-        }, .Fill);
+-        if (is_active) {
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xff0000 }, sdl.SDL_Rect{
+-                .x = x - @divTrunc(size, 2),
+-                .y = y - @divTrunc(size, 2),
+-                .w = size,
+-                .h = size,
+-            }, .Draw);
+-        }
+-    }
+-
+-    // Draw Pin label for current pin group
+-    if (pin.category == .Instructive and mepo.pin_group_active == pin_group) {
+-        const pin_label_bg: types.Color = bg: {
+-            if (is_active) {
+-                break :bg .{ .value = 0xe8e8e8, .opacity = 255 };
+-            } else {
+-                break :bg .{ .value = 0xffffff, .opacity = 255 };
+-            }
+-        };
+-        const pin_label_border: types.Color = border: {
+-            if (is_active) {
+-                break :border .{ .value = 0x000000, .opacity = 255 };
+-            } else {
+-                break :border .{ .value = 0xe8e8e8, .opacity = 255 };
+-            }
+-        };
+-        const label_color: u24 = 0x000000;
+-
+-        const label = lab: {
+-            if (pin.metadata.get("name")) |name| break :lab name;
+-            if (pin.handle) |h| break :lab h;
+-            break :lab "";
+-        };
+-
+-        try mepo.blit_multiline_text(
+-            label_color,
+-            pin_label_border,
+-            pin_label_bg,
+-            .{},
+-            x,
+-            y,
+-            config.ZoomLevelToPinFontSize[p.get(p.pref.zoom).u],
+-            "{s}",
+-            .{label},
+-        );
+-    }
+-}
+-
+-fn blit_pins(mepo: *@This()) !void {
+-    for (order: {
+-        // E.g. place active pingroup last so its always ontop in rendering order
+-        var groups = [10]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+-        var target_order: [10]u8 = undefined;
+-        var index: u8 = 0;
+-        for (groups) |i| {
+-            if (i == mepo.pin_group_active) continue;
+-            target_order[index] = i;
+-            index += 1;
+-        }
+-        target_order[9] = mepo.pin_group_active;
+-        break :order target_order;
+-    }) |pin_group_i| {
+-        const pin_group = mepo.pin_groups[pin_group_i];
+-        var ordered_group_active_path = false;
+-        var prev_pin: ?*types.Pin = null;
+-        for (pin_group.items) |*pin, pin_i| {
+-            defer prev_pin = pin;
+-
+-            const is_active = mepo.pin_group_active_item != null and mepo.pin_group_active_item.? == pin_i;
+-            const is_active_path = is_active_path: {
+-                const is_ordered = p.get(p.pingroup_prop(pin_group_i, .Ordered)).b;
+-                break :is_active_path (pin_group_i == mepo.pin_group_active and mepo.pin_group_active_item != null and
+-                    ((is_ordered and ordered_group_active_path) or
+-                    (!is_ordered and mepo.pin_group_active_item.? == pin_i)));
+-            };
+-
+-            // E.g. ordered_group_active_path just tracks every time
+-            // an instructive pin is hit so subsequent structural pins
+-            // highlighted in "active"/red color until next structural pin
+-            // hit and full "path" of the active segment of an ordered pin
+-            // group shows continuously as the active color
+-            if (mepo.pin_group_active_item != null and mepo.pin_groups[pin_group_i].items[pin_i].category == .Instructive)
+-                ordered_group_active_path = mepo.pin_group_active_item.? == pin_i;
+-
+-            try mepo.blit_pin(
+-                pin.*,
+-                if (prev_pin != null) prev_pin.?.* else null,
+-                @intCast(u8, pin_group_i),
+-                is_active,
+-                is_active_path,
+-            );
+-        }
+-    }
+-
+-    if (mepo.pin_group_active_item) |active_pin_i| {
+-        try mepo.blit_pin(
+-            mepo.pin_groups[mepo.pin_group_active].items[active_pin_i],
+-            null,
+-            mepo.pin_group_active,
+-            true,
+-            false,
+-        );
+-    }
+-}
+-
+-fn blit_overlay_debugbar(mepo: *@This()) !void {
+-    if (!p.get(p.pref.overlay_debugbar).b) return;
+-    const bottombar_height = p.get(p.pref.fontsize_ui).u + 5;
+-
+-    const bg: types.Color = color: {
+-        if (mepo.tile_cache.thread_download == null) {
+-            break :color .{ .value = 0xffdfd1, .opacity = 255 };
+-        } else if (mepo.tile_cache.queue_lifo_ui.count() > 0) {
+-            break :color .{ .value = 0xd7ffd6, .opacity = 255 };
+-        } else if (mepo.tile_cache.queue_lifo_bg.count() > 0) {
+-            break :color .{ .value = 0xc7d4ff, .opacity = 255 };
+-        } else {
+-            break :color .{ .value = 0xffffff, .opacity = 100 };
+-        }
+-    };
+-
+-    try utilsdl.sdl_renderer_rect(mepo.renderer, bg, sdl.SDL_Rect{
+-        .x = 0,
+-        .y = @intCast(i32, mepo.win_h) - bottombar_height,
+-        .w = @intCast(i32, mepo.win_w),
+-        .h = 200,
+-    }, .Fill);
+-    try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0x000000 }, sdl.SDL_Rect{
+-        .x = 0,
+-        .y = @intCast(i32, mepo.win_h) - bottombar_height,
+-        .w = @intCast(i32, mepo.win_w),
+-        .h = 1,
+-    }, .Fill);
+-    try mepo.blit_multiline_text(
+-        0x000000,
+-        null,
+-        null,
+-        .{ .align_x = .Right },
+-        0,
+-        @intCast(i32, mepo.win_h) - bottombar_height + 3,
+-        null,
+-        "Dl: {d:.2}Mb ",
+-        .{@intToFloat(f32, mepo.tile_cache.byte_counter) / 1024 / 1024},
+-    );
+-    try mepo.blit_multiline_text(
+-        0x000000,
+-        null,
+-        null,
+-        .{},
+-        5,
+-        @intCast(i32, mepo.win_h) - bottombar_height + 3,
+-        null,
+-        "{d:.3} {d:.3} Z{d} O{d} P{d} Q{d} B{d} D{d} M{d} S{d}",
+-        .{
+-            p.get(p.pref.lat).f,
+-            p.get(p.pref.lon).f,
+-            p.get(p.pref.zoom).u,
+-            @boolToInt(mepo.tile_cache.thread_download != null),
+-            mepo.pin_group_active,
+-            mepo.tile_cache.queue_lifo_ui.count(),
+-            mepo.tile_cache.queue_lifo_bg.count(),
+-            mepo.tile_cache.transfer_map.count(),
+-            mepo.tile_cache.texture_map.count(),
+-            mepo.async_shellpipe_threads.count(),
+-        },
+-    );
+-}
+-
+-fn blit_help(mepo: *@This()) !void {
+-    if (!p.get(p.pref.help).b) return;
+-
+-    var msg = msg: {
+-        var acc = std.ArrayList([]const u8).init(mepo.allocator);
+-        defer acc.deinit();
+-        defer for (acc.items) |item| mepo.allocator.free(item);
+-
+-        var it = mepo.table_keybindings.iterator();
+-
+-        while (it.next()) |kv| {
+-            const keymod = utilsdl.sdl_keymod_to_str(kv.key_ptr.keymod);
+-            try acc.append(try std.fmt.allocPrint(mepo.allocator, "{s} {c} = {s}", .{ keymod, kv.key_ptr.key, kv.value_ptr.* }));
+-        }
+-
+-        break :msg try std.mem.join(mepo.allocator, "\n", acc.items);
+-    };
+-    defer mepo.allocator.free(msg);
+-
+-    try mepo.blit_multiline_text(
+-        0x000000,
+-        null,
+-        types.Color{ .value = 0xe8e8e8, .opacity = 120 },
+-        .{ .align_x = .Center, .align_y = .Center },
+-        0,
+-        0,
+-        null,
+-        \\mepo - Development version ({s})
+-        \\ 
+-        \\Keybindings:
+-        \\{s}
+-    ,
+-        .{ config.Version, msg },
+-    );
+-}
+-
+-fn blit_uibuttons(mepo: *@This(), determine_click_target: ?sdl.SDL_Point) !?types.UIButton {
+-    var btn_i = mepo.uibuttons.items.len;
+-    const pad: c_int = 5;
+-    var pad_left: c_int = 5;
+-    var pad_right: c_int = 10;
+-    const pad_bottom: c_int = p.get(p.pref.fontsize_ui).u + 10;
+-
+-    while (btn_i > 0) {
+-        btn_i -= 1;
+-
+-        if (mepo.uibuttons.items[btn_i].only_visible_when_pin_active and mepo.pin_group_active_item == null)
+-            continue;
+-
+-        const surf = try utilsdl.errorcheck_ptr(
+-            sdl.SDL_Surface,
+-            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, mepo.uibuttons.items[btn_i].text), (types.Color{ .value = 0x000000 }).to_sdl()),
+-        );
+-        defer sdl.SDL_FreeSurface(surf);
+-
+-        const target = target: {
+-            if (mepo.uibuttons.items[btn_i].only_visible_when_pin_active) {
+-                const bg_w = surf.w + pad * 2;
+-                const bg_h = surf.h + pad * 2;
+-                defer pad_left += bg_w;
+-                break :target sdl.SDL_Rect{
+-                    .x = pad_left,
+-                    .y = 10,
+-                    .w = bg_w + 1,
+-                    .h = bg_h + 1,
+-                };
+-            } else {
+-                const bg_w = surf.w + pad * 2;
+-                const bg_h = surf.h + pad * 2;
+-                defer pad_right += bg_w;
+-
+-                break :target sdl.SDL_Rect{
+-                    .x = @intCast(c_int, mepo.win_w) - pad_right - bg_w,
+-                    .y = @intCast(c_int, mepo.win_h) - bg_h - pad_bottom,
+-                    .w = bg_w + 1,
+-                    .h = bg_h + 1,
+-                };
+-            }
+-        };
+-
+-        if (determine_click_target) |want_target| {
+-            // Determine if click fell within btn
+-            if (want_target.x >= target.x and want_target.y >= target.y and want_target.x <= target.x + target.w and want_target.y <= target.y + target.h) {
+-                return mepo.uibuttons.items[btn_i];
+-            }
+-        } else {
+-            // Rendering
+-            const dest_rect_text_lab = sdl.SDL_Rect{
+-                .x = target.x + pad,
+-                .y = target.y + pad,
+-                .w = surf.w,
+-                .h = surf.h,
+-            };
+-
+-            const bg_color = bg_color: {
+-                if (mepo.drag != null and sdl.SDL_TRUE == sdl.SDL_PointInRect(&mepo.drag.?.point, &dest_rect_text_lab)) {
+-                    break :bg_color types.Color{ .value = 0xe8e8e8, .opacity = 255 };
+-                } else if (mepo.uibuttons.items[btn_i].group_number == mepo.pin_group_active) {
+-                    break :bg_color types.Color{ .value = 0xe8e8e8, .opacity = 255 };
+-                } else {
+-                    break :bg_color types.Color{ .value = 0xffffff, .opacity = 125 };
+-                }
+-            };
+-
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, bg_color, target, .Fill);
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, types.Color{ .value = 0x888888, .opacity = 255 }, target, .Draw);
+-            if (mepo.uibuttons.items[btn_i].group_number) |group_number| {
+-                var highlight_rect = target;
+-                highlight_rect.h = 3;
+-                highlight_rect.x += 2;
+-                highlight_rect.y += 2;
+-                highlight_rect.w -= 4;
+-                const color = types.Color{ .value = p.get(p.pingroup_prop(group_number, .Color)).u24, .opacity = 255 };
+-                try utilsdl.sdl_renderer_rect(mepo.renderer, color, highlight_rect, .Fill);
+-            }
+-            const text = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf));
+-            defer sdl.SDL_DestroyTexture(text);
+-            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, null, &dest_rect_text_lab));
+-        }
+-    }
+-
+-    return null;
+-}
+-
+-pub fn blit(mepo: *@This()) !void {
+-    try utilsdl.errorcheck(sdl.SDL_RenderClear(mepo.renderer));
+-    try utilsdl.sdl_renderer_rect(
+-        mepo.renderer,
+-        .{ .value = 0xffffff },
+-        .{ .x = 0, .y = 0, .w = @intCast(c_int, mepo.win_w), .h = @intCast(c_int, mepo.win_h) },
+-        .Fill,
+-    );
+-    try mepo.blit_tiles_all(
+-        .{
+-            .x = 0,
+-            .y = 0,
+-            .w = @intCast(c_int, mepo.win_w),
+-            .h = @intCast(c_int, mepo.win_h),
+-        },
+-        p.get(p.pref.zoom).u,
+-    );
+-    try mepo.blit_pins();
+-    try mepo.blit_crosshair();
+-    try mepo.blit_overlay_pindetails();
+-    try mepo.blit_overlay_debugbar();
+-    try mepo.blit_help();
+-    try mepo.blit_debugmessage();
+-    _ = try mepo.blit_uibuttons(null);
+-
+-    sdl.SDL_RenderPresent(mepo.renderer);
+-
+-    // Update title, this is actually a relatively slow operation on certain
+-    // platforms such as Wayland/Phosh; thus we only update at a certain
+-    // specified config frequency
+-    if (sdl.SDL_GetTicks() > mepo.title_update_ms + config.TitleUpdateFrequencyMs) {
+-        mepo.title_update_ms = sdl.SDL_GetTicks();
+-        const title = try std.fmt.allocPrintZ(mepo.allocator, "mepo - {d:.5} lat, {d:.5} lon", .{ p.get(p.pref.lat).f, p.get(p.pref.lon).f });
+-        defer mepo.allocator.free(title);
+-        _ = sdl.SDL_SetWindowTitle(mepo.window, &title[0]);
+-    }
+-}
+-
+ pub fn convert_latlon_to_xy(mepo: *@This(), lat_or_lon: enum { LonToX, LatToY }, lat_lon_value: f64) i32 {
+     return switch (lat_or_lon) {
+         .LonToX => -1 * (mepo.get_x() - @divTrunc(@intCast(i32, mepo.win_w), 2) - utilconversion.lon_to_px_x(lat_lon_value, p.get(p.pref.zoom).u)),
+@@ -724,7 +156,7 @@ fn event_mousebuttonup(mepo: *@This(), e: sdl.SDL_Event) types.Pending {
+ 
+     // 2. UI on elements clcking overrides (uibtns)
+     //    these actions take preference *over* bind_click actions
+-    if (mepo.blit_uibuttons(cursor) catch null) |clicked_btn| {
++    if (blitfns.blit_uibuttons(mepo, cursor) catch null) |clicked_btn| {
+         // Click on UI button check
+         utildbg.log("Clicked on button: {} with clicks {}\n", .{ clicked_btn, e.button.clicks });
+         mepo.mepolang_execute(clicked_btn.mepolang_click_single) catch unreachable;
+@@ -757,6 +189,7 @@ fn event_mousebuttonup(mepo: *@This(), e: sdl.SDL_Event) types.Pending {
+         if (closest_match_pin) |match| {
+             mepo.pin_group_active = match.pin_group_i;
+             mepo.pin_group_active_item = match.pin_i;
++            mepo.blit_pinlayer_cache.clearAndFree();
+             return .Redraw;
+         }
+     }
+@@ -896,6 +329,10 @@ fn event_unhandled(_: *@This(), e: sdl.SDL_Event) types.Pending {
+     return .None;
+ }
+ 
++fn evict_texture(_: types.XYZ, texture: *sdl.SDL_Texture) void {
++    sdl.SDL_DestroyTexture(texture);
++}
++
+ pub fn mepolang_execute(mepo: *@This(), mepolang_text: []const u8) !void {
+     var arena = std.heap.ArenaAllocator.init(mepo.allocator);
+     defer arena.deinit();
+@@ -987,7 +424,7 @@ fn dispatch_check_click_hold(mepo: *@This()) void {
+ 
+     // Dispatch held action
+     if (threshold_hit_distance) {
+-        if (mepo.blit_uibuttons(mepo.drag.?.point) catch null) |held_btn| {
++        if (blitfns.blit_uibuttons(mepo, mepo.drag.?.point) catch null) |held_btn| {
+             if (threshold_hit_hold_ms) {
+                 utildbg.log("Held on button: {}\n", .{held_btn});
+                 mepo.mepolang_execute(held_btn.mepolang_click_hold) catch unreachable;
+@@ -1064,7 +501,7 @@ pub fn sdl_event_loop(mepo: *@This()) !void {
+         sdl.SDL_PumpEvents();
+         const has_pending_motion_events = (sdl.SDL_TRUE == sdl.SDL_HasEvent(sdl.SDL_MOUSEMOTION));
+         if ((!has_pending_motion_events and pending == .Drag) or pending == .Redraw) {
+-            try blit(mepo);
++            try mepo.blit();
+         }
+ 
+         mepo.dispatch_check_click_hold();
+@@ -1093,195 +530,8 @@ pub fn sdl_event_loop(mepo: *@This()) !void {
+                     break :b &event_unhandled;
+                 },
+             };
+-            
+-            pending = pending_fn(mepo, e);
+-        }
+-    }
+-}
+-
+-fn blit_table(mepo: *@This(), x: i32, y: i32, padding: c_int, rows: []const [2][:0]const u8) !void {
+-    var width_label: c_int = 0;
+-    var width_value: c_int = 0;
+-    var height_row: c_int = 0;
+-
+-    const border_color = types.Color{ .value = 0x888888, .opacity = 255 };
+-
+-    // Precalculate width/height for each label
+-    for (rows) |row| {
+-        const surf_lab = try utilsdl.errorcheck_ptr(
+-            sdl.SDL_Surface,
+-            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[0]), (types.Color{ .value = 0x000000 }).to_sdl()),
+-        );
+-        defer sdl.SDL_FreeSurface(surf_lab);
+-        const surf_val = try utilsdl.errorcheck_ptr(
+-            sdl.SDL_Surface,
+-            sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[1]), (types.Color{ .value = 0x000000 }).to_sdl()),
+-        );
+-        defer sdl.SDL_FreeSurface(surf_val);
+-        width_label = std.math.max(width_label, surf_lab.w);
+-        width_value = std.math.max(width_value, surf_val.w);
+-        height_row = surf_lab.h;
+-    }
+-
+-    // Background color & border
+-    try utilsdl.sdl_renderer_rect(mepo.renderer, types.Color{ .value = 0xffffff, .opacity = 125 }, sdl.SDL_Rect{
+-        .x = x,
+-        .y = y,
+-        .w = width_label + width_value + padding * 4,
+-        .h = height_row * @intCast(c_int, rows.len),
+-    }, .Fill);
+-    try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
+-        .x = x,
+-        .y = y,
+-        .w = width_label + width_value + padding * 4,
+-        .h = height_row * @intCast(c_int, rows.len),
+-    }, .Draw);
+-
+-    // Column divider
+-    try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
+-        .x = x + width_label + padding * 2,
+-        .y = y,
+-        .w = 1,
+-        .h = height_row * @intCast(c_int, rows.len),
+-    }, .Fill);
+-
+-    for (rows) |row, row_i| {
+-        // Label
+-        const surf_lab = try utilsdl.errorcheck_ptr(
+-            sdl.SDL_Surface,
+-            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[0]), (types.Color{ .value = 0x000000 }).to_sdl()),
+-        );
+-        const text_lab = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf_lab));
+-        defer sdl.SDL_FreeSurface(surf_lab);
+-        var dest_rect_lab = sdl.SDL_Rect{
+-            .x = x + padding,
+-            .y = y + @intCast(c_int, row_i) * height_row,
+-            .w = surf_lab.w,
+-            .h = surf_lab.h,
+-        };
+-        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text_lab, null, &dest_rect_lab));
+-
+-        // Value
+-        const surf_value = try utilsdl.errorcheck_ptr(
+-            sdl.SDL_Surface,
+-            sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[1]), (types.Color{ .value = 0x000000 }).to_sdl()),
+-        );
+-        const text_value = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf_value));
+-        defer sdl.SDL_FreeSurface(surf_value);
+-        var dest_rect_val = sdl.SDL_Rect{
+-            .x = x + width_label + padding * 3,
+-            .y = y + @intCast(c_int, row_i) * height_row,
+-            .w = surf_value.w,
+-            .h = surf_value.h,
+-        };
+-        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text_value, null, &dest_rect_val));
+-
+-        // Horizontal border between rows
+-        try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
+-            .x = x,
+-            .y = y + @intCast(c_int, row_i) * height_row,
+-            .w = width_label + width_value + padding * 4,
+-            .h = 1,
+-        }, .Fill);
+-    }
+-}
+-
+-pub fn blit_multiline_text(
+-    mepo: *@This(),
+-    color: u24,
+-    border_opt: ?types.Color,
+-    background_opt: ?types.Color,
+-    alignment: types.BoxAlignment,
+-    x: i32,
+-    y: i32,
+-    font_size_opt: ?u32,
+-    comptime fmt_string: [:0]const u8,
+-    args: anytype,
+-) !void {
+-    var msg = try std.fmt.allocPrintZ(mepo.allocator, fmt_string, args);
+-    defer mepo.allocator.free(msg);
+-
+-    const font_size = font_size: {
+-        if (font_size_opt) |font_size| {
+-            if (font_size > mepo.fonts_normal.len) return error.FontTooBig else break :font_size font_size;
+-        } else {
+-            break :font_size p.get(p.pref.fontsize_ui).u;
+-        }
+-    };
+-
+-    var textures_width: c_int = 0;
+-    var textures_height: c_int = 0;
+-
+-    // Accumulate lines rendered into slice of textures
+-    var textures: []*sdl.SDL_Texture = textures: {
+-        var textures_array: [50]*sdl.SDL_Texture = undefined;
+-        var textures_array_size: usize = 0;
+-
+-        var lines_it = std.mem.tokenize(u8, msg, "\n");
+-        while (lines_it.next()) |line| {
+-            if (textures_array_size + 1 > textures_array.len - 1) break;
+-
+-            const line_sentinel_terminated = try mepo.allocator.dupeZ(u8, line);
+-            defer mepo.allocator.free(line_sentinel_terminated);
+-
+-            const text_surf = try utilsdl.errorcheck_ptr(
+-                sdl.SDL_Surface,
+-                sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[font_size], @ptrCast([*c]const u8, line_sentinel_terminated), (types.Color{ .value = color }).to_sdl()),
+-            );
+-            defer sdl.SDL_FreeSurface(text_surf);
+-
+-            const text = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, text_surf));
+-            textures_height += text_surf.h;
+-            textures_width = std.math.max(textures_width, text_surf.w);
+-            textures_array[textures_array_size] = text;
+-            textures_array_size += 1;
+-        }
+-
+-        break :textures textures_array[0..textures_array_size];
+-    };
+-
+-    // Rendering
+-    {
+-        // Calculate X/Y offsets
+-        const x_off: c_int = x_off: {
+-            const bbox_total_w = @intCast(c_int, if (alignment.w) |w| w else mepo.win_w);
+-            const offset = switch (alignment.align_x) {
+-                .Left => 0,
+-                .Right => bbox_total_w - textures_width,
+-                .Center => @divTrunc(bbox_total_w - textures_width, 2),
+-            };
+-            break :x_off x + offset;
+-        };
+-        var y_off: c_int = y_off: {
+-            const bbox_total_h = @intCast(c_int, if (alignment.h) |h| h else mepo.win_h);
+-            const offset = switch (alignment.align_y) {
+-                .Top => 0,
+-                .Bottom => bbox_total_h - textures_height,
+-                .Center => @divTrunc(bbox_total_h - textures_height, 2),
+-            };
+-            break :y_off y + offset;
+-        };
+ 
+-        // Render background
+-        if (background_opt) |background|
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, background, sdl.SDL_Rect{ .x = x_off, .y = y_off, .w = textures_width, .h = textures_height }, .Fill);
+-
+-        // Render border
+-        if (border_opt) |border|
+-            try utilsdl.sdl_renderer_rect(mepo.renderer, border, sdl.SDL_Rect{ .x = x_off, .y = y_off, .w = textures_width, .h = textures_height }, .Draw);
+-
+-        // Reder text
+-        for (textures) |texture| {
+-            defer sdl.SDL_DestroyTexture(texture);
+-            var dest_rect = sdl.SDL_Rect{
+-                .x = x_off,
+-                .y = y_off,
+-                .w = undefined,
+-                .h = undefined,
+-            };
+-            try utilsdl.errorcheck(sdl.SDL_QueryTexture(texture, null, null, &dest_rect.w, &dest_rect.h));
+-            y_off += dest_rect.h;
+-            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, texture, null, &dest_rect));
++            pending = pending_fn(mepo, e);
+         }
+     }
+ }
+@@ -1313,10 +563,10 @@ pub fn scaled_mouse_position(mepo: *@This()) sdl.SDL_Point {
+     _ = sdl.SDL_GetMouseState(&cursor_x, &cursor_y);
+     sdl.SDL_GL_GetDrawableSize(mepo.window, &gl_w, &gl_h);
+     sdl.SDL_GetWindowSize(mepo.window, &win_w, &win_h);
+-    const scale_x = @divTrunc(gl_w, win_w);
+-    const scale_y = @divTrunc(gl_h, win_h);
+-    const scaled_x = cursor_x * scale_x;
+-    const scaled_y = cursor_y * scale_y;
++    const scale_x = @intToFloat(f64, gl_w) / @intToFloat(f64, win_w);
++    const scale_y = @intToFloat(f64, gl_h) / @intToFloat(f64, win_h);
++    const scaled_x = @floatToInt(c_int, @intToFloat(f64, cursor_x) * scale_x);
++    const scaled_y = @floatToInt(c_int, @intToFloat(f64, cursor_y) * scale_y);
+     return .{ .x = scaled_x, .y = scaled_y };
+ }
+ 
+@@ -1365,6 +615,7 @@ pub fn bounding_box(mepo: *@This()) types.LatLonBox {
+ 
+ pub fn graceful_terminate_sdl() void {
+     utildbg.log("Graceful shutdown\n", .{});
++    sdl.IMG_Quit();
+     sdl.SDL_VideoQuit();
+     sdl.SDL_Quit();
+     std.os.exit(0);
+@@ -1398,6 +649,9 @@ fn setup_sdl_video_and_window(allocator: std.mem.Allocator) !*sdl.SDL_Window {
+         _ = sdl.SDL_SetHint("SDL_MOUSE_AUTO_CAPTURE", "0");
+     }
+ 
++    // Initialize SDL Image library
++    try utilsdl.errorcheck(sdl.IMG_Init(sdl.IMG_INIT_PNG));
++
+     // Initialize SDL video
+     video_init: {
+         // Attempt to initialize with whatever is set in SDL_VIDEODRIVER
+@@ -1473,16 +727,27 @@ fn setup_sdl_video_and_window(allocator: std.mem.Allocator) !*sdl.SDL_Window {
+     };
+ }
+ 
++pub fn blit(mepo: *@This()) !void {
++    return blitfns.blit(mepo);
++}
++
+ pub fn video_init(mepo: *@This()) !void {
+     mepo.window = try setup_sdl_video_and_window(mepo.allocator);
+     mepo.renderer = renderer: {
+         var r = try utilsdl.errorcheck_ptr(sdl.SDL_Renderer, sdl.SDL_CreateRenderer(
+             mepo.window,
+             -1,
+-            if (mepo.renderer_sw) sdl.SDL_RENDERER_SOFTWARE else sdl.SDL_RENDERER_ACCELERATED,
++            switch (mepo.renderer_type) {
++                .Auto => 0,
++                .SW => sdl.SDL_RENDERER_SOFTWARE,
++                .HW => sdl.SDL_RENDERER_ACCELERATED,
++            },
+         ));
+         break :renderer r;
+     };
++    var sdl_renderer_info: sdl.SDL_RendererInfo = undefined;
++    try utilsdl.errorcheck(sdl.SDL_GetRendererInfo(mepo.renderer, &sdl_renderer_info));
++    utildbg.log("Requested renderer driver {}, using renderer: {s}\n", .{mepo.renderer_type, sdl_renderer_info.name});
+     mepo.tile_cache.renderer = mepo.renderer;
+ }
+ 
+@@ -1505,9 +770,12 @@ fn init_create_fonts_array(bold: bool) ![50]*sdl.TTF_Font {
+     return fonts;
+ }
+ 
+-pub fn init(allocator: std.mem.Allocator, tile_cache: *TileCache, use_config: []const u8, use_sw_renderer: bool) anyerror!@This() {
++pub fn init(allocator: std.mem.Allocator, tile_cache: *TileCache, use_config: []const u8, renderer_type: types.RendererType) anyerror!@This() {
+     return @as(@This(), .{
+         .allocator = allocator,
++        .blit_pinlayer_cache = datastructure.EvictionHashMap(
++            types.XYZ, *sdl.SDL_Texture, evict_texture, &config.MaxTextures,
++        ).init(allocator),
+         .async_shellpipe_threads = datastructure.QueueHashMap(i8, sdl.SDL_threadID).init(allocator),
+         .config = use_config,
+         .fonts_normal = try init_create_fonts_array(false),
+@@ -1525,6 +793,6 @@ pub fn init(allocator: std.mem.Allocator, tile_cache: *TileCache, use_config: []
+         },
+         .tile_cache = tile_cache,
+         .uibuttons = std.ArrayList(types.UIButton).init(allocator),
+-        .renderer_sw = use_sw_renderer,
++        .renderer_type = renderer_type,
+     });
+ }
+diff --git a/src/TileCache.zig b/src/TileCache.zig
+index 81014b8..a01e00e 100644
+--- a/src/TileCache.zig
++++ b/src/TileCache.zig
+@@ -51,8 +51,7 @@ curl_multi: *curl.CURLM,
+ queue_lifo_ui: datastructure.QueueHashMap(types.XYZ, void),
+ queue_lifo_bg: datastructure.QueueHashMap(types.XYZ, void),
+ renderer: ?*sdl.SDL_Renderer = null,
+-surface_map: datastructure.QueueHashMap(types.XYZ, *sdl.SDL_Surface),
+-texture_map: datastructure.EvictionHashMap(types.XYZ, *sdl.SDL_Texture, config.MaxTextures),
++texture_map: datastructure.EvictionHashMap(types.XYZ, *sdl.SDL_Texture, evict_texture, &config.MaxTextures),
+ transfer_map: datastructure.QueueHashMap(types.XYZ, *TransferDatum),
+ 
+ /// Downloads tiles continuously
+@@ -128,9 +127,7 @@ pub fn set_cache_url(tile_cache: *@This(), url: [:0]const u8) !void {
+ 
+     // Empty texture map, surface map, & queues
+     for (tile_cache.texture_map.values()) |t| sdl.SDL_DestroyTexture(t);
+-    for (tile_cache.surface_map.values()) |s| sdl.SDL_FreeSurface(s);
+     tile_cache.texture_map.clearAndFree();
+-    tile_cache.surface_map.clearAndFree();
+     tile_cache.queue_lifo_ui.clearAndFree();
+     tile_cache.queue_lifo_bg.clearAndFree();
+ 
+@@ -250,33 +247,28 @@ pub fn tile_ui_retreive_or_queue(tile_cache: *@This(), coords: types.XYZ) !TileD
+     } else if (tile_cache.transfer_map.get(coords)) |transfer| {
+         return TileData{ .transfer_datum = transfer.* };
+     } else if (tile_cache.cache_dir) |cache_dir| load_from_fs: {
+-        // Check tile exists
+         if (!try tile_cache.tile_exists_in_fs_and_non_expired(coords)) break :load_from_fs;
++        const png_fs_path = try png_path(tile_cache.allocator, p.get(p.pref.tile_cache_url).t.?, coords);
++        defer tile_cache.allocator.free(png_fs_path);
+ 
+-        // Load tile to surface
+-        {
+-            const png = try png_path(tile_cache.allocator, p.get(p.pref.tile_cache_url).t.?, coords);
+-            defer tile_cache.allocator.free(png);
+-            file_cached_png_opt = cache_dir.readFileAlloc(tile_cache.allocator, png, 500000) catch null;
+-            if (file_cached_png_opt) |file_cached_png| {
+-                defer tile_cache.allocator.free(file_cached_png);
+-                const surface = tile_cache.load_data_to_surface(coords, file_cached_png) catch {
+-                    break :load_from_fs;
+-                };
+-                try tile_cache.surface_map.put(coords, surface);
+-            }
++        file_cached_png_opt = cache_dir.readFileAlloc(tile_cache.allocator, png_fs_path, 500000) catch |err| b: {
++            utildbg.log("Unable to alloc space for PNG: {}\n", .{err});
++            break :b null;
++        };
++
++        if (file_cached_png_opt) |file_cached_png| {
++            defer tile_cache.allocator.free(file_cached_png);
++            const surface = tile_cache.load_data_to_surface(file_cached_png) catch |err| {
++                utildbg.log("Errored when loading data for tile {} from FS (file: {s}) to SDL Surface: {}\n", .{coords, png_fs_path, err});
++                break :load_from_fs;
++            };
++            defer sdl.SDL_FreeSurface(surface);
++            const texture = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(tile_cache.renderer, surface));
++            _ = try tile_cache.texture_map.put(coords, texture);
++            return TileData{ .texture = texture };
+         }
+     }
+ 
+-    // E.g. we found the tile cached in surface map, transfer to texture & return
+-    if (tile_cache.surface_map.get(coords)) |surface| {
+-        defer sdl.SDL_FreeSurface(surface);
+-        const texture = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(tile_cache.renderer, surface));
+-        _ = tile_cache.surface_map.swapRemove(coords);
+-        const evicted_texture_opt = try tile_cache.texture_map.put(coords, texture);
+-        if (evicted_texture_opt) |evicted_texture| sdl.SDL_DestroyTexture(evicted_texture);
+-        return TileData{ .texture = texture };
+-    }
+ 
+     if (tile_cache.thread_download == null) {
+         return TileData{ .error_type = .Offline };
+@@ -405,7 +397,7 @@ fn download_loop_progress_indicator(tile_cache: *@This(), initial_queue_size: us
+     );
+ }
+ 
+-/// Determine whether the download loop should continue based on either 
++/// Determine whether the download loop should continue based on either
+ /// if in graphical mode or non-empty queu
+ fn download_loop_should_continue(tile_cache: *@This(), graphical_mode: bool) bool {
+     const graphical_and_online = (graphical_mode and tile_cache.thread_download != null);
+@@ -425,13 +417,22 @@ fn download_loop_transfer_complete(tile_cache: *@This(), msg: *curl.CURLMsg) !vo
+                 tile_cache.byte_counter += transfer_datum.data_arraylist.items.len;
+ 
+                 if (tile_cache.cache_dir) |cache_dir| {
++                    const memory = try utilsdl.errorcheck_ptr(
++                        sdl.SDL_RWops,
++                        sdl.SDL_RWFromConstMem(@ptrCast(*anyopaque, &datum_array[0]), @intCast(c_int, datum_array.len)),
++                    );
++                    const is_valid_png_data = sdl.SDL_TRUE == sdl.IMG_isPNG(memory);
++                    try utilsdl.errorcheck(sdl.SDL_RWclose(memory));
++
+                     // Save to FS
+-                    const path = try png_path(tile_cache.allocator, p.get(p.pref.tile_cache_url).t.?, coords);
+-                    try cache_dir.writeFile(path, datum_array);
++                    if (is_valid_png_data) {
++                        const path = try png_path(tile_cache.allocator, p.get(p.pref.tile_cache_url).t.?, coords);
++                        try cache_dir.writeFile(path, datum_array);
++                    }
+                 }
+                 if (tile_cache.transfer_map.get(coords).?.load_to_texture) {
+                     // Load to surface
+-                    _ = try tile_cache.load_data_to_surface(coords, datum_array);
++                    _ = try tile_cache.load_data_to_surface(datum_array);
+                     utilsdl.sdl_push_event_resize();
+                 }
+             } else {
+@@ -461,7 +462,11 @@ fn download_loop_transfer_cleanup(tile_cache: *@This(), client: ?*curl.CURL) !vo
+     }
+ }
+ 
+-fn load_data_to_surface(_: *@This(), _: types.XYZ, data: []u8) !*sdl.SDL_Surface {
++fn evict_texture(_: types.XYZ, texture: *sdl.SDL_Texture) void {
++    sdl.SDL_DestroyTexture(texture);
++}
++
++fn load_data_to_surface(_: *@This(), data: []u8) !*sdl.SDL_Surface {
+     if (data.len == 0) return error.LoadToSurfaceFailEmptyData;
+ 
+     const memory = try utilsdl.errorcheck_ptr(sdl.SDL_RWops, sdl.SDL_RWFromConstMem(@ptrCast(*anyopaque, &data[0]), @intCast(c_int, data.len)));
+@@ -521,8 +526,7 @@ pub fn init(allocator: std.mem.Allocator) anyerror!@This() {
+             .curl_multi = curl.curl_multi_init().?,
+             .queue_lifo_ui = datastructure.QueueHashMap(types.XYZ, void).init(allocator),
+             .queue_lifo_bg = datastructure.QueueHashMap(types.XYZ, void).init(allocator),
+-            .surface_map = datastructure.QueueHashMap(types.XYZ, *sdl.SDL_Surface).init(allocator),
+-            .texture_map = datastructure.EvictionHashMap(types.XYZ, *sdl.SDL_Texture, config.MaxTextures).init(allocator),
++            .texture_map = datastructure.EvictionHashMap(types.XYZ, *sdl.SDL_Texture, evict_texture, &config.MaxTextures).init(allocator),
+             .transfer_map = datastructure.QueueHashMap(types.XYZ, *TransferDatum).init(allocator),
+         });
+         try tc.set_cache_url(try allocator.dupeZ(u8, "https://tile.openstreetmap.org/%3$d/%1$d/%2$d.png"));
+diff --git a/src/api/bind_signal.zig b/src/api/bind_signal.zig
+index 61af232..504d55a 100644
+--- a/src/api/bind_signal.zig
++++ b/src/api/bind_signal.zig
+@@ -39,13 +39,14 @@ fn bind_signal(mepo: *Mepo, signo_str: [:0]const u8, expression: []const u8) !vo
+     }
+ 
+     // Register generic signal handler
+-    if (0 != std.os.linux.sigaction(signal_name, &.{
++    const signal_action = std.os.Sigaction{
+         .handler = .{ .handler = utilsdl.sdl_push_event_signal },
+-        .mask = [_]u32{0} ** 32,
+-        .flags = @as(c_uint, 0),
+-    }, null)) {
+-        return error.FailedToSetupSighandler;
+-    }
++        .mask = std.os.empty_sigset,
++        .flags = 0,
++    };
++
++    std.os.sigaction(signal_name, &signal_action, null)
++        catch return error.FailedToSetupSighandler;
+ 
+     if (mepo.table_signals.get(signal_name)) |heap_str| {
+         mepo.allocator.free(heap_str);
+diff --git a/src/api/filedump.zig b/src/api/filedump.zig
+index 2ac95cc..fd821f9 100644
+--- a/src/api/filedump.zig
++++ b/src/api/filedump.zig
+@@ -146,7 +146,7 @@ fn filedump(mepo: *Mepo, save_types: []const u8, filepath: []const u8) !void {
+         // UI Buttons
+         for (mepo.uibuttons.items) |btn| {
+             const pins_only_btn: u8 = if (btn.only_visible_when_pin_active) 1 else 0;
+-            const group_number : i8 = if (btn.group_number) |g| @intCast(i8, g) else -1;
++            const group_number: i8 = if (btn.group_number) |g| @intCast(i8, g) else -1;
+             const statement_button = try std.fmt.allocPrint(
+                 arena.allocator(),
+                 "bind_button {d} {d} [{s}] [{s}] [{s}];",
+@@ -166,7 +166,7 @@ fn filedump(mepo: *Mepo, save_types: []const u8, filepath: []const u8) !void {
+                     if (pin.category == .Structural) break :b 1;
+                     break :b 0;
+                 };
+-                const handle : [:0]const u8 = handle: {
++                const handle: [:0]const u8 = handle: {
+                     if (pin.handle) |h| break :handle h;
+                     break :handle "";
+                 };
+@@ -193,7 +193,7 @@ fn filedump(mepo: *Mepo, save_types: []const u8, filepath: []const u8) !void {
+         try lines.append(try std.fmt.allocPrint(
+             arena.allocator(),
+             "pin_groupactivate {d};",
+-            .{ mepo.pin_group_active },
++            .{mepo.pin_group_active},
+         ));
+     }
+ 
+diff --git a/src/api/pin_activate.zig b/src/api/pin_activate.zig
+index 018b34c..98ec5d7 100644
+--- a/src/api/pin_activate.zig
++++ b/src/api/pin_activate.zig
+@@ -20,6 +20,7 @@ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+ 
+ fn pin_activate(mepo: *Mepo, group: i32, handle: [:0]const u8) !void {
+     const pin_group = if (group < 0) mepo.pin_group_active else @intCast(usize, group);
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     for (mepo.pin_groups[pin_group].items) |*pin, pin_i| {
+         if (pin.handle == null) continue;
+diff --git a/src/api/pin_add.zig b/src/api/pin_add.zig
+index 29e769c..0befdb3 100644
+--- a/src/api/pin_add.zig
++++ b/src/api/pin_add.zig
+@@ -26,6 +26,7 @@ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+ 
+ fn pin_add(mepo: *Mepo, group: i32, is_structural: bool, lat: f64, lon: f64, handle: [:0]const u8) !void {
+     const pin_group = if (group < 0) mepo.pin_group_active else @intCast(usize, group);
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     // E.g. nop if adding a pin_handle that already exists
+     if (handle.len != 0) {
+diff --git a/src/api/pin_cycle.zig b/src/api/pin_cycle.zig
+index 91f333e..cc6d0e8 100644
+--- a/src/api/pin_cycle.zig
++++ b/src/api/pin_cycle.zig
+@@ -21,6 +21,7 @@ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+ 
+ pub fn pin_cycle(mepo: *Mepo, viewport_only: bool, delta: i32) !void {
+     if (mepo.pin_groups[mepo.pin_group_active].items.len == 0) return;
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     const add: i32 = if (delta > 0) 1 else -1;
+     var delta_current = delta;
+diff --git a/src/api/pin_deactivate.zig b/src/api/pin_deactivate.zig
+index 136d5b8..8e4dba3 100644
+--- a/src/api/pin_deactivate.zig
++++ b/src/api/pin_deactivate.zig
+@@ -11,4 +11,5 @@ pub const spec = .{
+ 
+ fn execute(mepo: *Mepo, _: [types.MepoFnNargs]types.MepoArg) !void {
+     mepo.pin_group_active_item = null;
++    mepo.blit_pinlayer_cache.clearAndFree();
+ }
+diff --git a/src/api/pin_delete.zig b/src/api/pin_delete.zig
+index 7219e95..1664cd6 100644
+--- a/src/api/pin_delete.zig
++++ b/src/api/pin_delete.zig
+@@ -19,6 +19,8 @@ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+ }
+ 
+ fn pin_delete(mepo: *Mepo, group: i32, handle: [:0]const u8) !void {
++    defer mepo.blit_pinlayer_cache.clearAndFree();
++
+     const pin_group = if (group < 0) mepo.pin_group_active else @intCast(usize, group);
+     const target_pin_i = target_pin_i: {
+         if (handle.len == 0) {
+@@ -37,7 +39,6 @@ fn pin_delete(mepo: *Mepo, group: i32, handle: [:0]const u8) !void {
+         return;
+     };
+ 
+-
+     // Free up handle string
+     mepo.allocator.free(mepo.pin_groups[pin_group].items[target_pin_i].handle.?);
+ 
+diff --git a/src/api/pin_groupactivate.zig b/src/api/pin_groupactivate.zig
+index 29cca8b..98fe5b7 100644
+--- a/src/api/pin_groupactivate.zig
++++ b/src/api/pin_groupactivate.zig
+@@ -14,6 +14,7 @@ pub const spec = .{
+ 
+ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+     const group_number = @floatToInt(usize, args[0].Number);
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     mepo.pin_group_active_item = null;
+     mepo.pin_group_active = @intCast(u8, group_number);
+diff --git a/src/api/pin_purge.zig b/src/api/pin_purge.zig
+index 186c3a4..e1ba410 100644
+--- a/src/api/pin_purge.zig
++++ b/src/api/pin_purge.zig
+@@ -11,6 +11,7 @@ pub const spec = .{
+ 
+ fn execute(mepo: *Mepo, _: [types.MepoFnNargs]types.MepoArg) !void {
+     mepo.pin_group_active_item = null;
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     for (mepo.pin_groups[mepo.pin_group_active].items) |p| {
+         if (p.handle != null) {
+diff --git a/src/api/pin_transfer.zig b/src/api/pin_transfer.zig
+index 96ceef9..80953cc 100644
+--- a/src/api/pin_transfer.zig
++++ b/src/api/pin_transfer.zig
+@@ -23,7 +23,7 @@ fn execute(mepo: *Mepo, args: [types.MepoFnNargs]types.MepoArg) !void {
+ fn pin_transfer(mepo: *Mepo, from_group_number: i32, target_pin_handle: [:0]const u8, to_group: usize) !void {
+     const from_group = if (from_group_number < 0) mepo.pin_group_active else @intCast(usize, from_group_number);
+     if (from_group == to_group) return;
+-
++    defer mepo.blit_pinlayer_cache.clearAndFree();
+ 
+     const from_pin_i_opt = from_pin_i_opt: {
+         if (target_pin_handle.len == 0) {
+@@ -50,11 +50,10 @@ fn pin_transfer(mepo: *Mepo, from_group_number: i32, target_pin_handle: [:0]cons
+ 
+         // If pin to transfer is the currently active pin we
+         // re-activate it afterward (switch group and current pin index)
+-        if (
+-            from_group == mepo.pin_group_active and
++        if (from_group == mepo.pin_group_active and
+             mepo.pin_group_active_item != null and
+-            mepo.pin_group_active_item.? == from_pin_i
+-        ) {
++            mepo.pin_group_active_item.? == from_pin_i)
++        {
+             mepo.pin_group_active = @intCast(u8, to_group);
+             mepo.pin_group_active_item = @intCast(u32, mepo.pin_groups[mepo.pin_group_active].items.len - 1);
+         }
+diff --git a/src/api/shellpipe_async.zig b/src/api/shellpipe_async.zig
+index 329922d..afc41b5 100644
+--- a/src/api/shellpipe_async.zig
++++ b/src/api/shellpipe_async.zig
+@@ -51,7 +51,7 @@ fn async_shellpipe_run_catch_errors(mepo: *Mepo, unique_handle_id: i8, cmd: []co
+     defer mepo.allocator.free(cmd);
+     const thread_id = sdl.SDL_GetThreadID(null);
+     if (mepo.async_shellpipe_threads.get(unique_handle_id)) |already_spawned_thread_id| {
+-        utildbg.log("Async shellpipe id {} already present with thread_id {}\n", .{unique_handle_id, already_spawned_thread_id});
++        utildbg.log("Async shellpipe id {} already present with thread_id {}\n", .{ unique_handle_id, already_spawned_thread_id });
+         return;
+     }
+     try mepo.async_shellpipe_threads.put(unique_handle_id, thread_id);
+diff --git a/src/blit/blit.zig b/src/blit/blit.zig
+new file mode 100644
+index 0000000..d2c51f3
+--- /dev/null
++++ b/src/blit/blit.zig
+@@ -0,0 +1,870 @@
++const Mepo = @import("../Mepo.zig");
++const std = @import("std");
++const sdl = @import("../sdlshim.zig");
++const types = @import("../types.zig");
++const config = @import("../config.zig");
++const errors = @import("../errors.zig");
++const TileCache = @import("../TileCache.zig");
++const utilconversion = @import("../util/utilconversion.zig");
++const p = @import("../util/utilprefs.zig");
++const utilsdl = @import("../util/utilsdl.zig");
++const utildbg = @import("../util/utildbg.zig");
++
++fn blit_crosshair(mepo: *Mepo) errors.SDLError!void {
++    try utilsdl.sdl_renderer_set_draw_color(mepo.renderer, .{ .value = 0x000000 });
++    try utilsdl.errorcheck(sdl.SDL_RenderDrawLine(
++        mepo.renderer,
++        @intCast(c_int, mepo.win_w / 2 - (p.get(p.pref.crosshair_size).u / 2)),
++        @intCast(c_int, mepo.win_h / 2),
++        @intCast(c_int, mepo.win_w / 2 + (p.get(p.pref.crosshair_size).u / 2)),
++        @intCast(c_int, mepo.win_h / 2),
++    ));
++    try utilsdl.errorcheck(sdl.SDL_RenderDrawLine(
++        mepo.renderer,
++        @intCast(c_int, mepo.win_w / 2),
++        @intCast(c_int, mepo.win_h / 2 - (p.get(p.pref.crosshair_size).u / 2)),
++        @intCast(c_int, mepo.win_w / 2),
++        @intCast(c_int, mepo.win_h / 2 + (p.get(p.pref.crosshair_size).u / 2)),
++    ));
++}
++
++fn blit_tiles_all(mepo: *Mepo, bbox: sdl.SDL_Rect, zoom: u8) !void {
++    const vpx = utilconversion.lon_to_px_x(p.get(p.pref.lon).f, zoom) - @divTrunc(@intCast(i32, mepo.win_w), 2);
++    const vpy = utilconversion.lat_to_px_y(p.get(p.pref.lat).f, zoom) - @divTrunc(@intCast(i32, mepo.win_h), 2);
++    const begx = vpx - config.Tsize;
++    const begy = vpy - config.Tsize;
++    const endx = vpx + @intCast(i32, bbox.w) + config.Tsize;
++    const endy = vpy + @intCast(i32, bbox.h) + config.Tsize;
++
++    var tilex: i32 = @intCast(i32, @divFloor(begx, config.Tsize));
++    var tiley: i32 = @intCast(i32, @divFloor(begy, config.Tsize));
++
++    var x = begx;
++    while (x < endx) {
++        var y = begy;
++        tiley = @intCast(i32, @divFloor(begy, config.Tsize));
++        while (y < endy) {
++            if (tilex >= 0 and tiley >= 0 and tilex <= std.math.pow(u32, 2, zoom) - 1 and tiley <= std.math.pow(u32, 2, zoom) - 1) {
++                const tilex_int = @intCast(u32, tilex);
++                const tiley_int = @intCast(u32, tiley);
++                try blit_tile_surface(mepo, tilex_int, tiley_int, zoom, vpx, vpy, bbox);
++                try blit_tile_pinlayer(mepo, tilex_int, tiley_int, zoom, vpx, vpy, bbox);
++            }
++            y += config.Tsize;
++            tiley += 1;
++        }
++        x += config.Tsize;
++        tilex += 1;
++    }
++}
++
++fn blit_tile_surface(mepo: *Mepo, tile_x: u32, tile_y: u32, zoom: u8, x_off: i32, y_off: i32, bbox: sdl.SDL_Rect) !void {
++    const rect_dest = sdl.SDL_Rect{
++        .x = @intCast(i32, tile_x * config.Tsize) - x_off,
++        .y = @intCast(i32, tile_y * config.Tsize) - y_off,
++        .w = config.Tsize,
++        .h = config.Tsize,
++    };
++
++    var rect_intersect: sdl.SDL_Rect = undefined;
++
++    if (sdl.SDL_IntersectRect(&rect_dest, &bbox, &rect_intersect) == sdl.SDL_FALSE) return;
++
++    const rect_src = sdl.SDL_Rect{
++        .x = if (rect_intersect.x > rect_dest.x) rect_dest.w - rect_intersect.w else 0,
++        .y = if (rect_intersect.y > rect_dest.y) rect_dest.h - rect_intersect.h else 0,
++        .w = rect_intersect.w,
++        .h = rect_intersect.h,
++    };
++
++    switch (try mepo.tile_cache.tile_ui_retreive_or_queue(.{ .x = tile_x, .y = tile_y, .z = zoom })) {
++        .texture => |text| {
++            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, &rect_src, &rect_intersect));
++        },
++        .queued_position => |_| {
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xffffff }, rect_intersect, .Fill);
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xebebeb }, rect_intersect, .Draw);
++            try blit_multiline_text(
++                mepo,
++                0x000000,
++                null,
++                null,
++                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
++                @intCast(i32, tile_x * config.Tsize) - x_off,
++                @intCast(i32, tile_y * config.Tsize) - y_off,
++                20,
++                "Queued",
++                .{},
++            );
++        },
++        .transfer_datum => |transfer_datum| {
++            var dl_now_kb: f64 = 0;
++            var dl_total_kb: f64 = 0;
++            if (transfer_datum.progress_dl_now) |dln| dl_now_kb = @intToFloat(f64, dln) / 1000;
++            if (transfer_datum.progress_dl_total) |dlt| dl_total_kb = @intToFloat(f64, dlt) / 1000;
++            var percent: f64 = 0;
++            if (dl_total_kb != 0) {
++                percent = dl_now_kb / dl_total_kb;
++            }
++
++            const color = c: {
++                const r = @floatToInt(u24, 255 * percent);
++                const g = @floatToInt(u24, 255 * percent);
++                const b = @floatToInt(u24, 255 * percent);
++                const color: u24 = (r << 16) | (g << 8) | (b << 0);
++                break :c color;
++            };
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = color }, rect_intersect, .Fill);
++            try blit_multiline_text(
++                mepo,
++                0xffffff,
++                null,
++                null,
++                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
++                @intCast(i32, tile_x * config.Tsize) - x_off,
++                @intCast(i32, tile_y * config.Tsize) - y_off,
++                null,
++                "{d:0.2}%\n{d:0.1}/{d:0.1}Kb",
++                .{ percent * 100, dl_now_kb, dl_total_kb },
++            );
++        },
++        .error_type => {
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xffdfd1 }, rect_intersect, .Fill);
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xebebeb }, rect_intersect, .Draw);
++            try blit_multiline_text(
++                mepo,
++                0x000000,
++                null,
++                null,
++                .{ .w = config.Tsize, .h = config.Tsize, .align_x = .Center, .align_y = .Center },
++                @intCast(i32, tile_x * config.Tsize) - x_off,
++                @intCast(i32, tile_y * config.Tsize) - y_off,
++                20,
++                "Offline",
++                .{},
++            );
++        },
++    }
++}
++
++fn blit_tile_pinlayer(mepo: *Mepo, tile_x: u32, tile_y: u32, zoom: u8, x_off: i32, y_off: i32, bbox: sdl.SDL_Rect) !void {
++    const rect_dest = sdl.SDL_Rect{
++        .x = @intCast(i32, tile_x * config.Tsize) - x_off,
++        .y = @intCast(i32, tile_y * config.Tsize) - y_off,
++        .w = config.Tsize,
++        .h = config.Tsize,
++    };
++
++    var rect_intersect: sdl.SDL_Rect = undefined;
++
++    if (sdl.SDL_IntersectRect(&rect_dest, &bbox, &rect_intersect) == sdl.SDL_FALSE) return;
++
++    const rect_src = sdl.SDL_Rect{
++        .x = if (rect_intersect.x > rect_dest.x) rect_dest.w - rect_intersect.w else 0,
++        .y = if (rect_intersect.y > rect_dest.y) rect_dest.h - rect_intersect.h else 0,
++        .w = rect_intersect.w,
++        .h = rect_intersect.h,
++    };
++
++    if (mepo.blit_pinlayer_cache.get(.{ .x = tile_x, .y = tile_y, .z = zoom })) |text| {
++        utildbg.log("Pinlayer cache hit {}\n", .{.{ .x = tile_x, .y = tile_y, .z = zoom }});
++        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, &rect_src, &rect_intersect));
++    } else {
++        utildbg.log("Pinlayer cache miss {}\n", .{.{ .x = tile_x, .y = tile_y, .z = zoom }});
++        const text = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTexture(
++            mepo.renderer,
++            sdl.SDL_PIXELFORMAT_UNKNOWN,
++            sdl.SDL_TEXTUREACCESS_TARGET,
++            config.Tsize,
++            config.Tsize,
++        ));
++        try utilsdl.errorcheck(sdl.SDL_SetTextureBlendMode(text, sdl.SDL_BLENDMODE_BLEND));
++        try utilsdl.errorcheck(sdl.SDL_SetRenderTarget(mepo.renderer, text));
++        try utilsdl.errorcheck(sdl.SDL_SetRenderDrawColor(mepo.renderer, 0, 0, 0, 0));
++        try utilsdl.errorcheck(sdl.SDL_RenderClear(mepo.renderer));
++
++        // Rendering Logic
++        {
++            const pingroup_order = order: {
++                // E.g. place active pingroup last so its always ontop in rendering order
++                var groups = [10]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
++                var target_order: [10]u8 = undefined;
++                var index: u8 = 0;
++                for (groups) |i| {
++                    if (i == mepo.pin_group_active) continue;
++                    target_order[index] = i;
++                    index += 1;
++                }
++                target_order[9] = mepo.pin_group_active;
++                break :order target_order;
++            };
++
++            for (pingroup_order) |pin_group_i| {
++                const pin_group = mepo.pin_groups[pin_group_i];
++                var is_active_path_track= false;
++                var prev_pin: ?*types.Pin = null;
++                for (pin_group.items) |*pin, pin_i| {
++                    defer prev_pin = pin;
++
++                    // is_active_path: Whether path from prevpin to pin red
++                    // is_active_path_track: Track if next pin along instructive
++                    //                       pin highlighted track
++                    const is_active_path = is_active_path: {
++                        const is_ordered = p.get(p.pingroup_prop(pin_group_i, .Ordered)).b;
++                        break :is_active_path (pin_group_i == mepo.pin_group_active and mepo.pin_group_active_item != null and
++                            ((is_ordered and is_active_path_track) or
++                            (!is_ordered and mepo.pin_group_active_item.? == pin_i)));
++                    };
++                    is_active_path_track = track: {
++                        const has_active_pg_item = mepo.pin_group_active_item != null;
++                        const is_instructive_pin = mepo.pin_groups[pin_group_i].items[pin_i].category == .Instructive;
++                        const is_active_pin = has_active_pg_item and mepo.pin_group_active_item.? == pin_i;
++
++                        if (has_active_pg_item and is_instructive_pin) {
++                            break :track is_active_pin;
++                        } else {
++                            break :track is_active_path_track;
++                        }
++                    };
++
++                    try blit_pin(
++                        mepo,
++                        pin,
++                        if (prev_pin != null) prev_pin else null,
++                        @intCast(u8, pin_group_i),
++                        is_active_path,
++                        .{ .x = tile_x, .y = tile_y, .z = zoom }
++                    );
++                }
++            }
++
++            if (mepo.pin_group_active_item) |active_pin_i| {
++                try blit_pin(
++                    mepo,
++                    &mepo.pin_groups[mepo.pin_group_active].items[active_pin_i],
++                    null,
++                    mepo.pin_group_active,
++                    true,
++                    .{ .x = tile_x, .y = tile_y, .z = zoom }
++                );
++            }
++        }
++
++        _ = try mepo.blit_pinlayer_cache.put(.{ .x = tile_x, .y = tile_y, .z = zoom }, text);
++        try utilsdl.errorcheck(sdl.SDL_SetRenderTarget(mepo.renderer, null));
++        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, &rect_src, &rect_intersect));
++    }
++}
++
++fn blit_overlay_pindetails(mepo: *Mepo) !void {
++    if (!p.get(p.pref.overlay_pindetails).b) return;
++
++    const d_unit_km = p.get(p.pref.distance_unit_tf_km_mi).b;
++    const d_unit = if (d_unit_km) "km" else "mi";
++
++    var arena = std.heap.ArenaAllocator.init(mepo.allocator);
++    defer arena.deinit();
++
++    var al = std.ArrayList([2][:0]const u8).init(arena.allocator());
++    if (mepo.pin_group_active_item) |_| {
++        const pin = mepo.pin_groups[mepo.pin_group_active].items[mepo.pin_group_active_item.?];
++        const pin_coords_str = try std.fmt.allocPrintZ(arena.allocator(), "{d:.5} lat / {d:.5} lon", .{ pin.lat, pin.lon });
++        const distance_str = try std.fmt.allocPrintZ(arena.allocator(), "{d:.2}{s} away", .{
++            utilconversion.distance_haversine(
++                if (d_unit_km) .Km else .Mi,
++                p.get(p.pref.lat).f,
++                p.get(p.pref.lon).f,
++                pin.lat,
++                pin.lon,
++            ),
++            d_unit,
++        });
++
++        if (pin.handle != null) {
++            try al.append(([_][:0]const u8{ "Handle:", pin.handle.? })[0..].*);
++        }
++        try al.append(([_][:0]const u8{ "Coords:", pin_coords_str })[0..].*);
++        if (p.get(p.pref.overlay_pindetails_expanded).b) {
++            try al.append(([_][:0]const u8{ try std.fmt.allocPrintZ(
++                arena.allocator(),
++                "Group {d}:",
++                .{mepo.pin_group_active},
++            ), try std.fmt.allocPrintZ(
++                arena.allocator(),
++                "{d} of {d} ",
++                .{
++                    mepo.pin_group_active_item.? + 1,
++                    mepo.pin_groups[mepo.pin_group_active].items.len,
++                },
++            ) })[0..].*);
++            try al.append(([_][:0]const u8{ "Dist:", distance_str })[0..].*);
++            for (pin.metadata.keys()) |k| {
++                const duped = try std.fmt.allocPrintZ(arena.allocator(), "{s}", .{k});
++                try al.append(([_][:0]const u8{ duped, pin.metadata.get(k).? })[0..].*);
++            }
++        }
++        const off_y = p.get(p.pref.fontsize_ui).u + 26;
++        try blit_table(mepo, 5, off_y, 5, al.items);
++    }
++}
++
++fn blit_debugmessage(mepo: *Mepo) !void {
++    if (p.get(p.pref.debug_message_enabled).b and mepo.debug_message != null) {
++        const bottom_off: u32 = if (p.get(p.pref.overlay_debugbar).b) p.get(p.pref.fontsize_ui).u + 10 else 5;
++        try blit_multiline_text(
++            mepo,
++            0xff0000,
++            null,
++            types.Color{ .value = 0xffffff, .opacity = 200 },
++            .{ .h = mepo.win_h - bottom_off, .align_x = .Left, .align_y = .Bottom },
++            0,
++            5,
++            null,
++            "DEBUG: {s}",
++            .{mepo.debug_message.?},
++        );
++    }
++}
++
++fn get_pin_xyz_and_offsets(pin: *types.Pin, for_zoom: u8) types.XYZAndOffsets {
++    const pinx = utilconversion.lon_to_px_x(pin.lon, for_zoom);
++    const piny = utilconversion.lat_to_px_y(pin.lat, for_zoom);
++    const pintilex = @intCast(u32, @divFloor(pinx, config.Tsize));
++    const pintiley = @intCast(u32, @divFloor(piny, config.Tsize));
++    const tile_off_x = @intCast(u32, @rem(pinx, config.Tsize));
++    const tile_off_y = @intCast(u32, @rem(piny, config.Tsize));
++    return .{
++        .xyz = .{ .x = pintilex, .y = pintiley, .z = for_zoom },
++        .offset = .{ .x = tile_off_x, .y = tile_off_y },
++    };
++}
++
++fn blit_pin(mepo: *Mepo, pin: *types.Pin, prev_pin: ?*types.Pin, pin_group: u8, is_active_path: bool, for_tile: types.XYZ) !void {
++    const pin_rect_size: i32 = 10;
++    const is_active = mepo.pin_group_active_item != null and &mepo.pin_groups[mepo.pin_group_active].items[mepo.pin_group_active_item.?] == pin;
++
++    const pindest = get_pin_xyz_and_offsets(pin, for_tile.z);
++    const pin_target_x = ((@intCast(c_int, pindest.xyz.x) - @intCast(c_int, for_tile.x)) * config.Tsize) + @intCast(c_int, pindest.offset.x);
++    const pin_target_y = ((@intCast(c_int, pindest.xyz.y) - @intCast(c_int, for_tile.y)) * config.Tsize) + @intCast(c_int, pindest.offset.y);
++    var prevpin_target_x : ?i32 = null;
++    var prevpin_target_y : ?i32 = null;
++    if (prev_pin != null) {
++        const prevpindest = get_pin_xyz_and_offsets(prev_pin.?, for_tile.z);
++        prevpin_target_x = ((@intCast(c_int, prevpindest.xyz.x) - @intCast(c_int, for_tile.x)) * config.Tsize) + @intCast(c_int, prevpindest.offset.x);
++        prevpin_target_y = ((@intCast(c_int, prevpindest.xyz.y) - @intCast(c_int, for_tile.y)) * config.Tsize) + @intCast(c_int, prevpindest.offset.y);
++    }
++
++    // 0. Nop Check - ensure that rendered pin/connecting line within tile
++    {
++        const font_height = @intCast(i8, config.ZoomLevelToPinFontSize[p.get(p.pref.zoom).u]);
++        const n_tiles_font_overlap = 2;
++        const pin_in_view = r: {
++            const a = pin_target_x > (-config.Tsize * n_tiles_font_overlap)  and pin_target_x < (config.Tsize * n_tiles_font_overlap);
++            const b = pin_target_y > -font_height and pin_target_y - (pin_rect_size / 2) < config.Tsize;
++            break :r a and b;
++        };
++        const prevpin_in_view = r: {
++            if (prev_pin == null) break :r false;
++            const a = prevpin_target_x.? > (-config.Tsize * n_tiles_font_overlap) and prevpin_target_x.? < config.Tsize * n_tiles_font_overlap;
++            const b = prevpin_target_y.? > -font_height and prevpin_target_y.? - (pin_rect_size / 2) < config.Tsize; 
++            break :r a and b;
++        };
++        const connecting_line_in_view = r: {
++            if (prev_pin == null) break :r false;
++            const prevpindest = get_pin_xyz_and_offsets(prev_pin.?, for_tile.z);
++            var x1 = @intCast(c_int, pindest.xyz.x * config.Tsize + pindest.offset.x);
++            var y1 = @intCast(c_int, pindest.xyz.y * config.Tsize + pindest.offset.y);
++            var x2 = @intCast(c_int, prevpindest.xyz.x * config.Tsize + prevpindest.offset.x);
++            var y2 = @intCast(c_int, prevpindest.xyz.y * config.Tsize + prevpindest.offset.y);
++            const rect = sdl.SDL_Rect{
++                  .x = @intCast(i32, for_tile.x * config.Tsize),
++                  .y = @intCast(i32, for_tile.y * config.Tsize),
++                  .w = config.Tsize,
++                  .h = config.Tsize,
++            };
++            break :r sdl.SDL_IntersectRectAndLine(&rect, &x1, &y1, &x2, &y2) == sdl.SDL_TRUE;
++        };
++
++        if (!pin_in_view and !prevpin_in_view and !connecting_line_in_view) return;
++    }
++
++    // 1. Render the path from the previous pin in ordered pin group
++    render_connecting_line: {
++        if (!p.get(p.pingroup_prop(pin_group, .Ordered)).b or prev_pin == null)
++            break :render_connecting_line;
++
++        const pg_color = types.Color{ .value = p.get(p.pingroup_prop(pin_group, .Color)).u24 };
++        const connecting_line_color = if (is_active_path) 0xff0000ff else pg_color.to_u32();
++        try utilsdl.errorcheck(sdl.aalineColor(
++            mepo.renderer,
++            @intCast(i16, prevpin_target_x.?),
++            @intCast(i16, prevpin_target_y.?),
++            @intCast(i16, pin_target_x),
++            @intCast(i16, pin_target_y),
++            connecting_line_color,
++        ));
++    }
++
++    // 2. Render the pin square
++    render_pin_square: {
++        if (pin.category != .Instructive) break :render_pin_square;
++
++        const pg_color = types.Color{ .value = p.get(p.pingroup_prop(pin_group, .Color)).u24 };
++        const dest_rect = sdl.SDL_Rect{
++            .x = pin_target_x - @divTrunc(pin_rect_size, 2),
++            .y = pin_target_y - @divTrunc(pin_rect_size, 2),
++            .w = pin_rect_size,
++            .h = pin_rect_size,
++        };
++        try utilsdl.sdl_renderer_rect(mepo.renderer, pg_color, dest_rect, .Fill);
++        if (is_active) {
++            try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0xff0000 }, dest_rect, .Draw);
++        }
++    }
++
++    // 3. Render the pin label (only applies for the current pin group)
++    render_pin_label: {
++        if (pin.category != .Instructive or mepo.pin_group_active != pin_group)
++            break :render_pin_label;
++
++        const pin_label_bg_value : u24 = if (is_active) 0xe8e8e8 else 0xffffff;
++        const pin_label_bg: types.Color = .{ .value = pin_label_bg_value, .opacity = 255 };
++        const pin_label_border_value : u24 = if (is_active) 0x000000 else 0xe8e8e8;
++        const pin_label_border = .{ .value = pin_label_border_value, .opacity = 255 };
++
++        const label_color: u24 = 0x000000;
++        const label = lab: {
++            if (pin.metadata.get("name")) |name| break :lab name;
++            if (pin.handle) |h| break :lab h;
++            break :lab "";
++        };
++
++        try blit_multiline_text(
++            mepo,
++            label_color,
++            pin_label_border,
++            pin_label_bg,
++            .{},
++            pin_target_x,
++            pin_target_y,
++            config.ZoomLevelToPinFontSize[p.get(p.pref.zoom).u],
++            "{s}",
++            .{label},
++        );
++    }
++}
++
++fn blit_overlay_debugbar(mepo: *Mepo) !void {
++    if (!p.get(p.pref.overlay_debugbar).b) return;
++    const bottombar_height = p.get(p.pref.fontsize_ui).u + 5;
++
++    const bg: types.Color = color: {
++        if (mepo.tile_cache.thread_download == null) {
++            break :color .{ .value = 0xffdfd1, .opacity = 255 };
++        } else if (mepo.tile_cache.queue_lifo_ui.count() > 0) {
++            break :color .{ .value = 0xd7ffd6, .opacity = 255 };
++        } else if (mepo.tile_cache.queue_lifo_bg.count() > 0) {
++            break :color .{ .value = 0xc7d4ff, .opacity = 255 };
++        } else {
++            break :color .{ .value = 0xffffff, .opacity = 100 };
++        }
++    };
++
++    try utilsdl.sdl_renderer_rect(mepo.renderer, bg, sdl.SDL_Rect{
++        .x = 0,
++        .y = @intCast(i32, mepo.win_h) - bottombar_height,
++        .w = @intCast(i32, mepo.win_w),
++        .h = 200,
++    }, .Fill);
++    try utilsdl.sdl_renderer_rect(mepo.renderer, .{ .value = 0x000000 }, sdl.SDL_Rect{
++        .x = 0,
++        .y = @intCast(i32, mepo.win_h) - bottombar_height,
++        .w = @intCast(i32, mepo.win_w),
++        .h = 1,
++    }, .Fill);
++    try blit_multiline_text(
++        mepo,
++        0x000000,
++        null,
++        null,
++        .{ .align_x = .Right },
++        0,
++        @intCast(i32, mepo.win_h) - bottombar_height + 3,
++        null,
++        "Dl: {d:.2}Mb ",
++        .{@intToFloat(f32, mepo.tile_cache.byte_counter) / 1024 / 1024},
++    );
++    try blit_multiline_text(
++        mepo,
++        0x000000,
++        null,
++        null,
++        .{},
++        5,
++        @intCast(i32, mepo.win_h) - bottombar_height + 3,
++        null,
++        "{d:.3} {d:.3} Z{d} O{d} P{d} Q{d} B{d} D{d} M{d} S{d}",
++        .{
++            p.get(p.pref.lat).f,
++            p.get(p.pref.lon).f,
++            p.get(p.pref.zoom).u,
++            @boolToInt(mepo.tile_cache.thread_download != null),
++            mepo.pin_group_active,
++            mepo.tile_cache.queue_lifo_ui.count(),
++            mepo.tile_cache.queue_lifo_bg.count(),
++            mepo.tile_cache.transfer_map.count(),
++            mepo.tile_cache.texture_map.count(),
++            mepo.async_shellpipe_threads.count(),
++        },
++    );
++}
++
++fn blit_help(mepo: *Mepo) !void {
++    if (!p.get(p.pref.help).b) return;
++
++    var msg = msg: {
++        var acc = std.ArrayList([]const u8).init(mepo.allocator);
++        defer acc.deinit();
++        defer for (acc.items) |item| mepo.allocator.free(item);
++
++        var it = mepo.table_keybindings.iterator();
++
++        while (it.next()) |kv| {
++            const keymod = utilsdl.sdl_keymod_to_str(kv.key_ptr.keymod);
++            try acc.append(try std.fmt.allocPrint(mepo.allocator, "{s} {c} = {s}", .{ keymod, kv.key_ptr.key, kv.value_ptr.* }));
++        }
++
++        break :msg try std.mem.join(mepo.allocator, "\n", acc.items);
++    };
++    defer mepo.allocator.free(msg);
++
++    try blit_multiline_text(
++        mepo,
++        0x000000,
++        null,
++        types.Color{ .value = 0xe8e8e8, .opacity = 120 },
++        .{ .align_x = .Center, .align_y = .Center },
++        0,
++        0,
++        null,
++        \\mepo - Development version ({s})
++        \\ 
++        \\Keybindings:
++        \\{s}
++    ,
++        .{ config.Version, msg },
++    );
++}
++
++fn blit_table(mepo: *Mepo, x: i32, y: i32, padding: c_int, rows: []const [2][:0]const u8) !void {
++    var width_label: c_int = 0;
++    var width_value: c_int = 0;
++    var height_row: c_int = 0;
++
++    const border_color = types.Color{ .value = 0x888888, .opacity = 255 };
++
++    // Precalculate width/height for each label
++    for (rows) |row| {
++        const surf_lab = try utilsdl.errorcheck_ptr(
++            sdl.SDL_Surface,
++            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[0]), (types.Color{ .value = 0x000000 }).to_sdl()),
++        );
++        defer sdl.SDL_FreeSurface(surf_lab);
++        const surf_val = try utilsdl.errorcheck_ptr(
++            sdl.SDL_Surface,
++            sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[1]), (types.Color{ .value = 0x000000 }).to_sdl()),
++        );
++        defer sdl.SDL_FreeSurface(surf_val);
++        width_label = std.math.max(width_label, surf_lab.w);
++        width_value = std.math.max(width_value, surf_val.w);
++        height_row = surf_lab.h;
++    }
++
++    // Background color & border
++    try utilsdl.sdl_renderer_rect(mepo.renderer, types.Color{ .value = 0xffffff, .opacity = 125 }, sdl.SDL_Rect{
++        .x = x,
++        .y = y,
++        .w = width_label + width_value + padding * 4,
++        .h = height_row * @intCast(c_int, rows.len),
++    }, .Fill);
++    try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
++        .x = x,
++        .y = y,
++        .w = width_label + width_value + padding * 4,
++        .h = height_row * @intCast(c_int, rows.len),
++    }, .Draw);
++
++    // Column divider
++    try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
++        .x = x + width_label + padding * 2,
++        .y = y,
++        .w = 1,
++        .h = height_row * @intCast(c_int, rows.len),
++    }, .Fill);
++
++    for (rows) |row, row_i| {
++        // Label
++        const surf_lab = try utilsdl.errorcheck_ptr(
++            sdl.SDL_Surface,
++            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[0]), (types.Color{ .value = 0x000000 }).to_sdl()),
++        );
++        const text_lab = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf_lab));
++        defer sdl.SDL_FreeSurface(surf_lab);
++        var dest_rect_lab = sdl.SDL_Rect{
++            .x = x + padding,
++            .y = y + @intCast(c_int, row_i) * height_row,
++            .w = surf_lab.w,
++            .h = surf_lab.h,
++        };
++        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text_lab, null, &dest_rect_lab));
++
++        // Value
++        const surf_value = try utilsdl.errorcheck_ptr(
++            sdl.SDL_Surface,
++            sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, row[1]), (types.Color{ .value = 0x000000 }).to_sdl()),
++        );
++        const text_value = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf_value));
++        defer sdl.SDL_FreeSurface(surf_value);
++        var dest_rect_val = sdl.SDL_Rect{
++            .x = x + width_label + padding * 3,
++            .y = y + @intCast(c_int, row_i) * height_row,
++            .w = surf_value.w,
++            .h = surf_value.h,
++        };
++        try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text_value, null, &dest_rect_val));
++
++        // Horizontal border between rows
++        try utilsdl.sdl_renderer_rect(mepo.renderer, border_color, sdl.SDL_Rect{
++            .x = x,
++            .y = y + @intCast(c_int, row_i) * height_row,
++            .w = width_label + width_value + padding * 4,
++            .h = 1,
++        }, .Fill);
++    }
++}
++
++fn blit_multiline_text(
++    mepo: *Mepo,
++    color: u24,
++    border_opt: ?types.Color,
++    background_opt: ?types.Color,
++    alignment: types.BoxAlignment,
++    x: i32,
++    y: i32,
++    font_size_opt: ?u32,
++    comptime fmt_string: [:0]const u8,
++    args: anytype,
++) !void {
++    var msg = try std.fmt.allocPrintZ(mepo.allocator, fmt_string, args);
++    defer mepo.allocator.free(msg);
++
++    const font_size = font_size: {
++        if (font_size_opt) |font_size| {
++            if (font_size > mepo.fonts_normal.len) return error.FontTooBig else break :font_size font_size;
++        } else {
++            break :font_size p.get(p.pref.fontsize_ui).u;
++        }
++    };
++
++    var textures_width: c_int = 0;
++    var textures_height: c_int = 0;
++
++    // Accumulate lines rendered into slice of textures
++    var textures: []*sdl.SDL_Texture = textures: {
++        var textures_array: [50]*sdl.SDL_Texture = undefined;
++        var textures_array_size: usize = 0;
++
++        var lines_it = std.mem.tokenize(u8, msg, "\n");
++        while (lines_it.next()) |line| {
++            if (textures_array_size + 1 > textures_array.len - 1) break;
++
++            const line_sentinel_terminated = try mepo.allocator.dupeZ(u8, line);
++            defer mepo.allocator.free(line_sentinel_terminated);
++
++            const text_surf = try utilsdl.errorcheck_ptr(
++                sdl.SDL_Surface,
++                sdl.TTF_RenderUTF8_Blended(mepo.fonts_normal[font_size], @ptrCast([*c]const u8, line_sentinel_terminated), (types.Color{ .value = color }).to_sdl()),
++            );
++            defer sdl.SDL_FreeSurface(text_surf);
++
++            const text = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, text_surf));
++            textures_height += text_surf.h;
++            textures_width = std.math.max(textures_width, text_surf.w);
++            textures_array[textures_array_size] = text;
++            textures_array_size += 1;
++        }
++
++        break :textures textures_array[0..textures_array_size];
++    };
++
++    // Rendering
++    {
++        // Calculate X/Y offsets
++        const x_off: c_int = x_off: {
++            const bbox_total_w = @intCast(c_int, if (alignment.w) |w| w else mepo.win_w);
++            const offset = switch (alignment.align_x) {
++                .Left => 0,
++                .Right => bbox_total_w - textures_width,
++                .Center => @divTrunc(bbox_total_w - textures_width, 2),
++            };
++            break :x_off x + offset;
++        };
++        var y_off: c_int = y_off: {
++            const bbox_total_h = @intCast(c_int, if (alignment.h) |h| h else mepo.win_h);
++            const offset = switch (alignment.align_y) {
++                .Top => 0,
++                .Bottom => bbox_total_h - textures_height,
++                .Center => @divTrunc(bbox_total_h - textures_height, 2),
++            };
++            break :y_off y + offset;
++        };
++
++        // Render background
++        if (background_opt) |background|
++            try utilsdl.sdl_renderer_rect(mepo.renderer, background, sdl.SDL_Rect{ .x = x_off, .y = y_off, .w = textures_width, .h = textures_height }, .Fill);
++
++        // Render border
++        if (border_opt) |border|
++            try utilsdl.sdl_renderer_rect(mepo.renderer, border, sdl.SDL_Rect{ .x = x_off, .y = y_off, .w = textures_width, .h = textures_height }, .Draw);
++
++        // Render text
++        for (textures) |texture| {
++            defer sdl.SDL_DestroyTexture(texture);
++            var dest_rect = sdl.SDL_Rect{
++                .x = x_off,
++                .y = y_off,
++                .w = undefined,
++                .h = undefined,
++            };
++            try utilsdl.errorcheck(sdl.SDL_QueryTexture(texture, null, null, &dest_rect.w, &dest_rect.h));
++            y_off += dest_rect.h;
++            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, texture, null, &dest_rect));
++        }
++    }
++}
++
++pub fn blit_uibuttons(mepo: *Mepo, determine_click_target: ?sdl.SDL_Point) !?types.UIButton {
++    var btn_i = mepo.uibuttons.items.len;
++    const pad: c_int = 5;
++    var pad_left: c_int = 5;
++    var pad_right: c_int = 10;
++    const pad_bottom: c_int = p.get(p.pref.fontsize_ui).u + 10;
++
++    while (btn_i > 0) {
++        btn_i -= 1;
++
++        if (mepo.uibuttons.items[btn_i].only_visible_when_pin_active and mepo.pin_group_active_item == null)
++            continue;
++
++        const surf = try utilsdl.errorcheck_ptr(
++            sdl.SDL_Surface,
++            sdl.TTF_RenderUTF8_Blended(mepo.fonts_bold[p.get(p.pref.fontsize_ui).u], @ptrCast([*c]const u8, mepo.uibuttons.items[btn_i].text), (types.Color{ .value = 0x000000 }).to_sdl()),
++        );
++        defer sdl.SDL_FreeSurface(surf);
++
++        const target = target: {
++            if (mepo.uibuttons.items[btn_i].only_visible_when_pin_active) {
++                const bg_w = surf.w + pad * 2;
++                const bg_h = surf.h + pad * 2;
++                defer pad_left += bg_w;
++                break :target sdl.SDL_Rect{
++                    .x = pad_left,
++                    .y = 10,
++                    .w = bg_w + 1,
++                    .h = bg_h + 1,
++                };
++            } else {
++                const bg_w = surf.w + pad * 2;
++                const bg_h = surf.h + pad * 2;
++                defer pad_right += bg_w;
++
++                break :target sdl.SDL_Rect{
++                    .x = @intCast(c_int, mepo.win_w) - pad_right - bg_w,
++                    .y = @intCast(c_int, mepo.win_h) - bg_h - pad_bottom,
++                    .w = bg_w + 1,
++                    .h = bg_h + 1,
++                };
++            }
++        };
++
++        if (determine_click_target) |want_target| {
++            // Determine if click fell within btn
++            if (want_target.x >= target.x and want_target.y >= target.y and want_target.x <= target.x + target.w and want_target.y <= target.y + target.h) {
++                return mepo.uibuttons.items[btn_i];
++            }
++        } else {
++            // Rendering
++            const dest_rect_text_lab = sdl.SDL_Rect{
++                .x = target.x + pad,
++                .y = target.y + pad,
++                .w = surf.w,
++                .h = surf.h,
++            };
++
++            const bg_color = bg_color: {
++                if (mepo.drag != null and sdl.SDL_TRUE == sdl.SDL_PointInRect(&mepo.drag.?.point, &dest_rect_text_lab)) {
++                    break :bg_color types.Color{ .value = 0xe8e8e8, .opacity = 255 };
++                } else if (mepo.uibuttons.items[btn_i].group_number == mepo.pin_group_active) {
++                    break :bg_color types.Color{ .value = 0xe8e8e8, .opacity = 255 };
++                } else {
++                    break :bg_color types.Color{ .value = 0xffffff, .opacity = 125 };
++                }
++            };
++
++            try utilsdl.sdl_renderer_rect(mepo.renderer, bg_color, target, .Fill);
++            try utilsdl.sdl_renderer_rect(mepo.renderer, types.Color{ .value = 0x888888, .opacity = 255 }, target, .Draw);
++            if (mepo.uibuttons.items[btn_i].group_number) |group_number| {
++                var highlight_rect = target;
++                highlight_rect.h = 3;
++                highlight_rect.x += 2;
++                highlight_rect.y += 2;
++                highlight_rect.w -= 4;
++                const color = types.Color{ .value = p.get(p.pingroup_prop(group_number, .Color)).u24, .opacity = 255 };
++                try utilsdl.sdl_renderer_rect(mepo.renderer, color, highlight_rect, .Fill);
++            }
++            const text = try utilsdl.errorcheck_ptr(sdl.SDL_Texture, sdl.SDL_CreateTextureFromSurface(mepo.renderer, surf));
++            defer sdl.SDL_DestroyTexture(text);
++            try utilsdl.errorcheck(sdl.SDL_RenderCopy(mepo.renderer, text, null, &dest_rect_text_lab));
++        }
++    }
++
++    return null;
++}
++
++pub fn blit(mepo: *Mepo) !void {
++    try utilsdl.errorcheck(sdl.SDL_RenderClear(mepo.renderer));
++    try utilsdl.sdl_renderer_rect(
++        mepo.renderer,
++        .{ .value = 0xffffff },
++        .{ .x = 0, .y = 0, .w = @intCast(c_int, mepo.win_w), .h = @intCast(c_int, mepo.win_h) },
++        .Fill,
++    );
++    try blit_tiles_all(
++        mepo,
++        .{
++            .x = 0,
++            .y = 0,
++            .w = @intCast(c_int, mepo.win_w),
++            .h = @intCast(c_int, mepo.win_h),
++        },
++        p.get(p.pref.zoom).u,
++    );
++    try blit_crosshair(mepo);
++    try blit_overlay_pindetails(mepo);
++    try blit_overlay_debugbar(mepo);
++    try blit_help(mepo);
++    try blit_debugmessage(mepo);
++    _ = try blit_uibuttons(mepo, null);
++
++    sdl.SDL_RenderPresent(mepo.renderer);
++
++    // Update title, this is actually a relatively slow operation on certain
++    // platforms such as Wayland/Phosh; thus we only update at a certain
++    // specified config frequency
++    if (sdl.SDL_GetTicks() > mepo.title_update_ms + config.TitleUpdateFrequencyMs) {
++        mepo.title_update_ms = sdl.SDL_GetTicks();
++        const title = try std.fmt.allocPrintZ(mepo.allocator, "mepo - {d:.5} lat, {d:.5} lon", .{ p.get(p.pref.lat).f, p.get(p.pref.lon).f });
++        defer mepo.allocator.free(title);
++        _ = sdl.SDL_SetWindowTitle(mepo.window, &title[0]);
++    }
++}
+diff --git a/src/config.zig b/src/config.zig
+index d8a0980..d3cb4f3 100644
+--- a/src/config.zig
++++ b/src/config.zig
+@@ -13,11 +13,50 @@ pub const ZoomLevelToPinFontSize = [20]u8{
+     9,  9,  9,  9,  9,  9,  9,  9,  9, 9, 9, 9,
+     10, 11, 12, 13, 14, 15, 16, 16,
+ };
+-// Essentially the number of textures that are allowed to be loaded to
+-// the GPU concurrently
+-pub const MaxTextures = 50;
++// Number of textures (in both pin & OSM tile cache) loaded to GPU concurrently
++// can be modified with boot CLI param -tx, e.g. -tx400 for 400 textures
++pub var MaxTextures : usize = 200;
+ 
+ pub const DefaultBaseConfig =
++    \\ # Prefs;
++    \\ prefset_n debug_stderr 0;
++    \\ prefset_n lat 40.78392;
++    \\ prefset_n lon -73.96442;
++    \\ prefset_n fontsize_ui 16;
++    \\ prefset_n distance_unit_tf_km_mi 1;
++    \\ prefset_n crosshair_size 15;
++    \\ prefset_n debug_message_enabled 1;
++    \\ prefset_n overlay_debugbar 1;
++    \\ prefset_n overlay_pindetails 1;
++    \\ prefset_n overlay_pindetails_expanded 1;
++    \\ prefset_n zoom 14;
++    \\ prefset_n tile_cache_network 1;
++    \\ prefset_n tile_cache_max_n_transfers 20;
++    \\ # E.g. default 30 day expiry: 60s * 60m * 24h * 30 days;
++    \\ prefset_n tile_cache_expiry_seconds 2592000;
++    \\ prefset_t tile_cache_dir $XDG_CACHE_HOME/mepo/tiles;
++    \\ prefset_t tile_cache_url https://tile.openstreetmap.org/%3$d/%1$d/%2$d.png;
++    \\ prefset_t pingroup_0_color #0000ff;
++    \\ prefset_t pingroup_1_color #116e0e;
++    \\ prefset_t pingroup_2_color #7502ab;
++    \\ prefset_t pingroup_3_color #cf0064;
++    \\ prefset_t pingroup_4_color #b89600;
++    \\ prefset_t pingroup_5_color #00b0aa;
++    \\ prefset_t pingroup_6_color #ff8308;
++    \\ prefset_t pingroup_7_color #004a0c;
++    \\ prefset_t pingroup_8_color #ff00a2;
++    \\ prefset_t pingroup_9_color #fff673;
++    \\ prefset_n pingroup_0_ordered 0;
++    \\ prefset_n pingroup_1_ordered 0;
++    \\ prefset_n pingroup_2_ordered 0;
++    \\ prefset_n pingroup_3_ordered 0;
++    \\ prefset_n pingroup_4_ordered 0;
++    \\ prefset_n pingroup_5_ordered 0;
++    \\ prefset_n pingroup_6_ordered 0;
++    \\ prefset_n pingroup_7_ordered 1;
++    \\ prefset_n pingroup_8_ordered 1;
++    \\ prefset_n pingroup_9_ordered 1;
++    \\
+     \\ # UI Buttons;
+     \\ bind_button 0 -1 [Menu] [shellpipe_sync mepo_ui_central_menu.sh] [];
+     \\ bind_button 0 -1 [Center] [shellpipe_sync [mepo_ui_menu_user_pin_updater.sh droppinactivateandcenter]] [];
+@@ -25,7 +64,6 @@ pub const DefaultBaseConfig =
+     \\ bind_button 0 -1 [Nm] [shellpipe_sync mepo_ui_menu_search_nominatim.sh] [];
+     \\ bind_button 0 -1 [Op] [shellpipe_sync mepo_ui_menu_search_overpass.sh] [];
+     \\ bind_button 0 -1 [Dl] [shellpipe_sync mepo_ui_menu_dbg_queuedownloadnoninteractive.sh] [];
+-
+     \\ bind_button 1 -1 [~] [preftoggle overlay_pindetails_expanded] [];
+     \\ bind_button 1 -1 [Purge] [pin_purge] [];
+     \\ bind_button 1 -1 [Del] [pin_delete -1 []; pin_cycle 0 1; center_on_pin] [];
+@@ -102,7 +140,6 @@ pub const DefaultBaseConfig =
+     \\ bind_key _ q [shellpipe_sync [mepo_ui_menu_dbg_queuedownloadinteractive.sh]];
+     \\ bind_key s q [shellpipe_sync [mepo_ui_menu_dbg_queuedownloadnoninteractive.sh]];
+     \\ bind_key _ x [shellpipe_sync [mepo_ui_menu_user_pin_updater.sh droppinactivateandcenter]];
+-
+     \\ bind_key _ [1] [pin_groupactivate 0];
+     \\ bind_key _ [2] [pin_groupactivate 1];
+     \\ bind_key _ [3] [pin_groupactivate 2];
+@@ -133,10 +170,8 @@ pub const DefaultBaseConfig =
+     \\ bind_key cs [8] [pin_transfer -1 [all] 7];
+     \\ bind_key cs [9] [pin_transfer -1 [all] 8];
+     \\ bind_key cs [0] [pin_transfer -1 [all] 9];
+-
+     \\ bind_key _ d [pin_delete -1 []; pin_cycle 0 1];
+     \\ bind_key s d [pin_purge];
+-
+     \\ bind_key _ / [preftoggle help];
+     \\ bind_key _ e [preftoggle overlay_pindetails];
+     \\ bind_key _ s [preftoggle overlay_debugbar];
+@@ -152,46 +187,6 @@ pub const DefaultBaseConfig =
+     \\ # Quit action;
+     \\ bind_quit [filedump rp $XDG_CACHE_HOME/mepo/savestate];
+     \\
+-    \\ # Prefs;
+-    \\ prefset_n lat 40.78392;
+-    \\ prefset_n lon -73.96442;
+-    \\ prefset_n fontsize_ui 16;
+-    \\ prefset_n distance_unit_tf_km_mi 1;
+-    \\ prefset_n crosshair_size 15;
+-    \\ prefset_n debug_message_enabled 1;
+-    \\ prefset_n debug_stderr 0;
+-    \\ prefset_n overlay_debugbar 1;
+-    \\ prefset_n overlay_pindetails 1;
+-    \\ prefset_n overlay_pindetails_expanded 1;
+-    \\ prefset_n zoom 14;
+-    \\ prefset_n tile_cache_network 1;
+-    \\ prefset_n tile_cache_max_n_transfers 20;
+-    \\ # E.g. default 30 day expiry: 60s * 60m * 24h * 30 days;
+-    \\ prefset_n tile_cache_expiry_seconds 2592000;
+-    \\ prefset_t tile_cache_dir $XDG_CACHE_HOME/mepo/tiles;
+-    \\ prefset_t tile_cache_url https://tile.openstreetmap.org/%3$d/%1$d/%2$d.png;
+-    \\ prefset_t pingroup_0_color #0000ff;
+-    \\ prefset_t pingroup_1_color #116e0e;
+-    \\ prefset_t pingroup_2_color #7502ab;
+-    \\ prefset_t pingroup_3_color #cf0064;
+-    \\ prefset_t pingroup_4_color #b89600;
+-    \\ prefset_t pingroup_5_color #00b0aa;
+-    \\ prefset_t pingroup_6_color #ff8308;
+-    \\ prefset_t pingroup_7_color #004a0c;
+-    \\ prefset_t pingroup_8_color #ff00a2;
+-    \\ prefset_t pingroup_9_color #fff673;
+-
+-    \\ prefset_n pingroup_0_ordered 0;
+-    \\ prefset_n pingroup_1_ordered 0;
+-    \\ prefset_n pingroup_2_ordered 0;
+-    \\ prefset_n pingroup_3_ordered 0;
+-    \\ prefset_n pingroup_4_ordered 0;
+-    \\ prefset_n pingroup_5_ordered 0;
+-    \\ prefset_n pingroup_6_ordered 0;
+-    \\ prefset_n pingroup_7_ordered 1;
+-    \\ prefset_n pingroup_8_ordered 1;
+-    \\ prefset_n pingroup_9_ordered 1;
+-    \\ 
+     \\ # User-customizable bookmarks / arbitrary mepolang file;
+     \\ fileload $XDG_CACHE_HOME/mepo/savestate;
+     \\ fileload $XDG_CONFIG_HOME/mepo/config;
+diff --git a/src/datastructure/EvictionHashMap.zig b/src/datastructure/EvictionHashMap.zig
+index fcf972c..9ee65c0 100644
+--- a/src/datastructure/EvictionHashMap.zig
++++ b/src/datastructure/EvictionHashMap.zig
+@@ -1,9 +1,9 @@
+ const std = @import("std");
+ 
+-pub fn EvictionHashMap(comptime key_type: type, comptime metadata_type: type, comptime size: usize) type {
++pub fn EvictionHashMap(comptime key_type: type, comptime metadata_type: type, comptime eviction_function: fn (key_type, metadata_type) void, comptime size: *usize) type {
+     return struct {
+         array_hash_map: std.array_hash_map.AutoArrayHashMap(key_type, metadata_type),
+-        size: usize,
++        size: *usize,
+         mutex: std.Thread.Mutex,
+ 
+         pub fn count(self: *@This()) usize {
+@@ -29,18 +29,22 @@ pub fn EvictionHashMap(comptime key_type: type, comptime metadata_type: type, co
+             defer self.mutex.unlock();
+ 
+             try self.array_hash_map.put(k, v);
+-            return if (self.array_hash_map.count() > self.size) return self.shift() else null;
++            return if (self.array_hash_map.count() > self.size.*) return self.shift() else null;
+         }
+ 
+         fn shift(self: *@This()) !metadata_type {
++            const shifted_key = self.array_hash_map.keys()[0];
+             const shifted_val = self.array_hash_map.values()[0];
+             self.array_hash_map.orderedRemoveAt(0);
++            eviction_function(shifted_key, shifted_val);
+             return shifted_val;
+         }
+ 
+         pub fn clearAndFree(self: *@This()) void {
+             self.mutex.lock();
+             defer self.mutex.unlock();
++            var it = self.array_hash_map.iterator();
++            while (it.next()) |kv| eviction_function(kv.key_ptr.*, kv.value_ptr.*);
+             self.array_hash_map.clearAndFree();
+         }
+ 
+diff --git a/src/main.zig b/src/main.zig
+index 513038e..fb0d64d 100644
+--- a/src/main.zig
++++ b/src/main.zig
+@@ -6,13 +6,14 @@ const Docs = @import("./Docs.zig");
+ const Downloader = @import("./Downloader.zig");
+ const TileCache = @import("./TileCache.zig");
+ const sdl = @import("./sdlshim.zig");
++const types = @import("./types.zig");
+ const utildbg = @import("./util/utildbg.zig");
+ 
+ pub fn main() !void {
+     comptime {
+         const v = builtin.zig_version;
+-        if (v.major != 0 or v.minor != 10 or v.patch != 1)
+-            @panic("Must be built against Zig 0.10.1");
++        if (v.major != 0 or v.minor != 10)
++            @panic("Must be built against Zig 0.10.x");
+     }
+ 
+     const allocator = std.heap.c_allocator;
+@@ -21,7 +22,7 @@ pub fn main() !void {
+     var mode: enum { Graphical, Download, Version, DocsMarkdown, DocsManpage, Help } = .Graphical;
+     var download_request: []const u8 = undefined;
+     var enable_default_config = true;
+-    var use_sw_renderer = false;
++    var renderer_type: types.RendererType = .Auto;
+ 
+     var args_it = std.process.args();
+     var arg_w = args_it.next();
+@@ -44,8 +45,14 @@ pub fn main() !void {
+             // -e: Enable stderr debugging
+             stderr_debugging_on = true;
+         } else if (std.mem.eql(u8, arg, "-sw")) {
+-            // -sw: Use software renderer instead of default HW renderer
+-            use_sw_renderer = true;
++            // -sw: Force software renderer instead of default auto renderer
++            renderer_type = .SW;
++        } else if (std.mem.eql(u8, arg, "-hw")) {
++            // -hw: Force hardware renderer instead of default auto renderer
++            renderer_type = .HW;
++        } else if (std.mem.startsWith(u8, arg, "-tx")) {
++            // -tx: Number of GPU textures to cache for OSM/pin tiles concurrently
++            config.MaxTextures = try std.fmt.parseInt(usize, arg[3..], 10);
+         } else if (std.mem.eql(u8, arg, "-v")) {
+             // -v: Version
+             mode = .Version;
+@@ -82,7 +89,7 @@ pub fn main() !void {
+                 }
+                 break :cfg "";
+             };
+-            var mepo = try Mepo.init(allocator, &tile_cache, base_config, use_sw_renderer);
++            var mepo = try Mepo.init(allocator, &tile_cache, base_config, renderer_type);
+             mepo.init_video_and_sdl_stdin_loop(stdin_mepolang_parsing_on) catch Mepo.graceful_terminate_sdl();
+         },
+         .Download => {
+@@ -97,19 +104,19 @@ pub fn main() !void {
+                 \\Mepo {s} - fast simple hackable OSM map viewer:
+                 \\===============================================
+                 \\
+-                ,
++            ,
+                 .{config.Version},
+             );
+             for (Docs.CliFlags) |flag_spec| {
+                 if (flag_spec.param) |arg| {
+-                    std.debug.print("{s}{s}: {s}\n", .{flag_spec.flag, arg, flag_spec.desc});
++                    std.debug.print("{s}{s}: {s}\n", .{ flag_spec.flag, arg, flag_spec.desc });
+                 } else {
+-                    std.debug.print("{s}: {s}\n", .{flag_spec.flag, flag_spec.desc});
++                    std.debug.print("{s}: {s}\n", .{ flag_spec.flag, flag_spec.desc });
+                 }
+             }
+             std.debug.print(
+                 \\===============================================
+-                ,
++            ,
+                 .{},
+             );
+         },
+diff --git a/src/sdlshim.zig b/src/sdlshim.zig
+index bfbef45..49fa303 100644
+--- a/src/sdlshim.zig
++++ b/src/sdlshim.zig
+@@ -2,6 +2,6 @@ pub usingnamespace @cImport({
+     @cInclude("SDL2/SDL.h");
+     @cInclude("SDL2/SDL_revision.h");
+     @cInclude("SDL2/SDL_image.h");
+-    @cInclude("SDL2_gfxPrimitives.h");
++    @cInclude("SDL2/SDL2_gfxPrimitives.h");
+     @cInclude("SDL2/SDL_ttf.h");
+ });
+diff --git a/src/types.zig b/src/types.zig
+index 736f702..ae16b4f 100644
+--- a/src/types.zig
++++ b/src/types.zig
+@@ -4,6 +4,12 @@ const sdl = @import("./sdlshim.zig");
+ 
+ pub const Latlon = struct { lat: f64, lon: f64 };
+ pub const XYZ = struct { x: u32, y: u32, z: u8 };
++pub const XYZAndOffsets = struct {
++    xyz: XYZ,
++    offset: struct{ x: u32, y: u32 },
++};
++
++pub const RendererType = enum{ Auto, HW, SW };
+ 
+ pub const Pin = struct {
+     lat: f64,
+diff --git a/src/util/utilconversion.zig b/src/util/utilconversion.zig
+index 90f20dd..0623f63 100644
+--- a/src/util/utilconversion.zig
++++ b/src/util/utilconversion.zig
+@@ -7,7 +7,7 @@ pub fn lon_to_px_x(lon: f64, zoom: u32) i32 {
+ }
+ 
+ pub fn lat_to_px_y(lat: f64, zoom: u32) i32 {
+-    const tiley : f64 = (1.0 - std.math.asinh(std.math.tan(lat * std.math.pi / 180.0)) / std.math.pi) / 2.0;
++    const tiley: f64 = (1.0 - std.math.asinh(std.math.tan(lat * std.math.pi / 180.0)) / std.math.pi) / 2.0;
+     return lossyCastWithNan(i32, tiley * zoom_bit(zoom));
+ }
+ 
+@@ -46,7 +46,7 @@ fn zoom_bit(zoom: u32) f32 {
+ 
+ fn lossyCastWithNan(comptime to_type: type, value: anytype) to_type {
+     if (std.math.isNan(value)) {
+-        const t : to_type = 0;
++        const t: to_type = 0;
+         return t;
+     } else {
+         return std.math.lossyCast(to_type, value);
+diff --git a/src/util/utilplatform.zig b/src/util/utilplatform.zig
+index 7f951a5..204a802 100644
+--- a/src/util/utilplatform.zig
++++ b/src/util/utilplatform.zig
+@@ -7,7 +7,7 @@ pub fn supports_osk() bool {
+     return has_sdl_osk or xdg_desktop == .Phosh or xdg_desktop == .Plamo;
+ }
+ 
+-pub fn xdg_session_desktop() enum{Phosh, Plamo, Unknown} {
++pub fn xdg_session_desktop() enum { Phosh, Plamo, Unknown } {
+     var env_session_desktop: []const u8 = "unknown";
+     if (std.os.getenv("XDG_SESSION_DESKTOP")) |v| {
+         env_session_desktop = v;
+diff --git a/src/util/utilprefs.zig b/src/util/utilprefs.zig
+index 045911c..0372f15 100644
+--- a/src/util/utilprefs.zig
++++ b/src/util/utilprefs.zig
+@@ -59,7 +59,9 @@ pub var prefs_mapping: [n_prefs]PrefMapping = mapping: {
+     var mapping: [n_prefs]PrefMapping = undefined;
+     mapping[@enumToInt(pref.lat)] = .{ .name = "lat", .value = .{ .f = 40.78392 }, .bounds = .{ .min = -90, .max = 90 }, .desc = "Latitude of the map" };
+     mapping[@enumToInt(pref.lon)] = .{ .name = "lon", .value = .{ .f = -73.96442 }, .bounds = .{ .min = -180, .max = 180 }, .desc = "Longitude of the map" };
+-    mapping[@enumToInt(pref.zoom)] = .{ .name = "zoom", .value = .{ .u = 14, }, .bounds = .{ .min = 0, .max = 19 }, .desc = "Zoom level of the map (should be set between 0-19)" };
++    mapping[@enumToInt(pref.zoom)] = .{ .name = "zoom", .value = .{
++        .u = 14,
++    }, .bounds = .{ .min = 0, .max = 19 }, .desc = "Zoom level of the map (should be set between 0-19)" };
+     mapping[@enumToInt(pref.debug_message_enabled)] = .{ .name = "debug_message_enabled", .value = .{ .b = true }, .desc = "Whether debug overlay message should be shown in the UI" };
+     mapping[@enumToInt(pref.distance_unit_tf_km_mi)] = .{ .name = "distance_unit_tf_km_mi", .value = .{ .b = false }, .desc = "Whether to show distance in km (0) or mi (1)" };
+     mapping[@enumToInt(pref.overlay_debugbar)] = .{ .name = "overlay_debugbar", .value = .{ .b = true }, .desc = "Whether to show the debug bar" };
+@@ -69,7 +71,7 @@ pub var prefs_mapping: [n_prefs]PrefMapping = mapping: {
+     mapping[@enumToInt(pref.crosshair_size)] = .{ .name = "crosshair_size", .value = .{ .u = 15 }, .bounds = .{ .min = 0, .max = 300 }, .desc = "Pixel size of the crosshairs" };
+     mapping[@enumToInt(pref.drag_scale)] = .{ .name = "drag_scale", .value = .{ .u = 2 }, .bounds = .{ .min = 1, .max = 200 }, .desc = "Scale for dragging" };
+     mapping[@enumToInt(pref.fontsize_ui)] = .{ .name = "fontsize_ui", .value = .{ .u = 20 }, .bounds = .{ .min = 1, .max = 49 }, .desc = "Size of the font in the UI" };
+-    mapping[@enumToInt(pref.debug_stderr)] = .{ .name = "debug_stderr", .value = .{ .b = false }, .desc = "Send debug information to STDERR (note the commandline flag `-e` overrides this setting)" };
++    mapping[@enumToInt(pref.debug_stderr)] = .{ .name = "debug_stderr", .value = .{ .b = true }, .desc = "Send debug information to STDERR (note the commandline flag `-e` overrides this setting)" };
+     mapping[@enumToInt(pref.tile_cache_max_n_transfers)] = .{ .name = "tile_cache_max_n_transfers", .value = .{ .u = 20 }, .bounds = .{ .min = 1, .max = 9999 }, .desc = "Maximum number of concurrent transfers for curl" };
+     mapping[@enumToInt(pref.tile_cache_expiry_seconds)] = .{ .name = "tile_cache_expiry_seconds", .value = .{ .f = -1 }, .bounds = .{ .min = -1, .max = 99999999 }, .desc = "Number of seconds before a downloaded tiledata should be considered invalid" };
+     mapping[@enumToInt(pref.tile_cache_network)] = .{ .name = "tile_cache_network", .value = .{ .b = true }, .desc = "Whether to download new tiledata from external servers; if 0 that means you're offline" };
+@@ -106,7 +108,7 @@ pub fn get(prefname: pref) PrefValueUnion {
+ }
+ 
+ pub fn set_n(prefname: pref, value: f64) void {
+-    var bounded_value : f64 = value;
++    var bounded_value: f64 = value;
+     if (prefs_mapping[@enumToInt(prefname)].bounds) |bounds| {
+         if (bounded_value > bounds.max) bounded_value = bounds.max;
+         if (bounded_value < bounds.min) bounded_value = bounds.min;
