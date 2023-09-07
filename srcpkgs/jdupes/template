@@ -18,6 +18,9 @@ post_install() {
 	vlicense LICENSE.txt
 }
 
+make_build_args+=" STATIC_LDFLAGS=-ljodycode"
+make_build_target="static"
+
 do_check() {
 	./jdupes -v | grep 'Compile-time feature flags:.*dedup'
 }
