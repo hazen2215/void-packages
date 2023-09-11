@@ -1,8 +1,8 @@
 # Template file for 'elftoolchain'
 pkgname=elftoolchain
-version=0.7.1+svn20220506
+version=0.7.1+svn20230416
 revision=1
-_commit=f27fcce314b91b3dece6bee90949183f7a1e18b3
+_commit=fea115ec80ece0a0c2271ed2bc25a30a85da990e
 build_style=gnu-makefile
 make_cmd=bmake
 make_build_args="WITH_ADDITIONAL_DOCUMENTATION=no WITH_TESTS=no MANTARGET=man
@@ -19,9 +19,7 @@ license="BSD-2-Clause"
 homepage="https://sourceforge.net/projects/elftoolchain"
 distfiles="https://github.com/chimera-linux/elftoolchain/archive/${_commit}.tar.gz"
 # distfiles="https://downloads.sourceforge.net/sourceforge/elftoolchain/elftoolchain-${version}.tgz"
-checksum=f7017a5869c3dd7906010255ce199f3cdc0f220c10970cf23bf4c336fd724ed0
-
-conflicts="libdwarf pev"
+checksum=671c2641d1e510c58018e5fb66ebf80fab4e774577e8edc6403153c489d09ae2
 
 build_options="static"
 build_options_default="static"
@@ -49,7 +47,8 @@ post_install() {
 }
 
 elftoolchain-devel_package() {
-	depends="${sourcepkg}>=${version}_${revision}"
+	depends="${sourcepkg}>=${version}_${revision} elftoolchain-libdwarf
+	 elftoolchain-libelf elftoolchain-libelftc elftoolchain-libpe"
 	short_desc+=" - development files"
 	conflicts="binutils-devel elfutils-devel libdwarf-devel"
 	pkg_install() {
@@ -61,11 +60,37 @@ elftoolchain-devel_package() {
 	}
 }
 
+elftoolchain-libdwarf_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - libdwarf"
+	conflicts="libdwarf"
+	pkg_install() {
+		vmove "usr/lib/libdwarf.so.*"
+	}
+}
+
 elftoolchain-libelf_package() {
 	depends="${sourcepkg}>=${version}_${revision}"
 	short_desc+=" - libelf"
 	conflicts="libelf"
 	pkg_install() {
 		vmove "usr/lib/libelf.so.*"
+	}
+}
+
+elftoolchain-libelftc_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - libelftc"
+	pkg_install() {
+		vmove "usr/lib/libelftc.so.*"
+	}
+}
+
+elftoolchain-libpe_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - libpe"
+	conflicts="pev"
+	pkg_install() {
+		vmove "usr/lib/libpe.so.*"
 	}
 }
