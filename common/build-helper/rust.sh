@@ -30,6 +30,13 @@ else
 	unset CARGO_BUILD_TARGET
 fi
 
+if [ -n "$XBPS_SCCACHE" ] && [ "$pkgname" != "rust-sccache" ]; then
+	hostmakedepends+=" rust-sccache"
+	export RUSTC_WRAPPER="/usr/bin/sccache"
+	export SCCACHE_DIR="${XBPS_HOSTDIR}/sccache"
+	export SCCACHE_IDLE_TIMEOUT=30
+fi
+
 # For cross-compiling rust -sys crates
 export PKG_CONFIG_ALLOW_CROSS=1
 
