@@ -1,0 +1,13 @@
+diff --git a/gm8emulator/src/game/audio.rs b/gm8emulator/src/game/audio.rs
+index a739abe0..bd448247 100644
+--- a/gm8emulator/src/game/audio.rs
++++ b/gm8emulator/src/game/audio.rs
+@@ -56,7 +56,7 @@ pub struct AudioManager {
+ impl AudioManager {
+     pub fn new(do_output: bool) -> Self {
+         // TODO: not all these unwraps
+-        let session = Session::new(Api::SoundIo).unwrap();
++        let session = Session::new(Api::Dummy).unwrap();
+         let device = session.default_output_device().unwrap();
+         let sample_rate = device.sample_rate();
+         let channel_count = device.channel_count();
