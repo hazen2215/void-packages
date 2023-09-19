@@ -112,7 +112,17 @@ EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
 	-isystem \$(shell \$(CC) --print-file-name=include-fixed)
 !
 
+	# write dkms.conf
+	cat <<! >>${DESTDIR}/usr/src/oss-${version}/dkms.conf
+PACKAGE_NAME="oss"
+PACKAGE_VERSION="${version}"
+BUILT_MODULE_NAME[0]="osscore"
+BUILT_MODULE_LOCATION[0]="core/"
+DEST_MODULE_LOCATION[0]="/updates/dkms/"
+!
+
 	# Merge the drivers...
+	drv_i=1
 	for i in kernel/drv/*; do
 		[ -d "$i" ] || continue
 		NAME="${i##*/}"
@@ -121,9 +131,17 @@ EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
 		osscore | oss_audiocs | oss_sadasupport) continue ;;
 		# XXX: C++ not ready
 		lynxtwo) continue ;;
+		lynxone) continue ;;
 		oss_hdaudio) ;;
 		*) [ "$build_option_only_hdaudio" ] && continue ;;
 		esac
+
+		cat <<! >>${DESTDIR}/usr/src/oss-${version}/dkms.conf
+BUILT_MODULE_NAME[$drv_i]="$NAME"
+BUILT_MODULE_LOCATION[$drv_i]="drivers/"
+DEST_MODULE_LOCATION[$drv_i]="/updates/dkms/"
+!
+		drv_i=$((drv_i + 1))
 
 		unset SOURCES
 		SRCCOUNT=0
@@ -155,6 +173,15 @@ EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
 				>>$DKMSDIR/drivers/Makefile
 		fi
 	done
+
+	cat <<'!' >>${DESTDIR}/usr/src/oss-${version}/dkms.conf
+AUTOINSTALL=yes
+MAKE[0]="make -C ${kernel_source_dir} M=${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/core SUBDIRS=${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/core modules && \
+         make -C ${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/drivers osscore_symbols.inc && \
+         make -C ${kernel_source_dir} M=${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/drivers SUBDIRS=${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/drivers modules"
+CLEAN="cd core && rm -f *.o *.ko *.mod.c *.mod.o .*.cmd modules.order Module.symvers limits.h && rm -rf .tmp_versions && cd .. && \
+       cd drivers && rm -f *.o *.ko *.mod.c *.mod.o .*.cmd modules.order osscore_symbols.inc && rm -rf .tmp_versions && cd .. "
+!
 
 	# Adjust OSS files to some changed header file locations
 	find $DKMSDIR -type f -exec sed -i '{}' \
@@ -195,9 +222,9 @@ EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
 	# Remove backup files
 	# rm ${DESTDIR}/usr/src/oss-${version}/core/*.orig
 
-	cp ${FILESDIR}/dkms.conf ${DESTDIR}/usr/src/oss-${version}
-	vsed -i ${DESTDIR}/usr/src/oss-${version}/dkms.conf \
-		-e "s/_VERSION_/${version}/"
+	# cp ${FILESDIR}/dkms.conf ${DESTDIR}/usr/src/oss-${version}
+	# vsed -i ${DESTDIR}/usr/src/oss-${version}/dkms.conf \
+	# -e "s/_VERSION_/${version}/"
 
 	vinstall ${FILESDIR}/oss.resume 755 /etc/zzz.d/resume 99-oss.sh
 	vinstall ${FILESDIR}/oss.suspend 755 /etc/zzz.d/suspend 99-oss.sh
