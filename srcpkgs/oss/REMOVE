@@ -1,0 +1,8 @@
+#
+# This script removes leftovers dirs at purge time.
+#
+case "${ACTION}" in
+post)
+	[ -d usr/src/oss-${VERSION} ] && rm -rf usr/src/oss-${VERSION}
+	;;
+esac
