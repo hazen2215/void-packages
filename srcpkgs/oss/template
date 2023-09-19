@@ -24,12 +24,17 @@ make_dirs="/var/lib/oss 0755 root root"
 dkms_modules="oss ${version}"
 subpackages="oss-devel"
 
-build_options="gtk float static"
+build_options="gtk float only_hdaudio static"
 build_options_default="gtk float"
 desc_option_float="Enable support for floating arithmetric"
+desc_option_only_hdaudio="Enable support for hdaudio only"
 
 if [ "$build_option_gtk" ]; then
 	subpackages+=" ossxmix"
+fi
+
+if [ "$build_option_only_hdaudio" ]; then
+	configure_args+=" --only-drv=oss_hdaudio"
 fi
 
 post_extract() {
@@ -116,6 +121,8 @@ EXTRA_CFLAGS=-D_KERNEL -I\$(KBUILD_EXTMOD)/../core -I\$(KBUILD_EXTMOD) \
 		osscore | oss_audiocs | oss_sadasupport) continue ;;
 		# XXX: C++ not ready
 		lynxtwo) continue ;;
+		oss_hdaudio) ;;
+		*) [ "$build_option_only_hdaudio" ] && continue ;;
 		esac
 
 		unset SOURCES
