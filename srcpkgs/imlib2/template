@@ -19,6 +19,8 @@ post_install() {
 	vlicense COPYING
 }
 
+makedepends=${makedepends/librsvg-devel/}
+
 imlib2-tools_package() {
 	short_desc+=" - utilities"
 	pkg_install() {
