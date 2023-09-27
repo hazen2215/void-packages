@@ -1,9 +1,10 @@
 # Template file for 'avrdude'
 pkgname=avrdude
-version=7.0
+version=7.2
 revision=1
-build_style=gnu-configure
-configure_args="--enable-linuxspi --enable-linuxgpio --enable-parport"
+build_style=cmake
+configure_args="-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1
+ -DHAVE_LINUXSPI=1 -DHAVE_LINUXGPIO=1 -DHAVE_PARPORT=1"
 hostmakedepends="flex"
 makedepends="elfutils-devel libusb-devel libusb-compat-devel libftdi1-devel
  hidapi-devel"
@@ -13,6 +14,8 @@ maintainer="Subhaditya Nath <sn03.general@gmail.com>"
 license="GPL-2.0-only"
 homepage="http://www.nongnu.org/avrdude/"
 changelog="https://raw.githubusercontent.com/avrdudes/avrdude/master/NEWS"
-distfiles="$NONGNU_SITE/$pkgname/${pkgname}-$version.tar.gz"
-checksum=c0ef65d98d6040ca0b4f2b700d51463c2a1f94665441f39d15d97442dbb79b54
+distfiles="https://github.com/avrdudes/avrdude/archive/refs/tags/v${version}.tar.gz"
+checksum=beb4e0b0a07f8d47e550329ab93c345d5252350de6f833afde51b4d8bd934674
 conf_files="/etc/avrdude.conf"
+
+CFLAGS="-flto=auto"
