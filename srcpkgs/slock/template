@@ -20,7 +20,7 @@ do_build() {
 	sed -i 's/CPPFLAGS =/CPPFLAGS +=/g' config.mk
 	sed -i 's/CFLAGS =/CFLAGS +=/g' config.mk
 	sed -i 's/LDFLAGS =/LDFLAGS +=/g' config.mk
-	make CC=$CC INCS="-I." LIBS="-lX11 -lXext -lcrypt -lXrandr" ${makejobs}
+	make CC=$CC INCS="-I." LIBS="-static -lXrandr -lX11 -lpthread -lxcb -lXau -lXdmcp -lXext -lXrender -lX11" ${makejobs}
 }
 
 do_install() {
