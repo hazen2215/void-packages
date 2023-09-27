@@ -1,0 +1,12 @@
+# Template file for 'freepwing'
+pkgname=freepwing
+version=1.5
+revision=1
+build_style=gnu-configure
+hostmakedepends="perl"
+short_desc="Free JIS X 4081 (subset of EPWING V1) Formatter"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://www.sra.co.jp/people/m-kasahr/freepwing/"
+distfiles="http://deb.debian.org/debian/pool/main/f/freepwing/freepwing_${version}.orig.tar.gz"
+checksum=51e3acf62c9c634c049116e99f02185143a81e4da0971896d48ea84fcffa5dd8
