@@ -1,0 +1,13 @@
+diff --git a/vis-cmds.c b/vis-cmds.c
+index 4ae4b87..3fd565e 100644
+--- a/vis-cmds.c
++++ b/vis-cmds.c
+@@ -130,7 +130,7 @@ static void windows_arrange(Vis *vis, enum UiLayout layout);
+ }
+ 
+ static void tabwidth_set(Vis *vis, int tabwidth) {
+-	if (tabwidth < 1 || tabwidth > 8)
++	if (tabwidth < 1)
+ 		return;
+ 	for (Win *win = vis->windows; win; win = win->next)
+ 		view_tabwidth_set(win->view, tabwidth);
