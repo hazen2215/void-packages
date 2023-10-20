@@ -1,0 +1,16 @@
+# Template file for 'python3-mcpi'
+pkgname=python3-mcpi
+version=1.2.1
+revision=1
+build_style=python3-module
+hostmakedepends="python3-setuptools"
+short_desc="Python library for the Minecraft Pi edition and RaspberryJuice API"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://pypi.org/project/mcpi/"
+distfiles="${PYPI_SITE}/m/mcpi/mcpi-${version}.tar.gz"
+checksum=6fb8a80395bdbed8f18d7a3d12514f603e51bb4695f926cb1920eaf799b42526
+
+post_install() {
+	vlicense LICENSE
+}
