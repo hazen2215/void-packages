@@ -1,0 +1,14 @@
+# Template file for 'libgen-cli'
+pkgname=libgen-cli
+version=1.0.11
+revision=1
+build_style=go
+go_import_path=github.com/ciehanski/libgen-cli
+short_desc="CLI tool to access the Library Genesis dataset"
+maintainer="hazen2215 <haz@disroot.org>"
+license="Apache-2.0"
+homepage="https://github.com/ciehanski/libgen-cli"
+distfiles="https://github.com/ciehanski/libgen-cli/archive/v${version}.tar.gz"
+checksum=6f434a02a27f204995bda40596aeabf9c9c43ebb3940c1253c368f67c5531422
+
+export CGO_ENABLED=0
