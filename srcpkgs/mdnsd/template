@@ -16,6 +16,14 @@ conf_files="
  /etc/mdns.d/ssh.service"
 conflicts="mDNSResponder"
 
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	subpackages="${subpackages/libmdnsd-devel}"
+	subpackages="${subpackages/libmdnsd}"
+	make_build_args="LDFLAGS=-all-static"
+fi
+
 pre_configure() {
 	./autogen.sh
 }
@@ -24,6 +32,7 @@ post_install() {
 	rm ${DESTDIR}/usr/share/doc/mdnsd/LICENSE
 	vsv mdnsd
 	vlicense LICENSE
+	rm -r ${DESTDIR}/usr/include ${DESTDIR}/usr/lib
 }
 
 libmdnsd_package() {
