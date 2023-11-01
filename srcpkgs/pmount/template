@@ -7,6 +7,13 @@ hostmakedepends="intltool"
 makedepends="libblkid-devel"
 short_desc="Permits normal users to mount removable devices"
 maintainer="Enno Boland <gottox@voidlinux.org>"
+
+build_options="static"
+build_options_default="static"
+if [ "$build_option_static" ]; then
+	make_build_args="LDFLAGS=-all-static"
+fi
+
 license="GPL-3.0-only"
 homepage="http://pmount.alioth.debian.org/"
 distfiles="${DEBIAN_SITE}/main/p/${pkgname}/${pkgname}_${version}.orig.tar.bz2"
