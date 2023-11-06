@@ -21,6 +21,12 @@ pre_configure() {
 	autoreconf -fi
 }
 
+makedepends="bzip2-devel zlib-devel libcurl-devel"
+LDFLAGS="-static"
+configure_args+=" --disable-nls"
+conflicts="gnupg>=0"
+provides="gnupg-${version}_1"
+
 post_extract() {
 	case "$XBPS_TARGET_MACHINE" in
 		i686-musl) sed -i Makefile* -e"s;checks = checks;checks =;" ;;
@@ -28,6 +34,7 @@ post_extract() {
 }
 
 post_install() {
+	if false; then
 	rm ${DESTDIR}/usr/bin/gpgsplit
 	mv ${DESTDIR}/usr/bin/gpg ${DESTDIR}/usr/bin/gpg1
 	mv ${DESTDIR}/usr/bin/gpgv ${DESTDIR}/usr/bin/gpgv1
@@ -35,4 +42,5 @@ post_install() {
 		${DESTDIR}/usr/share/man/man1/gpg1.1
 	mv ${DESTDIR}/usr/share/man/man1/gpgv.1 \
 		${DESTDIR}/usr/share/man/man1/gpgv1.1
+	fi
 }
