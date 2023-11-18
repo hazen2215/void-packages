@@ -1,0 +1,34 @@
+# Template file for 'SpaceCadetPinball'
+pkgname=SpaceCadetPinball
+version=2.1.0
+revision=1
+build_style=cmake
+build_wrksrc=SpaceCadetPinball-Release_${version}
+makedepends="SDL2_mixer-devel"
+short_desc="Decompilation of 3D Pinball for Windows – Space Cadet"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT, Proprietary"
+homepage="https://github.com/k4zmu2a/SpaceCadetPinball"
+distfiles="https://github.com/k4zmu2a/SpaceCadetPinball/archive/refs/tags/Release_${version}.tar.gz
+ https://archive.org/download/SpaceCadet_Plus95/Space_Cadet.rar
+ https://archive.org/download/win311_ftiltpball/FULLTILT.ZIP>FULLTILT.zip"
+checksum="b647dc59abad3d52378b9f67ff4fb70a37e9752afaff1d098b71028cad29b8d6
+ 3cc5dfd914c2ac41b03f006c7ccbb59d6f9e4c32ecfd1906e718c8e47f130f4a
+ 183a2219865b3f2199403928b817b7c967837ea6298de14fb8a379944c7b4599"
+
+skip_extraction="Space_Cadet.rar"
+
+post_extract() {
+	bsdtar xf ${XBPS_SRCDISTDIR}/SpaceCadetPinball-${version}/Space_Cadet.rar
+}
+
+post_install() {
+	vlicense LICENSE
+	cd ..
+	vmkdir usr/share/SpaceCadetPinball
+	vmkdir usr/share/doc/SpaceCadetPinball
+	cp -r PINBALL.DAT *.MID Sounds/*.WAV \
+		CADET/CADET.DAT CADET/SOUND \
+		${DESTDIR}/usr/share/SpaceCadetPinball
+	cp PINBALL.DOC TABLE.BMP ${DESTDIR}/usr/share/doc/SpaceCadetPinball
+}
