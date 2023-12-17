@@ -1,0 +1,19 @@
+# Template file for 'mahjong'
+pkgname=mahjong
+version=1.16
+revision=1
+build_style=gnu-makefile
+make_install_target="install install.man"
+make_install_args="BINDIR=/usr/bin MANDIR=/usr/share/man/man1"
+hostmakedepends="perl pkg-config"
+makedepends="gtk+-devel"
+short_desc="Networked Mah Jong program, together with a computer player"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://mahjong.julianbradfield.org/"
+distfiles="http://mahjong.julianbradfield.org/Source/mj-${version}-src.tar.gz"
+checksum=c25e9848f49f70635e5e3ba0cb59799e5bc149a95f786621b99696b66787a29d
+
+pre_build() {
+	CFLAGS="$CFLAGS $(pkg-config gtk+-2.0 --cflags) -DTILESET=NULL -DTILESETPATH=NULL -DGTK2=1 -w"
+}

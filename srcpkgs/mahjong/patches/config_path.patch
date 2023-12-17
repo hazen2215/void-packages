@@ -1,0 +1,12 @@
+diff --git a/sysdep.c b/sysdep.c
+index 322dcdb..0a34dc2 100644
+--- a/sysdep.c
++++ b/sysdep.c
+@@ -914,5 +914,6 @@ char *get_homedir(void) {
+   return NULL;
+ # else
+   struct passwd *pw;
++  if ( (p = getenv("XDG_DATA_HOME")) ) return p;
+   if ( (p = getenv("HOME")) ) return p;
+   if ( (pw = getpwuid(getuid())) ) return pw->pw_dir;
+   return NULL;
