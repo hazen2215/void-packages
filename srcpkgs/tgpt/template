@@ -1,0 +1,14 @@
+# Template file for 'tgpt'
+pkgname=tgpt
+version=2.2.2
+revision=1
+build_style=go
+go_import_path=github.com/aandrew-me/tgpt/v2
+short_desc="ChatGPT in terminal without needing API keys"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/aandrew-me/tgpt"
+distfiles="https://github.com/aandrew-me/tgpt/archive/refs/tags/v${version}.tar.gz"
+checksum=06842db4dc47d5ac9dcf5cba5e0b9bd24248f7ca3f99053baa1615a98bcef9a8
+
+export CGO_ENABLED=0
