@@ -1,0 +1,22 @@
+# Template file for 'MiHaJong'
+pkgname=MiHaJong
+version=2.4.3
+revision=1
+build_style=gnu-configure
+hostmakedepends="autoconf automake libtool ruby python3 python3-Markdown python3-Pygments"
+makedepends="libX11-devel libglvnd-devel libogg-devel libopenal-devel
+ libpng-devel libvorbis-devel lua52-devel"
+short_desc="Japanese Mahjong with a lot of local rules implemented"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://w.atwiki.jp/mihajong/"
+distfiles="https://github.com/MihailJP/MiHaJong/archive/refs/tags/${version}.tar.gz"
+checksum=aa22449da9fd2b889a498a0a0d9d32599c584b5f53781d7d56c39522ad804245
+
+pre_configure() {
+	autoreconf -fi
+}
+
+post_install() {
+	vlicense LICENSE
+}

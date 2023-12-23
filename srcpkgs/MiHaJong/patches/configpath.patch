@@ -1,0 +1,17 @@
+diff --git a/mjcore/conffile/conffile.cpp b/mjcore/conffile/conffile.cpp
+index 932b471..f9b2238 100644
+--- a/mjcore/conffile/conffile.cpp
++++ b/mjcore/conffile/conffile.cpp
+@@ -34,6 +34,12 @@ std::string ConfigFile::confPath() {
+ 	delete[] cur; delete[] appdata; delete[] progfiles;
+ #else /* _WIN32 */
+ 	char* homedir = new char[bufSize] {};
++	getEnv(nullptr, homedir, bufSize, "XDG_DATA_HOME");
++	if (homedir) {
++		configpath = std::string(homedir) + std::string("/mihajong/");
++		delete[] homedir;
++		return configpath;
++	}
+ 	getEnv(nullptr, homedir, bufSize, "HOME");
+ 	configpath = std::string(homedir) + std::string("/.mihajong/");
+ 	delete[] homedir;
