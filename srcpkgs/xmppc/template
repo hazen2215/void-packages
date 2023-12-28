@@ -1,0 +1,17 @@
+# Template file for 'xmppc'
+pkgname=xmppc
+version=0.1.2
+revision=1
+build_style=gnu-configure
+hostmakedepends="autoconf automake libtool pkg-config"
+makedepends="libstrophe-devel glib-devel gpgme-devel openssl-devel"
+short_desc="Command Line Interface Tool for XMPP"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://codeberg.org/Anoxinon_e.V./xmppc"
+distfiles="https://codeberg.org/Anoxinon_e.V./xmppc/archive/${version}.tar.gz"
+checksum=2049f170a9c61acf11c20c26e522ef507a96d862dae3032f47c40ee206049326
+
+pre_configure() {
+	./bootstrap.sh
+}
