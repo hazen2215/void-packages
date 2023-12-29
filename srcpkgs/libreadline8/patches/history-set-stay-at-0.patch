@@ -1,0 +1,12 @@
+diff --git a/misc.c b/misc.c
+index 860a2c8..044fec4 100644
+--- a/misc.c
++++ b/misc.c
+@@ -413,6 +413,7 @@ _rl_history_set_point (void)
+   if (rl_editing_mode == vi_mode && _rl_keymap != vi_insertion_keymap)
+     rl_point = 0;
+ #endif /* VI_MODE */
++  rl_point = 0;
+ 
+   if (rl_editing_mode == emacs_mode)
+     rl_mark = (rl_point == rl_end ? 0 : rl_end);
