@@ -1,0 +1,20 @@
+# Template file for 'ucspi'
+pkgname=ucspi
+version=1.2.20230920
+revision=1
+_commit=9435993f47af23a98464beee872e412aec295e5c
+build_style=gnu-makefile
+make_install_args="MANDIR=\${DESTDIR}/usr/share/man"
+hostmakedepends="pkg-config"
+makedepends="openssl-devel libtls-devel"
+short_desc="UNIX Client-Server Program Interface"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/younix/ucspi"
+distfiles="https://github.com/younix/ucspi/archive/${_commit}.tar.gz"
+checksum=2eeae3eb76a2cbde10b5af302627b774eefe40454217dff5b026aeb2080e4aa6
+
+post_install() {
+	sed -n '/Copyright/,/OF THIS SOFTWARE./p' sockc.c >LICENSE
+	vlicense LICENSE
+}
