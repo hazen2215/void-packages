@@ -1,0 +1,24 @@
+diff --git a/Makefile b/Makefile
+index ac2d3b2..9ed1cb0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -5,8 +5,8 @@ DEFINES	:= $(DEFINES) -D_BSD_SOURCE
+ 
+ DEBUG	:= -g
+ LDFLAGS	:=
+-CFLAGS	:= -std=c99 -pedantic -Wall -Wextra -O3 $(DEBUG) $(DEFINES)
+-CFLAGS_MXML := `pkg-config --cflags mxml`
++CFLAGS	:= -std=c99 -pedantic -Wall -Wextra -O3 $(DEBUG)
++CFLAGS_MXML := `pkg-config --cflags mxml` $(DEFINES)
+ LIBS_MXML := `pkg-config --libs mxml`
+ 
+ .PHONY: all tests clean debug update install
+@@ -60,7 +60,7 @@ roster.o: roster.c
+ 	$(CC) $(CFLAGS) $(CFLAGS_MXML) -c -o $@ roster.c
+ 
+ .c.o:
+-	$(CC) $(CFLAGS) -c -o $@ $<
++	$(CC) $(CFLAGS) $(CFLAGS_MXML) -c -o $@ $<
+ 
+ clean:
+ 	rm -f $(BINS) *.o *.core expat

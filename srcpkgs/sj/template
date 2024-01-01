@@ -1,0 +1,42 @@
+# Template file for 'sj'
+pkgname=sj
+version=0.0.20230922
+revision=1
+_commit=5ad696c597b0ed2c0c6cca8f39fc12ffcd2454ac
+_bxml_commit=32af5451c4c918e7a016f372656b09e3da2bc47f
+_sasl_commit=3fb399408e4b1f99f1e90565e9f5a65196c095a0
+build_style=gnu-makefile
+build_wrksrc="sj-${_commit}"
+hostmakedepends="pkg-config"
+makedepends="mxml-devel libbsd-devel"
+depends="ucspi ucspi-tcp"
+short_desc="Simple jabber client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/younix/sj"
+distfiles="https://github.com/younix/sj/archive/${_commit}.tar.gz
+ https://github.com/younix/bxml/archive/${_bxml_commit}.tar.gz
+ https://github.com/younix/sasl/archive/${_sasl_commit}.tar.gz"
+checksum="f5b0b60d8a2f0984ebf90819c00ec102f223788ad874944336ea347029706fc0
+ 9a968592e771dc59dae87b7e6379740c07a4ea02eb8a0fd610a5c059eaff76c8
+ 959fede39a00f030033843a4ed6eb00034acbae3961fe6478f1a278553415ddf"
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	makedepends+=" musl-legacy-compat"
+fi
+
+post_extract() {
+	rmdir ${build_wrksrc}/{bxml,sasl}
+	mv bxml-${_bxml_commit} ${build_wrksrc}/bxml
+	mv sasl-${_sasl_commit} ${build_wrksrc}/sasl
+}
+
+do_install() {
+	make HOME=${DESTDIR}/usr install
+	for f in *.1; do
+		vman $f
+	done
+	sed -n '/Copyright/,/OF THIS SOFTWARE./p' sj.c >LICENSE
+	vlicense LICENSE
+}
