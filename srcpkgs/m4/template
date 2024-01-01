@@ -25,6 +25,13 @@ if [ -z "$CHROOT_READY" ]; then
 	export MAKEINFO=:
 fi
 
+configure_args+=" --program-prefix=g"
+build_options="static"
+LDFLAGS="$(vopt_if static -static)"
+alternatives="
+ m4:m4:/usr/bin/gm4
+ m4:m4.1:/usr/share/man/man1/gm4.1"
+
 pre_check() {
 	case "$XBPS_TARGET_MACHINE" in
 		# Disable tests that fail on musl
