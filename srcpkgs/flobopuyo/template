@@ -1,0 +1,23 @@
+# Template file for 'flobopuyo'
+pkgname=flobopuyo
+version=0.20
+revision=1
+build_style=gnu-makefile
+make_build_args="PREFIX=/usr"
+make_use_env=yes
+hostmakedepends="pkg-config flex"
+makedepends="SDL_image-devel SDL_mixer-devel"
+short_desc="Clone of the famous PuyoPuyo game"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://web.archive.org/web/20150922053000/http://www.fovea.cc/flobopuyo-en"
+distfiles="http://www.fovea.cc/files/flobopuyo/flobopuyo-${version}.tgz"
+checksum=46d12af706fba7281e7f92f733e70cc38e9965a550e06a8a38ea4f65620da130
+
+post_patch() {
+	rm data/sfx/._bi
+}
+
+post_install() {
+	vman man/flobopuyo.6
+}

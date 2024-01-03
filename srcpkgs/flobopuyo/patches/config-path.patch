@@ -1,0 +1,13 @@
+diff --git a/preferences.c b/preferences.c
+index 7f2cbdd..2dea730 100644
+--- a/preferences.c
++++ b/preferences.c
+@@ -145,7 +145,7 @@ void GetStrPreference (const char *name, char *out, const char *defaut, const in
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ 
+-static const char * prefsfile = ".flobopuyorc";
++static const char * prefsfile = ".local/share/flobopuyorc";
+ static const char * sep = "\n\r";
+ 
+ static char * file = NULL;
