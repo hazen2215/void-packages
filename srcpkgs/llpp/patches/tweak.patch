@@ -1,20 +1,29 @@
-diff --git a/link.c b/link.c
-index ecf6189..a97cff1 100644
---- a/link.c
-+++ b/link.c
-@@ -905,6 +905,7 @@ static void layout (void)
-                 zh = state.h / h;
-                 zoom = fz_min (zw, zh);
-                 p->left = (int) ((maxw - (w * zoom)) / 2.f);
-+                zoom = maxw / 120;
-             }
-             break;
-         case FitWidth:
 diff --git a/main.ml b/main.ml
-index a2f439c..3ea66a9 100644
+index 7fdf5a9..5bbb7ff 100644
 --- a/main.ml
 +++ b/main.ml
-@@ -552,6 +552,11 @@ let gotoxy x y =
+@@ -77,6 +77,20 @@ let launchpath () =
+        adderrfmt "spawn" "failed to execute `%s': %s" cmd @@ exntos exn
+     | _pid -> ()
+ 
++let launchmenu () =
++    let n =
++      match !S.layout with
++      | l :: _ -> string_of_int l.pageno
++      | _ -> E.s
++    in
++    let cmd = Str.global_replace Re.percents !S.path "llpp-menu '%s' '%p'" in
++    let cmd =
++      if nonemptystr n
++      then Str.global_replace Re.percentp n cmd
++      else cmd
++    in
++    getcmdoutput (adderrfmt cmd "failed to obrain query: %s") cmd
++
+ let getopaque pageno = Hashtbl.find S.pagemap (pageno, !S.gen)
+ 
+ let pagetranslatepoint l x y =
+@@ -552,6 +566,11 @@ let gotoxy x y =
    S.x := x;
    S.y := y;
    S.layout := layout;
@@ -26,7 +35,20 @@ index a2f439c..3ea66a9 100644
    begin match !S.mode with
    | LinkNav ln ->
       begin match ln with
-@@ -1096,10 +1101,7 @@ let act cmds =
+@@ -1008,6 +1027,12 @@ let getpassword () =
+   then (adderrmsg "askpass" "ask password program not set"; E.s)
+   else getcmdoutput (adderrfmt passcmd "failed to obrain password: %s") passcmd
+ 
++let getsearchquery () =
++  let searchcmd = getenvdef "LLPP_SEARCH" "llpp-search" in
++  if emptystr searchcmd
++  then (adderrmsg "search" "search program not set"; E.s)
++  else getcmdoutput (adderrfmt searchcmd "failed to obrain query: %s") searchcmd
++
+ let pgoto opaque pageno x y =
+   let pdimno = getpdimno pageno in
+   let x, y = Ffi.project opaque pageno pdimno x y in
+@@ -1096,10 +1121,7 @@ let act cmds =
       if n = 0
       then (
         let y = (getpagey pageno) + truncate y0 in
@@ -38,7 +60,55 @@ index a2f439c..3ea66a9 100644
         in
         addnav ();
         gotoxy x y;
-@@ -3297,6 +3299,13 @@ let viewkeyboard key mask =
+@@ -2770,11 +2792,11 @@ let gotoremote spec =
+         S.ranchors := ranchor :: !S.ranchors;
+         opendoc path E.s E.s;
+     in
+-    if substratis spec 0 "page="
++    if substratis dest 0 "page="
+     then
+-      match Scanf.sscanf spec "page=%d" (fun n -> n) with
++      match Scanf.sscanf dest "page=%d" (fun n -> n) with
+       | exception exn ->
+-         adderrfmt "error parsing remote destination" "%s %s" spec @@ exntos exn
++         adderrfmt "error parsing remote destination" "%s %s" dest @@ exntos exn
+       | pageno ->
+          S.anchor := (pageno, 0.0, 0.0);
+          dospawn @@ lazy (Printf.sprintf "%s -page %d %S"
+@@ -3033,7 +3055,7 @@ let setautoscrollspeed step goingdown =
+ let canpan () =
+   match conf.columns with
+   | Csplit _ -> true
+-  | Csingle _ | Cmulti _ -> !S.x != 0 || conf.zoom > 1.0
++  | Csingle _ | Cmulti _ -> !S.x != 0 || conf.zoom > 0.0
+ 
+ let existsinrow pageno (columns, coverA, coverB) p =
+   let last = ((pageno - coverA) mod columns) + columns in
+@@ -3237,7 +3259,7 @@ let viewkeyboard key mask =
+      S.text := E.s;
+      Hashtbl.iter (fun _ opaque -> Ffi.clearmark opaque) S.pagemap;
+      Glutils.postRedisplay "dehighlight";
+-  | Ascii (('/' | '?') as c) ->
++  | Ascii (('?') as c) ->
+      let ondone isforw s =
+        cbput !S.hists.pat s;
+        S.searchpattern := s;
+@@ -3245,6 +3267,14 @@ let viewkeyboard key mask =
+      in
+      enttext (String.make 1 c, E.s, Some (onhist !S.hists.pat),
+               textentry, ondone (c = '/'), true)
++  | Ascii '/' ->
++     let query = getsearchquery() in
++     if nonemptystr query
++     then (
++       cbput !S.hists.pat query;
++       S.searchpattern := query;
++       search query true
++     )
+   | Ascii '+' | Ascii '=' when ctrl ->
+      let incr = if conf.zoom +. 0.01 > 0.1 then 0.1 else 0.01 in
+      pivotzoom (conf.zoom +. incr)
+@@ -3297,6 +3327,13 @@ let viewkeyboard key mask =
    | Ascii '4' when ctrl ->
       let zoom = Ffi.getmaxw () /. float !S.winw in
       if zoom > 0.0 then setzoom zoom
@@ -52,25 +122,108 @@ index a2f439c..3ea66a9 100644
    | Fn 9 -> togglebirdseye ()
    | Ascii '9' when ctrl -> togglebirdseye ()
    | Ascii ('0'..'9' as c) when not ctrl ->
-diff --git a/uiutils.ml b/uiutils.ml
-index 811d01b..735f231 100644
---- a/uiutils.ml
-+++ b/uiutils.ml
-@@ -97,17 +97,6 @@ let enttext () =
+@@ -3358,6 +3395,34 @@ let viewkeyboard key mask =
+      | None -> S.autoscroll := Some conf.autoscrollstep
+      end
+   | Ascii 'p' when ctrl -> launchpath ()
++  | Ascii 'm' when ctrl ->
++     let cmds = launchmenu () in
++     let cl = splitatchar cmds ' ' in
++     let scan s fmt f =
++       try Scanf.sscanf s fmt f
++       with exn -> adderrfmt "remote exec" "error processing '%S': %s\n"
++                     cmds @@ exntos exn
++     in
++     (
++     match cl with
++     | "goto", args ->
++        scan args "%u %f %f"
++          (fun pageno x y ->
++            let cmd, _ = !S.geomcmds in
++            if emptystr cmd
++            then gotopagexy pageno x y
++            else
++              let f prevf () =
++                gotopagexy pageno x y;
++                prevf ()
++              in
++              S.reprf := f !S.reprf
++          )
++     | "gotor", args -> scan args "%S" gotoremote
++     | _ ->
++        adderrfmt "remote command"
++          "error processing remote command: %S\n" cmds
++     )
+   | Ascii 'P' ->
+      setpresentationmode (not conf.presentation);
+      showtext ' ' ("presentation mode " ^ onoffs conf.presentation)
+@@ -3374,7 +3439,19 @@ let viewkeyboard key mask =
+      end
+   | Ascii ' ' -> nextpage ()
+   | Delete -> prevpage ()
+-  | Ascii '=' -> showtext ' ' (describe_layout !S.layout);
++  | Ascii '=' ->
++     if conf.zoom = 1.0
++     then gotoxy 0 !S.y
++     else setzoom 1.0;
++     reqlayout conf.angle FitPage
++  | Ascii 'Z' ->
++     if Wsi.withshift mask
++     then (
++       setzoom 1.6;
++       reqlayout conf.angle FitPage;
++       let m = (!S.winw - !S.w) / 2 in
++       gotoxy m !S.y
++     )
+   | Ascii 'w' ->
+      begin match !S.layout with
+      | [] -> ()
+@@ -3405,7 +3482,7 @@ let viewkeyboard key mask =
+   | Ascii 'c' when !S.mode = View ->
+      if Wsi.withalt mask
+      then (
+-       if conf.zoom > 1.0
++       if conf.zoom > 0.0
+        then
+          let m = (!S.winw - !S.w) / 2 in
+          gotoxy m !S.y
+@@ -4586,7 +4663,7 @@ let () =
+   if !S.confpath == E.s
+   then (
+     let dir =
+-      let dir = Filename.concat home ".config" in
++      let dir = Filename.concat home ".local/share" in
+       if try Sys.is_directory dir with _ -> false then dir else home
+     in
+     S.confpath := Filename.concat dir "llpp.conf"
+diff --git a/misc/llppac b/misc/llppac
+index 46dd727..79f0453 100755
+--- a/misc/llppac
++++ b/misc/llppac
+@@ -6,7 +6,8 @@ die() {
+     exit 1
+ }
  
-     | Birdseye _ | View | LinkNav _ -> !S.text
-   in
--  let s =
--    if !S.newerrmsgs
--    then (
--      if not (istextentry !S.mode) && !S.uioh#eformsgs
--      then
--        let s1 = "(press 'e' to review error messages)" in
--        if nonemptystr s then s ^ " " ^ s1 else s1
--      else s
--    )
--    else s
--  in
-   if nonemptystr s
-   then drawstring s
+-cachedir="$HOME/.cache/llpp"
++
++cachedir="${XDG_CACHE_HOME:-$HOME/.cache}/llpp"
+ test -d "$cachedir" || die "cache directory '$cachedir' does not exist"
+ 
+ caspsuf=
+diff --git a/wsi/x11/wsi.ml b/wsi/x11/wsi.ml
+index e1903fc..6f17f4a 100644
+--- a/wsi/x11/wsi.ml
++++ b/wsi/x11/wsi.ml
+@@ -1101,7 +1101,11 @@ let init t w h =
+   w16 s 8 (String.length adata);
+   sendstr1 s 0 (Bytes.length s) fd;
+   S.sock := fd;
+-  setup d fd 0 screennum w h;
++  let rootwid =
++    try int_of_string(Sys.getenv "LLPP_WID")
++    with Not_found -> 0
++  in
++  setup d fd rootwid screennum w h;
+   S.t := t;
+   fd, !S.w, !S.h
  
