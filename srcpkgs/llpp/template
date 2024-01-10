@@ -1,6 +1,6 @@
 # Template file for 'llpp'
 pkgname=llpp
-version=41
+version=42
 revision=1
 hostmakedepends="asciidoc ocaml pkg-config"
 makedepends="freetype-devel glu-devel gumbo-parser-devel harfbuzz-devel
@@ -11,14 +11,13 @@ maintainer="hazen2215 <haz@disroot.org>"
 license="Public Domain"
 homepage="https://github.com/criticic/llpp"
 distfiles="https://github.com/criticic/llpp/archive/refs/tags/v${version}.tar.gz"
-checksum=2e6bac2f88c0b6c38cb2fecf79f7fafb700cb9d36d4fc76853341a5e51a69447
+checksum=a154d97d21b2e8dc28aa9db073f4ad349ae23c343c69b77d57620d0d621f96dc
 disable_parallel_build=1
 nostrip=yes
 
 CFLAGS="-I${XBPS_CROSS_BASE}/usr/include/freetype2"
 
 post_patch() {
-	vsed -i link.c -e 's/map_page_count/rev_page_count/'
 	vsed -i build.bash -e "2d;s/ver=.*/ver=${version}/"
 	vsed -i main.ml -e 's,\.config,.local/share,'
 }
