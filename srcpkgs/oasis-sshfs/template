@@ -1,0 +1,34 @@
+# Template file for 'oasis-sshfs'
+pkgname=oasis-sshfs
+version=3.6.0
+revision=1
+makedepends="fuse3-static"
+depends="openssh"
+short_desc="FUSE client based on the SSH File Transfer Protocol"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://github.com/libfuse/sshfs"
+distfiles="https://github.com/libfuse/sshfs/releases/download/sshfs-${version}/sshfs-${version}.tar.xz"
+checksum=1679b5543a6db2e93e06dbcdc9247b35df64c3148e2c30f80764f4813bd6c270
+
+conflicts="fuse-sshfs>=0"
+provides="fuse-sshfs-${version}_${revision}"
+
+case "${XBPS_TARGET_MACHINE}" in
+i686 | armv6l | armv7l)
+	CFLAGS="-D_FILE_OFFSET_BITS=64" ;;
+esac
+
+do_build() {
+	$CC -static $CFLAGS -DFUSE_USE_VERSION=31 \
+		$LDFLAGS -I${FILESDIR} \
+		-I${XBPS_CROSS_BASE}/usr/include/fuse3 \
+		-o sshfs sshfs.c nocache.c -lfuse3
+}
+
+do_install() {
+	vbin sshfs
+	ln -s sshfs ${DESTDIR}/usr/bin/mount.fuse.sshfs
+	ln -s sshfs ${DESTDIR}/usr/bin/mount.sshfs
+	vman ${FILESDIR}/sshfs.1
+}
