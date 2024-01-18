@@ -1,0 +1,127 @@
+From 71731981d5d726647ca768a643479e7ad757868b Mon Sep 17 00:00:00 2001
+From: Michael Forney <mforney@mforney.org>
+Date: Sun, 5 Jun 2016 18:24:16 -0700
+Subject: [PATCH] Disable uidmap and gidmap support
+
+---
+ sshfs.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/sshfs.c b/sshfs.c
+index 42ff750..472f98c 100644
+--- a/sshfs.c
++++ b/sshfs.c
+@@ -248,10 +248,12 @@ struct sshfs {
+ 	char *mountpoint;
+ 	char *uid_file;
+ 	char *gid_file;
++#if 0
+ 	GHashTable *uid_map;
+ 	GHashTable *gid_map;
+ 	GHashTable *r_uid_map;
+ 	GHashTable *r_gid_map;
++#endif
+ 	unsigned max_read;
+ 	unsigned max_write;
+ 	unsigned ssh_ver;
+@@ -384,7 +386,9 @@ enum {
+ enum {
+ 	IDMAP_NONE,
+ 	IDMAP_USER,
++#if 0
+ 	IDMAP_FILE,
++#endif
+ };
+ 
+ enum {
+@@ -405,7 +409,9 @@ static struct fuse_opt sshfs_opts[] = {
+ 	SSHFS_OPT("workaround=%s",     workarounds, 0),
+ 	SSHFS_OPT("idmap=none",        idmap, IDMAP_NONE),
+ 	SSHFS_OPT("idmap=user",        idmap, IDMAP_USER),
++#if 0
+ 	SSHFS_OPT("idmap=file",        idmap, IDMAP_FILE),
++#endif
+ 	SSHFS_OPT("uidfile=%s",        uid_file, 0),
+ 	SSHFS_OPT("gidfile=%s",        gid_file, 0),
+ 	SSHFS_OPT("nomap=ignore",      nomap, NOMAP_IGNORE),
+@@ -554,6 +560,7 @@ static int list_empty(const struct list_head *head)
+ 	return head->next == head;
+ }
+ 
++#if 0
+ /* given a pointer to the uid/gid, and the mapping table, remap the
+  * uid/gid, if necessary */
+ static inline int translate_id(uint32_t *id, GHashTable *map)
+@@ -571,6 +578,7 @@ static inline int translate_id(uint32_t *id, GHashTable *map)
+ 		abort();
+ 	}
+ }
++#endif
+ 
+ static inline void buf_init(struct buffer *buf, size_t size)
+ {
+@@ -813,12 +821,14 @@ static int buf_get_attrs(struct buffer *buf, struct stat *stbuf, int *flagsp)
+ 		if (gid == sshfs.remote_gid)
+ 			gid = sshfs.local_gid;
+ 	}
++#if 0
+ 	if (sshfs.idmap == IDMAP_FILE && sshfs.uid_map)
+ 		if (translate_id(&uid, sshfs.uid_map) == -1)
+ 			return -EPERM;
+ 	if (sshfs.idmap == IDMAP_FILE && sshfs.gid_map)
+ 		if (translate_id(&gid, sshfs.gid_map) == -1)
+ 			return -EPERM;
++#endif
+ 
+ 	memset(stbuf, 0, sizeof(struct stat));
+ 	stbuf->st_mode = mode;
+@@ -2473,12 +2483,14 @@ static int sshfs_chown(const char *path, uid_t uid, gid_t gid,
+ 		if (gid == sshfs.local_gid)
+ 			gid = sshfs.remote_gid;
+ 	}
++#if 0
+ 	if (sshfs.idmap == IDMAP_FILE && sshfs.r_uid_map)
+ 		if(translate_id(&uid, sshfs.r_uid_map) == -1)
+ 			return -EPERM;
+ 	if (sshfs.idmap == IDMAP_FILE && sshfs.r_gid_map)
+ 		if (translate_id(&gid, sshfs.r_gid_map) == -1)
+ 			return -EPERM;
++#endif
+ 
+ 	buf_init(&buf, 0);
+ 	if (sf == NULL)
+@@ -3782,6 +3794,7 @@ static int ssh_connect(void)
+ 	return 0;
+ }
+ 
++#if 0
+ /* number of ':' separated fields in a passwd/group file that we care
+  * about */
+ #define IDMAP_FIELDS 3
+@@ -3956,6 +3969,7 @@ static inline void load_gid_map(void)
+ {
+ 	read_id_map(sshfs.gid_file, &groupname_to_gid, "gid", &sshfs.gid_map, &sshfs.r_gid_map);
+ }
++#endif
+ 
+ #ifdef __APPLE__
+ int main(int argc, char *argv[], __unused char *envp[], char **exec_path)
+@@ -4052,6 +4066,7 @@ int main(int argc, char *argv[])
+ 
+ 	if (sshfs.idmap == IDMAP_USER)
+ 		sshfs.detect_uid = 1;
++#if 0
+ 	else if (sshfs.idmap == IDMAP_FILE) {
+ 		sshfs.uid_map = NULL;
+ 		sshfs.gid_map = NULL;
+@@ -4066,6 +4081,7 @@ int main(int argc, char *argv[])
+ 		if (sshfs.gid_file)
+ 			load_gid_map();
+ 	}
++#endif
+ 	free(sshfs.uid_file);
+ 	free(sshfs.gid_file);
+ 
+-- 
+2.24.0
+

@@ -1,0 +1,43 @@
+From 243d834a3d6b665bbc935278908d445f39a69100 Mon Sep 17 00:00:00 2001
+From: Michael Forney <mforney@mforney.org>
+Date: Sun, 5 Jun 2016 17:13:58 -0700
+Subject: [PATCH] Add nocache.c stub
+
+---
+ nocache.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 nocache.c
+
+diff --git a/nocache.c b/nocache.c
+new file mode 100644
+index 0000000..7c2833e
+--- /dev/null
++++ b/nocache.c
+@@ -0,0 +1,24 @@
++#include "cache.h"
++
++void cache_invalidate(const char *path)
++{
++}
++
++void cache_add_attr(const char *path, const struct stat *stbuf, uint64_t wrctr)
++{
++}
++
++uint64_t cache_get_write_ctr(void)
++{
++	return 0;
++}
++
++struct fuse_operations *cache_wrap(struct fuse_operations *oper)
++{
++	return oper;
++}
++
++int cache_parse_options(struct fuse_args *args)
++{
++	return 0;
++}
+-- 
+2.13.2
+
