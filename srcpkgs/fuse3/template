@@ -18,6 +18,15 @@ conf_files="/etc/fuse.conf"
 # Tests require root
 make_check=no
 
+configure_args+=" -Ddefault_library=both"
+fuse3-static_package() {
+	depends="${sourcepkg}-devel>=${version}_${revision}"
+	short_desc+=" - static libraries"
+	pkg_install() {
+		vmove "usr/lib/*.a"
+	}
+}
+
 post_install() {
 	chmod u+s ${DESTDIR}/usr/bin/fusermount3
 	rm ${DESTDIR}/etc/init.d/fuse3
