@@ -1,0 +1,18 @@
+# Template file for 'm2t'
+pkgname=m2t
+version=0.0.20210316
+revision=1
+_commit=364a662706819136e39b451d3591b1b31b18d74a
+build_style=go
+go_import_path="github.com/Donearm/m2t"
+go_ldflags="-X main.gVersion=$version"
+short_desc="Terminal file manager"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/Donearm/m2t"
+distfiles="https://github.com/Donearm/m2t/archive/${_commit}.tar.gz"
+checksum=658e5c4c00e79e95b221570cd6037ec48216061896c45689e75a8603d2c8d208
+
+post_install() {
+	vlicense LICENSE
+}
