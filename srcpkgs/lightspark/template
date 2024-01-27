@@ -1,0 +1,17 @@
+# Template file for 'lightspark'
+pkgname=lightspark
+version=0.8.7.20240115
+revision=1
+_commit=553ca570d24863af34305ff758707e72ca4d92a3
+build_style=cmake
+hostmakedepends="pkg-config nasm"
+makedepends="SDL2-devel cairo-devel ffmpeg-devel glew-devel libcurl-devel
+ libglvnd-devel libjpeg-turbo-devel liblzma-devel librtmp-devel pango-devel
+ zlib-devel"
+short_desc="Open source flash player implementation"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later, LGPL-3.0-or-later"
+homepage="https://github.com/lightspark/lightspark"
+changelog="https://raw.githubusercontent.com/lightspark/lightspark/master/ChangeLog"
+distfiles="https://github.com/lightspark/lightspark/archive/${_commit}.tar.gz"
+checksum=4fe9d8f68b02a86083f4ffb14a7ff1393eed283a268061048f2eca3c208cfd55
