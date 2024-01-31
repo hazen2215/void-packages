@@ -1,0 +1,35 @@
+# Template file for 'oasis-libressl-netcat'
+pkgname=oasis-libressl-netcat
+version=3.8.2
+revision=1
+create_wrksrc=yes
+build_wrksrc="libressl-${version}"
+makedepends="libbsd-devel libtls-bearssl-devel"
+short_desc="TCP/IP swiss army knife (LibreSSL variant)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="OpenSSL, ISC"
+homepage="http://www.libressl.org/"
+changelog="https://raw.githubusercontent.com/libressl/portable/master/ChangeLog"
+distfiles="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${version}.tar.gz"
+checksum=6d4b8d5bbb25a1f8336639e56ec5088052d43a95256697a85c4ce91323c25954
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+conflicts="libressl-netcat>=0"
+provides="libressl-netcat-${version}_${revision}"
+replaces="libressl-netcat>=0"
+
+alternatives="
+ nc:nc:/usr/bin/libressl-nc
+ nc:nc.1:/usr/share/man/man1/libressl-nc.1"
+
+do_build() {
+	cd apps/nc
+	$CC $CFLAGS $LDFLAGS -static -o libressl-nc -I${FILESDIR}/include \
+		compat/*.c netcat.c atomicio.c socks.c -lbsd -ltls -lbearssl
+}
+
+do_install() {
+	vlicense COPYING
+	vbin apps/nc/libressl-nc
+	vman apps/nc/nc.1 libressl-nc.1
+}
