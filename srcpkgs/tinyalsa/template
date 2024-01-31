@@ -1,0 +1,31 @@
+# Template file for 'tinyalsa'
+pkgname=tinyalsa
+version=2.0.0.20230905
+revision=1
+_commit=2ca2386c1f41f3820e22281de570b19380682086
+build_style=meson
+configure_args="-Ddocs=disabled -Dexamples=disabled -Ddefault_library=static"
+short_desc="Tiny library to interface with ALSA in the Linux kernel"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/tinyalsa/tinyalsa"
+distfiles="https://github.com/tinyalsa/tinyalsa/archive/${_commit}.tar.gz"
+checksum=07e6d540e374c87b09eeee1c7a15d71f695dc2b89a1862acd201044b8237c388
+
+CFLAGS=-fno-lto
+LDFLAGS="--static"
+
+tinyalsa-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		# vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+	}
+}
+
+post_install() {
+	cp include/tinyalsa/attributes.h ${DESTDIR}/usr/include/tinyalsa
+}
