@@ -1,0 +1,15 @@
+diff --git a/libsndio/aucat.c b/libsndio/aucat.c
+index d08d716..57283f7 100644
+--- a/libsndio/aucat.c
++++ b/libsndio/aucat.c
+@@ -244,8 +244,8 @@ _aucat_wdata(struct aucat *hdl, const void *buf, size_t len,
+ static int
+ aucat_mkcookie(unsigned char *cookie)
+ {
+-#define COOKIE_DIR	"/.sndio"
+-#define COOKIE_SUFFIX	"/.sndio/cookie"
++#define COOKIE_DIR	"/.local/var/cache/sndio"
++#define COOKIE_SUFFIX	"/.local/var/cache/sndio/cookie"
+ #define TEMPL_SUFFIX	".XXXXXXXX"
+ 	struct stat sb;
+ 	char *home, *path = NULL, *tmp = NULL;

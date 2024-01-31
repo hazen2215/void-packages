@@ -1,0 +1,74 @@
+# Template file for 'oasis-sndio'
+pkgname=oasis-sndio
+version=1.9.0
+revision=1
+build_style=configure
+configure_args="--prefix=/usr --disable-alsa"
+makedepends="tinyalsa-devel"
+short_desc="Small audio and MIDI framework part of the OpenBSD project"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+system_accounts="sndiod"
+sndiod_descr="sndio daemon"
+sndiod_pgroup="audio"
+homepage="http://www.sndio.org/"
+distfiles="http://www.sndio.org/sndio-${version}.tar.gz"
+checksum=f30826fc9c07e369d3924d5fcedf6a0a53c0df4ae1f5ab50fe9cf280540f699a
+
+conflicts="sndio>=0"
+provides="sndio-${version}_${revision}"
+replaces="sndio>=0"
+
+post_patch() {
+	vsed -i libsndio/{sio.c,sio_alsa.c,sio_priv.h} -e '1i\
+#define USE_ALSA 1'
+	# avoid building midicat
+	vsed -i Makefile.in -e '/midicat/d'
+	vsed -i configure -e 's/-lrt/-lrt -ltinyalsa/'
+}
+
+post_configure() {
+	vsed -i libsndio/Makefile -e 's/-lrt/-lrt -l:libtinyalsa.a/'
+}
+
+do_build() {
+	make -C libsndio LDFLAGS="$LDFLAGS -ltinyalsa"
+	patch -Np1 -i ${FILESDIR}/0005-static-lib.patch
+	./configure $configure_args
+	make LDFLAGS="$LDFLAGS -static -ltinyalsa"
+}
+
+post_install() {
+	cp libsndio/libsndio.so* ${DESTDIR}/usr/lib
+	vsv sndiod
+	sed -n '/Copyright/,/PERFORMANCE/p' <sndiod/sndiod.c >LICENSE
+}
+
+oasis-libsndio_package() {
+	short_desc+=" - library"
+	shlib_provides="libsndio.so.7.0"
+	conflicts="libsndio>=0"
+	provides="libsndio-${version}_${revision}"
+	replaces="libsndio>=0"
+	pkg_install() {
+		vmove "usr/lib/libsndio.so.*"
+		ln -sf libsndio.so.7 ${PKGDESTDIR}/usr/lib/libsndio.so.7.0
+		ln -sf libsndio.so.7.2 ${PKGDESTDIR}/usr/lib/libsndio.so.7
+		vlicense LICENSE
+	}
+}
+
+oasis-sndio-devel_package() {
+	depends="oasis-libsndio>=${version}_${revision}"
+	short_desc+=" - development files"
+	conflicts="sndio-devel>=0"
+	provides="sndio-devel-${version}_${revision}"
+	replaces="sndio-devel>=0"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove "usr/share/man/man3/*.3"
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+	}
+}
