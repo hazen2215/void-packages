@@ -1,5 +1,5 @@
 diff --git a/palemoon/app/application.ini b/palemoon/app/application.ini
-index c64ed9079..b57781237 100644
+index c64ed9079..547a17e2b 100644
 --- a/palemoon/app/application.ini
 +++ b/palemoon/app/application.ini
 @@ -20,9 +20,9 @@
@@ -14,3 +14,27 @@ index c64ed9079..b57781237 100644
  RemotingName=@MOZ_APP_REMOTINGNAME@
  #ifdef MOZ_APP_DISPLAYNAME
  CodeName=@MOZ_APP_DISPLAYNAME@
+diff --git a/palemoon/confvars.sh b/palemoon/confvars.sh
+index 4b4f7a67b..ea6b8ae69 100755
+--- a/palemoon/confvars.sh
++++ b/palemoon/confvars.sh
+@@ -8,8 +8,8 @@
+ # These values where appropriate are hardcoded in application.ini
+ # to "Pale Moon" and "Moonchild Productions" respectively for
+ # Pale Moon
+-MOZ_APP_BASENAME=Palemoon 
+-MOZ_APP_VENDOR=Moonchild
++MOZ_APP_BASENAME=Web
++MOZ_APP_VENDOR=Local
+ 
+ # Application Version
+ # MOZ_APP_VERSION is read from ./config/version.txt
+@@ -93,7 +93,7 @@
+ # Currently, only omni and flat are supported
+ MOZ_CHROME_FILE_FORMAT=omni
+ JAR_COMPRESSION=brotli
+-OMNIJAR_NAME=palemoon.res
++OMNIJAR_NAME=web.res
+ 
+ # Set the default top-level extensions
+ MOZ_EXTENSIONS_DEFAULT=" gio"
