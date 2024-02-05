@@ -1,8 +1,8 @@
 # Template file for 'web'
 pkgname=web
-version=32.5.2
+version=33.0.0
 revision=1
-_UXP_version=RB_20231221-2
+_UXP_version=RB_20240130
 create_wrksrc=yes
 build_wrksrc="pale-moon"
 hostmakedepends="autoconf213 perl pkg-config python unzip yasm zip tar
@@ -17,8 +17,8 @@ license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
-checksum="2d12fd5a0be447bc2a2c50e6d0da7cd973bc1567909b6307809c55feebc5280c
- 518d900afb4082ed76cae2ab36745ec11644826e036d9b40044e95d291d6666a"
+checksum="36bc3243ee294e2e10df9faac71d9831ef74a326e4622005a7be958505f282af
+ dbb8fa819c5562904252ad89fbbf6f1e5e85622b3b9f59d4583194d7f3a2ae12"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 CFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
@@ -141,12 +141,7 @@ do_install() {
 	done
 
 	# We don't want the development stuff
-	rm -rf ${DESTDIR}/usr/{include,lib/palemoon-devel,share/idl}
+	rm -rf ${DESTDIR}/usr/{include,lib/web-devel,share/idl}
 
-	rm ${DESTDIR}/usr/lib/palemoon/palemoon-bin
-	mv ${DESTDIR}/usr/lib/palemoon/{palemoon,web}
-	rm ${DESTDIR}/usr/bin/palemoon
-
-	mv ${DESTDIR}/usr/lib/{palemoon,web}
-	ln -s /usr/lib/web/web ${DESTDIR}/usr/bin/web
+	rm ${DESTDIR}/usr/lib/web/web-bin
 }
