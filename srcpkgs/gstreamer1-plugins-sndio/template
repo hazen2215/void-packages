@@ -1,0 +1,20 @@
+# Template file for 'gstreamer1-plugins-sndio'
+pkgname=gstreamer1-plugins-sndio
+version=1.8.0.1
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+hostmakedepends="pkg-config"
+makedepends="sndio-devel gstreamer1-devel gst-plugins-base1-devel"
+short_desc="Sndio GStreamer plugin"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/lanodan/gstreamer1-plugins-sndio"
+distfiles="https://github.com/lanodan/gstreamer1-plugins-sndio/archive/v${version}.tar.gz"
+checksum=2dbc21970166500ad24f91be600fe989e625ccf6e60fb4c720afa85d2bba511c
+
+post_install() {
+	chmod +x ${DESTDIR}/usr/lib/gstreamer-1.0/libgstsndio.so
+	sed -n '/Copyright/,/SOFTWARE\./p' gstsndio.c >LICENSE
+	vlicense LICENSE
+}
