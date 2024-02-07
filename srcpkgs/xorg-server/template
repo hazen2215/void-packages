@@ -34,6 +34,11 @@ conf_files="/etc/X11/Xwrapper.config"
 build_options="elogind"
 desc_option_elogind="Rootless Xorg support with elogind"
 
+makedepends+=" $(vopt_if libseat 'libseat-devel')"
+build_options+=" libseat"
+configure_args+=" -Dseatd_libseat=$(vopt_if libseat true false)"
+vopt_conflict elogind libseat
+
 # disable VBE on non-x86 systems
 case "$XBPS_TARGET_MACHINE" in
 	x86_64*|i686*) configure_args+=" -Dint10=x86emu" ;;
