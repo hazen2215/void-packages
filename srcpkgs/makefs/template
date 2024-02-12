@@ -1,0 +1,37 @@
+# Template file for 'makefs'
+pkgname=makefs
+version=r12
+revision=1
+build_style=gnu-makefile
+make_use_env=yes
+makedepends="libuuid-devel"
+short_desc="FreeBSD makefs(8) + HAMMER2 support + exFAT support"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause, BSD-3-Clause, GPL-2.0-or-later"
+homepage="https://github.com/kusumi/makefs"
+changelog="https://raw.githubusercontent.com/kusumi/makefs/master/CHANGES"
+distfiles="https://github.com/kusumi/makefs/archive/${version}.tar.gz"
+checksum=26fd668c6c238ac9541600f8bdfc6d764ee4cfc43015b8ea65a7d7429b13bd1c
+
+build_options="static"
+CFLAGS="$(vopt_if static -static)"
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	makedepends+=" musl-fts-devel musl-legacy-compat"
+fi
+
+pre_build() {
+	make ${makejobs} -C src/gpl/github.com/relan/exfat/libexfat
+}
+
+post_patch() {
+	find . -type f -exec sed -i {} -e 's/__unused/&1/g' \
+		-e 's/__progname/&1/g' \;
+}
+
+do_install() {
+	vbin src/usr.sbin/makefs/makefs
+	vman src/usr.sbin/makefs/makefs.8
+	vlicense src/usr.sbin/makefs/hammer2/COPYRIGHT COPYRIGHT.BSD3
+	vlicense COPYRIGHT COPYRIGHT.BSD2
+}
