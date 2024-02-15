@@ -1,0 +1,14 @@
+# Template file for 'norikae'
+pkgname=norikae
+version=1.0.2
+revision=1
+build_style=go
+go_import_path=076/norikae
+short_desc="CLI train route search"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://gitler.moe/suwako/norikae"
+distfiles="https://gitler.moe/suwako/norikae/archive/norikae-${version}.tar.gz"
+checksum=0221a6a328d303d2935d08696fa3e6be3f7de512978a74e84168aaedac7cbd1f
+
+export CGO_ENABLED=0
