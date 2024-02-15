@@ -1,0 +1,20 @@
+# Template file for 'dwlb'
+pkgname=dwlb
+version=0.0.20231129
+revision=1
+_commit=d2150540f5860d41d7fce97769f94a557986051a
+build_style=gnu-makefile
+make_install_args="PREFIX=\${DESTDIR}/usr"
+make_use_env=yes
+hostmakedepends="pkg-config"
+makedepends="fcft-devel pixman-devel wayland-devel wayland-protocols"
+short_desc="Fast, feature-complete bar for dwl"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later, MIT, CC0-1.0"
+homepage="https://github.com/kolunmi/dwlb"
+distfiles="https://github.com/kolunmi/dwlb/archive/${_commit}.tar.gz"
+checksum=7358434f38b72fc1466bd32d25167bd85b3328e09b1c92910361fabc8f21e3c5
+
+post_install() {
+	vlicense LICENSE
+}
