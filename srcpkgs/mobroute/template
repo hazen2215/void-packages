@@ -1,0 +1,21 @@
+# Template file for 'mobroute'
+pkgname=mobroute
+version=0.4.0
+revision=1
+build_style=go
+go_import_path=git.sr.ht/~mil/mobroute
+short_desc="Minimal FOSS Public Transportation Router"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://git.sr.ht/~mil/mobroute"
+distfiles="https://git.sr.ht/~mil/mobroute/archive/v${version}.tar.gz"
+checksum=be303f22e690ee314febc45dc8e74a6662d386dbc2be6af7039c2df0fdd2e5c1
+
+export CGO_ENABLED=0
+
+post_install() {
+	for f in scripts/*; do
+		vbin $f
+	done
+	vdoc README.md
+}
