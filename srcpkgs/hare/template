@@ -1,0 +1,25 @@
+# Template file for 'hare'
+pkgname=hare
+version=0.24.0
+revision=1
+archs="x86_64* aarch64* riscv64*"
+build_style=gnu-makefile
+hostmakedepends="qbe harec scdoc"
+depends="qbe harec binutils"
+checkdepends="tzdata"
+short_desc="Hare systems programming language"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0, GPL-3.0-only"
+homepage="https://harelang.org"
+distfiles="https://git.sr.ht/~sircmpwn/hare/archive/${version}.tar.gz"
+checksum=7061dad3c79cca51a1662a71b1c6f8ec001f52ef3053dd3c2dbb95ae9beff7bc
+
+pre_build() {
+	cp ${FILESDIR}/config.${XBPS_TARGET_MACHINE}.mk config.mk
+	# Don't use user's global Hare cache
+	export XDG_CACHE_HOME=${wrksrc}/.cache
+	mkdir -p $XDG_CACHE_HOME
+	# Configure build version info
+	export VERSION=${version}
+	export LOCALVER=void
+}
