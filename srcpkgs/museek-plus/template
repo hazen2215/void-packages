@@ -1,0 +1,21 @@
+# Template file for 'museek-plus'
+pkgname=museek-plus
+version=0.0.20220308
+revision=1
+_commit=36c3e9bfb491ee5f6a4a31e73ba38c888b482407
+build_style=cmake
+configure_args="-DEVERYTHING=0 -DMURMUR=0 -DMUCOUS=0 -DMUSEEKD=1 -DMUSETUP=1
+ -DMUSCAN=1 -DMUSEEQ=0 -DPYTHON_BINDINGS=0"
+hostmakedepends="pkg-config"
+makedepends="libevent-devel libxml2-devel libxml++-devel"
+short_desc="Museek+: Client/server mode client for the SoulSeek peer-to-peer system"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="https://github.com/eLvErDe/museek-plus"
+distfiles="https://github.com/eLvErDe/museek-plus/archive/${_commit}.tar.gz"
+checksum=d819d4c53415a0bf0118ca433cf79d0ad76401ad1193d648bbc9603e7140f631
+
+post_patch() {
+	find . \( \( -name '*.cpp' -o -name '*.cc' -o -name '*.h' -o -name '*.hh' \) -a ! -name 'mutypes.h' \) \
+		-exec sed -i {} -e 's/\<uint\>/unsigned int/g' \;
+}

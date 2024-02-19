@@ -1,0 +1,18 @@
+commit ba238567035c0edc7610e3b7f631430a7875d6df
+Author: hazen2215 <haz@disroot.org>
+Date:   Mon Feb 19 20:47:47 2024 +0900
+
+    ok
+
+diff --git a/NewNet/nnratelimiter.h b/NewNet/nnratelimiter.h
+index 52170ae..7490200 100644
+--- a/NewNet/nnratelimiter.h
++++ b/NewNet/nnratelimiter.h
+@@ -21,6 +21,7 @@
+ #ifndef NEWNET_RATELIMITER_H
+ #define NEWNET_RATELIMITER_H
+ 
++#include <sys/types.h>
+ #include "nnobject.h"
+ 
+ namespace NewNet
