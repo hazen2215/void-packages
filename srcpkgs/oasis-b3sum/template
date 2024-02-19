@@ -1,0 +1,13 @@
+# Template file for 'oasis-b3sum'
+pkgname=oasis-b3sum
+version=1.5.0
+revision=1
+_commit=d995c3d31b42d09a568a0a658bcbcd3814164ca9
+build_style=gnu-makefile
+short_desc="C implementation of the b3sum tool as well as a reusable library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="CC0-1.0"
+homepage="https://git.sr.ht/~mcf/b3sum/"
+distfiles="https://git.sr.ht/~mcf/b3sum/archive/${_commit}.tar.gz"
+checksum=705b465fec6f59240f521faf94379f9ae465f2907a15f80b9b2b815a91f69e02
+conflicts="b3sum"
