@@ -1,0 +1,24 @@
+# Template file for 'mdev-conf'
+pkgname=mdev-conf
+version=4.6
+revision=1
+build_style=gnu-makefile
+make_install_args="libexecdir=/usr/lib/mdev"
+short_desc="Configuration files for mdev and mdevd from Alpine"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://gitlab.alpinelinux.org/alpine/mdev-conf"
+distfiles="https://gitlab.alpinelinux.org/alpine/mdev-conf/-/archive/${version}/mdev-conf-${version}.tar.gz"
+checksum=59a2f9877b16c6eda4c11f02a66ea29a4a266eb35370187e5607721eb45ecefb
+make_check=no # needs util-linux which conflicts with chroot-util-linux
+
+post_patch() {
+	vsed -i -e 's/root:netdev/root:network/' \
+		-e '/root:uucp/s/^/#/' \
+		-e 's/root:uucp/root:_uucp/' \
+		mdev.conf
+}
+
+post_install() {
+	vlicense LICENSE
+}
