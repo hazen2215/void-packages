@@ -1,0 +1,21 @@
+# Template file for 'uuterm'
+pkgname=uuterm
+version=0.0.20080120
+revision=1
+_githash=e12a9833773fd62f524b03dbfb1d45319d497a26
+build_style=gnu-makefile
+make_build_target="all uuterm-fb"
+makedepends="libX11-devel"
+short_desc="Tiny multilingual Unicode terminal emulator for X or Linux fbcon"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://www.etalabs.net/uuterm.html"
+distfiles="http://git.musl-libc.org/cgit/uuterm/snapshot/uuterm-${_githash}.tar.gz"
+checksum=3cf3aaa8babcacdbceafc19e60d3e9f8a916cd95643ca2f1d069e8cf082a9783
+
+do_install() {
+	vbin uuterm-x11
+	ln -s uuterm-x11 ${DESTDIR}/usr/bin/uuterm
+	vbin uuterm-fb
+	vbin ucfcomp
+}
