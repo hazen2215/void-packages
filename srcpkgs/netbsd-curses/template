@@ -21,6 +21,16 @@ post_install() {
 	for f in ${DESTDIR}/usr/lib/*.sow.so.6; do
 		mv ${f} ${f%.sow.so.6}w.so.6
 	done
+	(
+		cd ${DESTDIR}/usr/lib
+		ar -x libcurses.a
+		ar -x libterminfo.a
+		rm libcurses.a libterminfo.a libtermcap.a \
+			pkgconfig/termcap.pc pkgconfig/terminfo.pc
+		ar -q -c libcurses.a *.o
+		sed -i -e 's/ -lterminfo//g' pkgconfig/*.pc
+		rm *.o
+	)
 }
 
 netbsd-curses-devel_package() {
