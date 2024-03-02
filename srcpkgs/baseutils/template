@@ -27,7 +27,7 @@ conflicts="coreutils ctags diffutils ed patch"
 provides="diffutils-0_1 ctags-0_1 ed-0_1 findutils-0_1 patch-0_1"
 
 _files="
- diff3 getopt look pr tr
+ diff3 getopt look pr tr sed
 "
 
 _bins="
