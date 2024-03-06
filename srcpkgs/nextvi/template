@@ -1,0 +1,30 @@
+# Template file for 'nextvi'
+pkgname=nextvi
+version=0.0.20240304
+revision=1
+_commit=9ff1e7bfe41828ab6cd440bb2be4c4f8300474ef
+short_desc="Next version of neatvi for editing bidirectional UTF-8 text"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC"
+homepage="https://github.com/kyx0r/nextvi"
+distfiles="https://github.com/kyx0r/nextvi/archive/${_commit}.tar.gz"
+checksum=f29e611765b4306775882891dde81bbbb906cf058d52d1263ae93d013c5f1d0b
+
+alternatives="
+ vi:ex:/usr/bin/nextvi
+ vi:vi:/usr/bin/nextvi
+"
+
+build_options="static"
+CFLAGS+=" $(vopt_if static -static)"
+
+do_build() {
+	[ -e ${FILESDIR}/conf.c ] && cp ${FILESDIR}/conf.c conf.c
+	./build.sh
+}
+
+do_install() {
+	vbin vi nextvi
+	sed -n '0,/\*\//p' <vi.c >LICENSE
+	vlicense LICENSE
+}
