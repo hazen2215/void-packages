@@ -1,0 +1,61 @@
+# Template file for 'godot3'
+pkgname=godot3
+version=3.5.3
+revision=1
+archs="x86_64* i686* aarch64* armv7* ppc64*"
+build_style=scons
+# Godot contains private copies of libraries
+# that already have been packaged elsewhere.
+# Use builtin bullet for now as it's too old in repos (needs 2.89)
+# Toggle to not use builtin once bullet has been updated
+make_build_args="platform=x11 tools=yes target=release_debug dev=no progress=no
+ builtin_embree=false
+ builtin_bullet=false builtin_libpng=false builtin_libvpx=false
+ builtin_libwebp=false builtin_libogg=false builtin_libtheora=false
+ builtin_opus=false builtin_libvorbis=false builtin_enet=false
+ builtin_zlib=false builtin_freetype=false
+ builtin_miniupnpc=false builtin_pcre2=false"
+hostmakedepends="pkg-config clang"
+makedepends="embree3-devel
+ alsa-lib-devel freetype-devel glu-devel libXcursor-devel libXi-devel
+ libXinerama-devel libXrender-devel libXrandr-devel libX11-devel
+ bullet-devel libpng-devel libvpx-devel libwebp-devel libogg-devel libtheora-devel
+ opus-devel opusfile-devel libvorbis-devel libenet-devel zlib-devel
+ miniupnpc-devel pcre2-devel pulseaudio-devel"
+short_desc="Multiplatform 2D and 3D engine (LTS)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://www.godotengine.org/"
+distfiles="https://github.com/godotengine/godot/archive/${version}-stable.tar.gz"
+checksum=643366a288fc529564d8bb42a42093d72071c8186f57ff03cae6d5929f81bd1d
+nocross=https://build.voidlinux.org/builders/armv7l_builder/builds/6342/steps/shell_3/logs/stdio
+
+CFLAGS+=" -fPIE -fPIC"
+LDFLAGS+=" -pie"
+
+post_patch() {
+	vsed -i platform/x11/detect.py \
+		-e 's,0] >,0] =,g'
+	vsed -i platform/x11/crash_handler_x11.cpp \
+		-e 's/#ifdef CRASH_HANDLER_ENABLED/#if defined(CRASH_HANDLER_ENABLED) \&\& defined(__GLIBC__)/'
+	vsed -i misc/dist/linux/org.godotengine.Godot.xml \
+		-e 's/name="x/name="application-x/g'
+}
+
+pre_build() {
+	export CXXFLAGS=" $CXXFLAGS "
+}
+
+do_install() {
+	vlicense LICENSE.txt
+	vinstall ${FILESDIR}/godot.desktop 644 /usr/share/applications godot3.desktop
+	vinstall ${wrksrc}/icon.png 644 /usr/share/pixmaps/ godot3.png
+
+	case "$XBPS_TARGET_MACHINE" in
+	x86_64* | aarch64*) vbin bin/godot.x11.opt.tools.64 godot3 ;;
+	ppc64*) vbin bin/godot.x11.opt.tools.ppc64 godot3 ;;
+	*) vbin bin/godot.x11.opt.tools.32 godot3 ;;
+	esac
+	vinstall misc/dist/linux/org.godotengine.Godot.xml 644 /usr/share/mime/packages org.godotengine.Godot3.xml
+	vman misc/dist/linux/godot.6 godot3.6
+}
