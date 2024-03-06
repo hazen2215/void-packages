@@ -1,0 +1,13 @@
+diff --git a/vi.c b/vi.c
+index 8f7ce6e..7de5005 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1908,6 +1908,8 @@ void vi(int init)
+ 				k = vi_read();
+ 				if (k == 'Z')
+ 					ex_exec("x");
++				else if (k == 'Q')
++					xquit = 1;
+ 				break;
+ 			case '~':
+ 				vi_back(' ');
