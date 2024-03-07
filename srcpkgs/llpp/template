@@ -2,9 +2,9 @@
 pkgname=llpp
 version=42
 revision=1
-hostmakedepends="asciidoc ocaml pkg-config"
+hostmakedepends="asciidoc ocaml5.0 pkg-config"
 makedepends="freetype-devel glu-devel gumbo-parser-devel harfbuzz-devel
- jbig2dec-devel libjpeg-turbo-devel libopenjpeg2-devel mupdf-devel ocaml
+ jbig2dec-devel libjpeg-turbo-devel libopenjpeg2-devel mupdf-devel ocaml5.0
  ocaml-lablgl zlib-devel"
 short_desc="Graphical PDF viewer which aims to superficially resemble less(1)"
 maintainer="hazen2215 <haz@disroot.org>"
