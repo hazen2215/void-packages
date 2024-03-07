@@ -1,0 +1,30 @@
+# Template file for 'ocaml5.0'
+pkgname=ocaml5.0
+version=5.0.0
+revision=1
+build_style="gnu-configure"
+configure_args="--with-pic --libdir=/usr/lib/ocaml"
+makedepends="libzstd-devel"
+depends="${makedepends}"
+short_desc="Main implementation of the OCaml language"
+maintainer="hazen2215 <haz@disroot.org>"
+license="QPL-1.0, LGPL-2.1-only"
+homepage="http://ocaml.org/"
+distfiles="https://github.com/ocaml/ocaml/archive/${version}.tar.gz"
+checksum=72fa3d0ba19b82fcb9e6c62e0090b9d22e5905c4be0f94faf56904a9377a9e5b
+nocross=yes
+
+conflicts="ocaml>=0"
+proivdes="ocaml-${version}_1"
+
+case "$XBPS_TARGET_MACHINE" in
+	# native code platforms
+	x86_64*|aarch64*|riscv64*) make_build_target="world.opt";;
+	*) make_build_target="world";;
+esac
+
+export ASPP="cc -c"
+
+post_install() {
+	vlicense LICENSE
+}
