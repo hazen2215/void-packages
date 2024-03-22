@@ -1,0 +1,32 @@
+# Template file for 'libubox'
+pkgname=libubox
+version=0.0.20240224
+revision=1
+_commit=12bda4bdb1971385fd787737e8eec5a2eeb0deed
+build_style=cmake
+configure_args="-DBUILD_LUA=OFF -DBUILD_EXAMPLES=OFF"
+hostmakedepends="pkg-config"
+makedepends="json-c-devel"
+short_desc="OpenWrt utility and data structures library"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC, BSD-3-Clause"
+homepage="https://git.openwrt.org/project/libubox.git"
+distfiles="https://git.openwrt.org/project/libubox.git/snapshot/${_commit}.tar.gz"
+checksum=05969a0a796675a97366523d5b58e6cda7c4a4e4e7eabb3c156c76fa1533758d
+CFLAGS="-fPIC -DPIC"
+
+post_install() {
+	sed -n '/Copyright (c)/,/SUCH DAMAGE\./p' avl.c >LICENSE.BSD
+	sed -n '/Copyright (c)/,/OF THIS SOFTWARE\./p' avl-cmp.c >LICENSE.ISC
+	vlicense LICENSE.BSD
+	vlicense LICENSE.ISC
+}
+
+libubox-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.a"
+	}
+}
