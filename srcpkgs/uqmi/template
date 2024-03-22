@@ -1,0 +1,21 @@
+# Template file for 'uqmi'
+pkgname=uqmi
+version=0.0.20240116
+revision=1
+_commit=c3488b831ce6285c8107704156b9b8ed7d59deb3
+build_style=cmake
+hostmakedepends="perl"
+makedepends="json-c-devel libubox-devel"
+short_desc="Tiny QMI command line utility"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.0-or-later"
+homepage="https://git.openwrt.org/project/uqmi.git"
+distfiles="https://git.openwrt.org/project/uqmi.git/snapshot/${_commit}.tar.gz"
+checksum=3dc7e00d397681778249d8158cc2298bb1c9e7ee4067bfd13231e00db1448ef4
+
+CFLAGS="-Wno-dangling-pointer -Wno-error=maybe-uninitialized"
+
+post_install() {
+	vmkdir usr/bin
+	mv ${DESTDIR}/usr/sbin/* ${DESTDIR}/usr/bin
+}
