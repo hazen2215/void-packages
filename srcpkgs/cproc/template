@@ -1,0 +1,17 @@
+# Template file for 'cproc'
+pkgname=cproc
+version=0.0.20240322
+revision=1
+_commit=706f0eff71bf8811bf2c1ff1c57dfb755cd22205
+build_style=configure
+configure_args="--prefix=/usr --target=${XBPS_CROSS_TRIPLET} --with-cpp=cpp"
+short_desc="C11 compiler using QBE as a backend"
+maintainer="hazen2215 <haz@disroot.org>"
+license="ISC, MIT, Unlicense"
+homepage="https://sr.ht/~mcf/cproc/"
+distfiles="https://git.sr.ht/~mcf/cproc/archive/${_commit}.tar.gz"
+checksum=cb5c6a18097e49a834af74d422f9d635dc334d68050de064ec4c0e6e0d974ad0
+
+post_install() {
+	vlicense LICENSE
+}
