@@ -1,0 +1,35 @@
+# Template file for 'tinyx'
+pkgname=tinyx
+version=0.0.20221107
+revision=1
+_githash=eed4902840732f170a7020cedb381017de99f2e6
+create_wrksrc=yes
+build_wrksrc="tinyx-${_githash}"
+build_style=gnu-configure
+configure_args="--with-fontdir=/usr/share/fonts"
+hostmakedepends="pkg-config autoconf automake libtool"
+makedepends="harfbuzz-devel libXdmcp-devel libXfont-devel libXtst-devel
+ libfontenc-devel libpng-devel zlib-devel xtrans"
+depends="font-util"
+short_desc="Tiny X server"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/tinycorelinux/tinyx"
+distfiles="https://github.com/tinycorelinux/tinyx/archive/${_githash}.tar.gz
+ https://github.com/kyx0r/repo-main/releases/download/tinyxfont_1.0/tinyxfont.tar.gz"
+checksum="72139d15f80c91768a4fa54c1a646c8e0d9dfc384f57fca4e806e4de0e3f728d
+ e77ad154972a8203c1304a9b4ea707cea7b2968a655ae609fd3da37bfbad4138"
+font_dirs="/usr/share/fonts/misc"
+
+pre_configure() {
+	./autogen.sh
+}
+
+post_install() {
+	chmod 4755 ${DESTDIR}/usr/bin/Xfbdev
+	chmod 4755 ${DESTDIR}/usr/bin/Xvesa
+
+	#install minimum requirement for bitmap fonts
+	vmkdir usr/share/fonts/misc
+	mv ../misc/*.pcf.gz ${DESTDIR}/usr/share/fonts/misc
+}
