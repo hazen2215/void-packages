@@ -1,0 +1,20 @@
+# Template file for 'svn-lite'
+pkgname=svn-lite
+version=1.09.20240118
+revision=1
+_commit=87c728f06b39808554986f67abca783fecf85c33
+build_style=gnu-makefile
+makedepends="openssl-devel"
+short_desc="Minimalist svn client to checkout/update Subversion repositories"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause"
+homepage="https://github.com/rofl0r/svn-lite"
+distfiles="https://github.com/rofl0r/svn-lite/archive/${_commit}.tar.gz"
+checksum=95d8e76f1d1f6db6562e9643b0cde51a3f78027f0201d9c40eb7e2421fd48b26
+
+conflicts="subversion"
+
+post_install() {
+	sed -n '/Copyright/,/SUCH DAMAGE/p' svnup.c >LICENSE
+	vlicense LICENSE
+}
