@@ -1,0 +1,22 @@
+# Template file for 'portablemc'
+pkgname=portablemc
+version=4.2.1
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-poetry-core"
+depends="python3"
+short_desc="Easy-to-use Python CLI Minecraft launcher"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/mindstorm38/portablemc"
+distfiles="${PYPI_SITE}/p/portablemc/portablemc-${version}.tar.gz"
+checksum=914b83a388712ab0f9118ccb41085d7594ead93bc421fec1cb599ff13369d02c
+
+# Mojang only provides JRE linked against glibc
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	depends+=" virtual?java-runtime"
+fi
+
+post_install() {
+	vdoc ${FILESDIR}/README.voidlinux
+}
