@@ -1,0 +1,13 @@
+# Template file for 'portablemc-forge'
+pkgname=portablemc-forge
+version=2.0.2
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-poetry-core"
+depends="portablemc"
+short_desc="Easy-to-use Python CLI Minecraft launcher - Forge add-on"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/mindstorm38/portablemc/tree/master/src/forge"
+distfiles="${PYPI_SITE}/p/portablemc-forge/portablemc-forge-${version}.tar.gz"
+checksum=0206635556dfc8f8c85cc86bb2cca50739944e054626dff9bb01b2e10d04489b
