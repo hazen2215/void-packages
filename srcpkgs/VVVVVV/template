@@ -1,0 +1,27 @@
+# Template file for 'VVVVVV'
+pkgname=VVVVVV
+version=2.4.1
+revision=1
+build_wrksrc="desktop_version"
+build_style=cmake
+makedepends="SDL2-devel SDL2_mixer-devel"
+short_desc="Retro-styled 2D platformer"
+maintainer="hazen2215 <haz@disroot.org>"
+license="custom:VVVVVV Source Code License v1.0"
+homepage="https://thelettervsixtim.es/"
+distfiles="
+ https://github.com/TerryCavanagh/VVVVVV/releases/download/${version}/VVVVVV-${version}.zip
+ https://thelettervsixtim.es/makeandplay/data.zip"
+checksum="c453373cfa29456318c2ece7d452b2e971595004c1b353cd7073f6912b3c3d12
+ c767809594f6472da9f56136e76657e38640d584164a46112250ac6293ecc0ea"
+
+skip_extraction="data.zip"
+
+do_install() {
+	vbin build/VVVVVV
+	vinstall ${XBPS_SRCDISTDIR}/VVVVVV-${version}/data.zip 644 usr/lib/VVVVVV
+	vcopy fonts usr/lib/VVVVVV
+	vcopy lang usr/lib/VVVVVV
+	vlicense ../LICENSE.md
+	vlicense "../License exceptions.md"
+}
