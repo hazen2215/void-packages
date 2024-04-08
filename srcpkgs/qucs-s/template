@@ -1,0 +1,19 @@
+# Template file for 'qucs-s'
+pkgname=qucs-s
+version=24.2.1
+revision=1
+build_style=cmake
+hostmakedepends="flex gperf dos2unix"
+makedepends="qt5-svg-devel qt5-tools-devel"
+depends="ngspice octave"
+short_desc="Circuit simulation program with Qt-based GUI"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/ra3xdh/qucs_s"
+changelog="https://raw.githubusercontent.com/ra3xdh/qucs_s/current/ChangeLog"
+distfiles="https://github.com/ra3xdh/qucs_s/releases/download/${version}/qucs-s-${version}.tar.gz"
+checksum=bb773fca419b1a1dfcd8cdc8457791f3a412a48fad2ffd6eea484b75930347c3
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	makedepends+=" musl-legacy-compat"
+fi
