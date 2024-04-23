@@ -1,0 +1,28 @@
+commit e41fb12ac7345a522257fcb7e6b780e4971834e3
+Author: Georgi Kirilov <>
+Date:   Sun Nov 22 15:00:01 2020 +0200
+
+    vis: in insert mode, highlight the match of the closing bracket _before_ the cursor
+
+diff --git a/vis.c b/vis.c
+index 3838f0b..7f94721 100644
+--- a/vis.c
++++ b/vis.c
+@@ -395,9 +395,15 @@ static void window_draw_cursor_matching(Win *win, Selection *cur, CellStyle *sty
+ 		return;
+ 	Line *line_match; int col_match;
+ 	size_t pos = view_cursors_pos(cur);
++	char cur_char = '\0', prev_char = '\0';
++	text_byte_get(win->file->text, pos, &cur_char);
++	if (win->vis->mode->id == VIS_MODE_INSERT)
++		text_byte_get(win->file->text, pos - 1, &prev_char);
++	bool trail = prev_char && (prev_char == ')' || prev_char == '}' || prev_char == ']');
++	size_t closing_pos = pos - (trail ? 1 : 0);
+ 	Filerange limits = view_viewport_get(win->view);
+-	size_t pos_match = text_bracket_match_symbol(win->file->text, pos, "(){}[]\"'`", &limits);
+-	if (pos == pos_match)
++	size_t pos_match = text_bracket_match_symbol(win->file->text, closing_pos, "(){}[]\"'`", &limits);
++	if (closing_pos == pos_match)
+ 		return;
+ 	if (!view_coord_get(win->view, pos_match, &line_match, NULL, &col_match))
+ 		return;
