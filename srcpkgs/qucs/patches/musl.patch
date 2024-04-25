@@ -1,0 +1,24 @@
+diff --git a/qucs/qucs/mouseactions.cpp b/qucs/qucs/mouseactions.cpp
+index 32a9335..779f810 100644
+--- a/qucs/qucs/mouseactions.cpp
++++ b/qucs/qucs/mouseactions.cpp
+@@ -47,6 +47,7 @@
+ 
+ #include <limits.h>
+ #include <stdlib.h>
++#include <cstdint>
+ 
+ 
+ #define  DOC_X_POS(x)  (int(float(x)/Doc->Scale) + Doc->ViewX1)
+diff --git a/qucs/qucs/schematic_element.cpp b/qucs/qucs/schematic_element.cpp
+index d30db3f..10d5e4a 100644
+--- a/qucs/qucs/schematic_element.cpp
++++ b/qucs/qucs/schematic_element.cpp
+@@ -16,6 +16,7 @@
+  ***************************************************************************/
+ #include <stdlib.h>
+ #include <limits.h>
++#include <cstdint>
+ 
+ #include "schematic.h"
+ #include <Q3PtrList>
