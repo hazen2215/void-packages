@@ -1876,6 +1876,17 @@ libgltf-0.1.so.1 libgltf-0.1.0_1
 libabw-0.1.so.1 libabw-0.1.0_1
 libcmis-0.6.so.6 libcmis-0.6.2_1
 libcmis-c-0.6.so.6 libcmis-0.6.2_1
+libcmis-0.5.so.5 libcmis-0.5.0_1
+libcmis-c-0.5.so.5 libcmis-0.5.0_1
+libQtSvg.so.4 qt-4.8.7_30
+libQtGui.so.4 qt-4.8.7_30
+libQtCore.so.4 qt-4.8.7_30
+libqucsator.so.0 qt-4.8.7_30
+libQtScript.so.4 qt-4.8.7_30
+libQt3Support.so.4 qt-4.8.7_30
+libQtNetwork.so.4 qt-4.8.7_30
+libQtOpenGL.so.4 qt-4.8.7_30
+libQtXml.so.4 qt-4.8.7_30
 libQt5Bluetooth.so.5 qt5-connectivity-5.15.2_3
 libQt53DAnimation.so.5 qt5-3d-5.15.2_3
 libQt53DCore.so.5 qt5-3d-5.15.2_3
