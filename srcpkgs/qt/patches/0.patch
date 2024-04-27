@@ -1,0 +1,102 @@
+commit 8f5d4af459c8b91d3a572af1f02c60fe24691053
+Author: hazen2215 <haz@disroot.org>
+Date:   Fri Apr 26 13:46:53 2024 +0900
+
+    patch
+
+diff --git a/src/gui/kernel/qkeysequence.cpp b/src/gui/kernel/qkeysequence.cpp
+index 7658239..f4f859d 100644
+--- a/src/gui/kernel/qkeysequence.cpp
++++ b/src/gui/kernel/qkeysequence.cpp
+@@ -692,16 +692,19 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
+     {QKeySequence::Preferences,             0,          Qt::CTRL | Qt::Key_Comma,               QApplicationPrivate::KB_Mac},
+     {QKeySequence::ZoomOut,                 1,          Qt::CTRL | Qt::Key_Minus,               QApplicationPrivate::KB_All},
+     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::Key_Period,              QApplicationPrivate::KB_KDE},
++    {QKeySequence::SelectAll,               0,          Qt::CTRL | Qt::Key_Slash,               QApplicationPrivate::KB_All},
+     {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            QApplicationPrivate::KB_Mac},
+-    {QKeySequence::SelectAll,               1,          Qt::CTRL | Qt::Key_A,                   QApplicationPrivate::KB_All},
+-    {QKeySequence::Bold,                    1,          Qt::CTRL | Qt::Key_B,                   QApplicationPrivate::KB_All},
++    {QKeySequence::MoveToStartOfLine,       0,          Qt::CTRL | Qt::Key_A,                   QApplicationPrivate::KB_All},
++    {QKeySequence::MoveToPreviousChar,      1,          Qt::CTRL | Qt::Key_B,                   QApplicationPrivate::KB_All},
++    {QKeySequence::Bold,                    0,          Qt::CTRL | Qt::Key_B,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Copy,                    1,          Qt::CTRL | Qt::Key_C,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Delete,                  0,          Qt::CTRL | Qt::Key_D,                   QApplicationPrivate::KB_X11}, //emacs (line edit only)
++    {QKeySequence::MoveToEndOfLine,         0,          Qt::CTRL | Qt::Key_E,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Find,                    0,          Qt::CTRL | Qt::Key_F,                   QApplicationPrivate::KB_All},
++    {QKeySequence::MoveToNextChar,          1,          Qt::CTRL | Qt::Key_F,                   QApplicationPrivate::KB_All},
+     {QKeySequence::FindNext,                1,          Qt::CTRL | Qt::Key_G,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
+     {QKeySequence::FindNext,                0,          Qt::CTRL | Qt::Key_G,                   QApplicationPrivate::KB_Win},
+-    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QApplicationPrivate::KB_Win}, 
+-    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QApplicationPrivate::KB_Gnome}, 
++    {QKeySequence::Back,                    0,          Qt::CTRL | Qt::Key_H,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Italic,                  0,          Qt::CTRL | Qt::Key_I,                   QApplicationPrivate::KB_All}, 
+     {QKeySequence::DeleteEndOfLine,         0,          Qt::CTRL | Qt::Key_K,                   QApplicationPrivate::KB_X11}, //emacs (line edit only)
+     {QKeySequence::New,                     1,          Qt::CTRL | Qt::Key_N,                   QApplicationPrivate::KB_All},
+@@ -715,6 +718,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
+     {QKeySequence::Underline,               1,          Qt::CTRL | Qt::Key_U,                   QApplicationPrivate::KB_All}, 
+     {QKeySequence::Paste,                   1,          Qt::CTRL | Qt::Key_V,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
++    {QKeySequence::DeleteStartOfWord,       1,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_Mac},
+     {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_S60},
+@@ -741,6 +745,12 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
+     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  QApplicationPrivate::KB_Win},
+     {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  QApplicationPrivate::KB_Mac},
+     {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_F6,                  QApplicationPrivate::KB_Win},
++    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectStartOfLine,       1,          Qt::CTRL | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectPreviousChar,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_B,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectNextChar,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F,       QApplicationPrivate::KB_All},
+     {QKeySequence::FindPrevious,            1,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
+     {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QApplicationPrivate::KB_Win},
+     {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       QApplicationPrivate::KB_KDE},
+@@ -759,6 +769,9 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
+     {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac },
+     {QKeySequence::SelectEndOfDocument,     1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Down,    QApplicationPrivate::KB_Mac},
+     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      QApplicationPrivate::KB_Win},
++    {QKeySequence::MoveToPreviousWord,      0,          Qt::ALT  | Qt::Key_B,                   QApplicationPrivate::KB_All},
++    {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_D,                   QApplicationPrivate::KB_All},
++    {QKeySequence::MoveToNextWord,          0,          Qt::ALT  | Qt::Key_F,                   QApplicationPrivate::KB_All},
+     {QKeySequence::Undo,                    0,          Qt::ALT  | Qt::Key_Backspace,           QApplicationPrivate::KB_Win},
+     {QKeySequence::DeleteStartOfWord,       0,          Qt::ALT  | Qt::Key_Backspace,           QApplicationPrivate::KB_Mac},
+     {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_Delete,              QApplicationPrivate::KB_Mac},    
+@@ -770,6 +783,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
+     {QKeySequence::MoveToEndOfBlock,        0,          Qt::ALT  | Qt::Key_Down,                QApplicationPrivate::KB_Mac}, //mac only
+     {QKeySequence::MoveToPreviousPage,      0,          Qt::ALT  | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac },
+     {QKeySequence::MoveToNextPage,          0,          Qt::ALT  | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac },
++    {QKeySequence::SelectPreviousWord,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_B,       QApplicationPrivate::KB_All},
++    {QKeySequence::SelectNextWord,          0,          Qt::ALT  | Qt::SHIFT | Qt::Key_F,       QApplicationPrivate::KB_All},
+     {QKeySequence::Redo,                    0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Backspace,QApplicationPrivate::KB_Win},
+     {QKeySequence::SelectPreviousWord,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
+     {QKeySequence::SelectStartOfBlock,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Up,      QApplicationPrivate::KB_Mac}, //mac only
+diff --git a/src/gui/text/qtextcontrol.cpp b/src/gui/text/qtextcontrol.cpp
+index 53b3b0b..748b7b9 100644
+--- a/src/gui/text/qtextcontrol.cpp
++++ b/src/gui/text/qtextcontrol.cpp
+@@ -1218,7 +1218,7 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
+     // example)
+     repaintSelection();
+ 
+-    if (e->key() == Qt::Key_Backspace && !(e->modifiers() & ~Qt::ShiftModifier)) {
++    if (e == QKeySequence::Back || e->key() == Qt::Key_Backspace && !(e->modifiers() & ~Qt::ShiftModifier)) {
+         QTextBlockFormat blockFmt = cursor.blockFormat();
+         QTextList *list = cursor.currentList();
+         if (list && cursor.atBlockStart() && !cursor.hasSelection()) {
+diff --git a/src/gui/widgets/qlinecontrol.cpp b/src/gui/widgets/qlinecontrol.cpp
+index 82d6c27..193d1e8 100644
+--- a/src/gui/widgets/qlinecontrol.cpp
++++ b/src/gui/widgets/qlinecontrol.cpp
+@@ -1779,6 +1779,10 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
+         else
+             layoutDirection() == Qt::LeftToRight ? home(1) : end(1);
+     }
++    else if (event == QKeySequence::Back) {
++        if (!isReadOnly())
++            backspace();
++    }
+     else if (event == QKeySequence::Delete) {
+         if (!isReadOnly())
+             del();
