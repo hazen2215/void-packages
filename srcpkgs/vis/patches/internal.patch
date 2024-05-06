@@ -1,14 +1,14 @@
-commit a110ce5656539126342347a924a1f65d1e85b91f
+commit 4ed354e9b73bee0f937c5673736140568836fe08
 Author: hazen2215 <haz@disroot.org>
 Date:   Wed Aug 9 00:45:47 2023 +0900
 
-    better file->internal
+    better vis:message internal window
 
 diff --git a/sam.c b/sam.c
-index 60d204e..1cd17e3 100644
+index 5f9e8f9..8ff4001 100644
 --- a/sam.c
 +++ b/sam.c
-@@ -1220,8 +1220,6 @@ enum SamError sam_cmd(Vis *vis, const char *s) {
+@@ -1236,8 +1236,6 @@ enum SamError sam_cmd(Vis *vis, const char *s) {
  	}
  
  	for (File *file = vis->files; file; file = file->next) {
@@ -17,7 +17,7 @@ index 60d204e..1cd17e3 100644
  		sam_transcript_init(&file->transcript);
  	}
  
-@@ -1231,8 +1229,6 @@ enum SamError sam_cmd(Vis *vis, const char *s) {
+@@ -1247,8 +1245,6 @@ enum SamError sam_cmd(Vis *vis, const char *s) {
  	sam_execute(vis, vis->win, cmd, NULL, &range);
  
  	for (File *file = vis->files; file; file = file->next) {
@@ -26,28 +26,15 @@ index 60d204e..1cd17e3 100644
  		Transcript *t = &file->transcript;
  		if (t->error != SAM_ERR_OK) {
  			err = t->error;
-@@ -1579,8 +1575,6 @@ static bool cmd_files(Vis *vis, Win *win, Command *cmd, const char *argv[], Sele
- static bool cmd_files(Vis *vis, Win *win, Command *cmd, const char *argv[], Selection *sel, Filerange *range) {
- 	bool ret = true;
- 	for (Win *win = vis->windows; win; win = win->next) {
--		if (win->file->internal)
+@@ -1595,8 +1591,6 @@ static bool cmd_files(Vis *vis, Win *win, Command *cmd, const char *argv[], Sele
+ 	for (Win *wn, *w = vis->windows; w; w = wn) {
+ 		/* w can get freed by sam_execute() so store w->next early */
+ 		wn = w->next;
+-		if (w->file->internal)
 -			continue;
  		bool match = !cmd->regex ||
- 		             (win->file->name && text_regex_match(cmd->regex, win->file->name, 0) == 0);
+ 		             (w->file->name && text_regex_match(cmd->regex, w->file->name, 0) == 0);
  		if (match ^ (argv[0][0] == 'Y')) {
-diff --git a/vis.c b/vis.c
-index d374d39..8c04cdd 100644
---- a/vis.c
-+++ b/vis.c
-@@ -83,7 +83,7 @@ bool vis_event_emit(Vis *vis, enum VisEvents id, ...) {
- 	case VIS_EVENT_WIN_STATUS:
- 	{
- 		Win *win = va_arg(ap, Win*);
--		if (win->file->internal && id != VIS_EVENT_WIN_STATUS)
-+		if (win->file->internal && id != VIS_EVENT_WIN_STATUS && id != VIS_EVENT_WIN_HIGHLIGHT)
- 			break;
- 		if (vis->event->win_open && id == VIS_EVENT_WIN_OPEN) {
- 			vis->event->win_open(vis, win);
 diff --git a/vis-prompt.c b/vis-prompt.c
 index 1add11a..0801206 100644
 --- a/vis-prompt.c
@@ -63,3 +50,16 @@ index 1add11a..0801206 100644
  	text_save(txt, NULL);
  	view_cursor_to(win->view, pos);
  	vis_window_focus(win);
+diff --git a/vis.c b/vis.c
+index e287405..619b260 100644
+--- a/vis.c
++++ b/vis.c
+@@ -84,7 +84,7 @@ bool vis_event_emit(Vis *vis, enum VisEvents id, ...) {
+ 	case VIS_EVENT_WIN_STATUS:
+ 	{
+ 		Win *win = va_arg(ap, Win*);
+-		if (win->file->internal && id != VIS_EVENT_WIN_STATUS)
++		if (win->file->internal && id != VIS_EVENT_WIN_STATUS && id != VIS_EVENT_WIN_HIGHLIGHT)
+ 			break;
+ 		if (vis->event->win_open && id == VIS_EVENT_WIN_OPEN) {
+ 			vis->event->win_open(vis, win);
