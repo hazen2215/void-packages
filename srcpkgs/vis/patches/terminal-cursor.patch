@@ -1,0 +1,284 @@
+From 4a5fa536e630f16995fb48b9e4bfb08c0193fafb Mon Sep 17 00:00:00 2001
+From: Petros Pateros <petratman@gmail.com>
+Date: Sun, 31 Mar 2024 11:10:16 +0300
+Subject: [PATCH] use terminal's cursor and add STYLE_CURSOR_MATCHING style
+
+Previously, vis used to hide the terminal's cursor, but now terminal's
+cursor is positioned to the active cursor's position.
+
+The STYLE_CURSOR_MATCHING style is added so that it can be adjusted
+independently.
+---
+ lua/themes/base-16.lua   |  1 +
+ lua/themes/solarized.lua |  1 +
+ lua/themes/zenburn.lua   |  1 +
+ lua/vis.lua              |  1 +
+ ui-terminal-curses.c     |  4 +---
+ ui-terminal-vt100.c      | 12 ++----------
+ ui-terminal.c            | 22 +++++++++++++++++++++-
+ ui.h                     |  1 +
+ vis-lua.c                |  1 +
+ vis.c                    | 13 +++++++------
+ 10 files changed, 37 insertions(+), 20 deletions(-)
+
+diff --git a/lua/themes/base-16.lua b/lua/themes/base-16.lua
+index f7c03460f..4744f8be7 100644
+--- a/lua/themes/base-16.lua
++++ b/lua/themes/base-16.lua
+@@ -28,6 +28,7 @@ lexers.STYLE_LINENUMBER = ''
+ lexers.STYLE_LINENUMBER_CURSOR = lexers.STYLE_LINENUMBER
+ lexers.STYLE_CURSOR = 'back:white,fore:black'
+ lexers.STYLE_CURSOR_PRIMARY = lexers.STYLE_CURSOR..',fore:yellow'
++lexers.STYLE_CURSOR_MATCHING = lexers.STYLE_CURSOR..',fore:yellow'
+ lexers.STYLE_CURSOR_LINE = 'underlined'
+ lexers.STYLE_COLOR_COLUMN = 'back:red'
+ lexers.STYLE_SELECTION = 'back:white,bold'
+diff --git a/lua/themes/solarized.lua b/lua/themes/solarized.lua
+index 7f408586a..61cbc3375 100644
+--- a/lua/themes/solarized.lua
++++ b/lua/themes/solarized.lua
+@@ -58,6 +58,7 @@ lexers.STYLE_LINENUMBER = 'fore:'..colors.base00..',back:'..colors.base02
+ lexers.STYLE_LINENUMBER_CURSOR = 'back:'..colors.base00..',fore:'..colors.base02
+ lexers.STYLE_CURSOR = 'fore:'..colors.base03..',back:'..colors.base0
+ lexers.STYLE_CURSOR_PRIMARY = lexers.STYLE_CURSOR..',back:yellow'
++lexers.STYLE_CURSOR_MATCHING = lexers.STYLE_CURSOR..',back:yellow'
+ lexers.STYLE_CURSOR_LINE = 'back:'..colors.base02
+ lexers.STYLE_COLOR_COLUMN = 'back:'..colors.base02
+ -- lexers.STYLE_SELECTION = 'back:'..colors.base02
+diff --git a/lua/themes/zenburn.lua b/lua/themes/zenburn.lua
+index 1cefb10b1..7472fda21 100644
+--- a/lua/themes/zenburn.lua
++++ b/lua/themes/zenburn.lua
+@@ -29,6 +29,7 @@ lexers.STYLE_LINENUMBER = 'fore:#585858'
+ lexers.STYLE_LINENUMBER_CURSOR = 'fore:#666666'
+ lexers.STYLE_CURSOR = 'back:#585858'
+ lexers.STYLE_CURSOR_PRIMARY = 'fore:#1c1c1c,back:#87afaf,bold'
++lexers.STYLE_CURSOR_MATCHING = 'fore:#1c1c1c,back:#87afaf,bold'
+ lexers.STYLE_CURSOR_LINE = 'back:#444444'
+ lexers.STYLE_COLOR_COLUMN = 'back:#444444'
+ lexers.STYLE_SELECTION = 'back:#5f875f'
+diff --git a/lua/vis.lua b/lua/vis.lua
+index 2432c7200..abfec74f6 100644
+--- a/lua/vis.lua
++++ b/lua/vis.lua
+@@ -259,6 +259,7 @@ vis.types.window.set_syntax = function(win, syntax)
+ 	win:style_define(win.STYLE_DEFAULT, lexers.STYLE_DEFAULT or '')
+ 	win:style_define(win.STYLE_CURSOR, lexers.STYLE_CURSOR or '')
+ 	win:style_define(win.STYLE_CURSOR_PRIMARY, lexers.STYLE_CURSOR_PRIMARY or '')
++	win:style_define(win.STYLE_CURSOR_MATCHING, lexers.STYLE_CURSOR_MATCHING or '')
+ 	win:style_define(win.STYLE_CURSOR_LINE, lexers.STYLE_CURSOR_LINE or '')
+ 	win:style_define(win.STYLE_SELECTION, lexers.STYLE_SELECTION or '')
+ 	win:style_define(win.STYLE_LINENUMBER, lexers.STYLE_LINENUMBER or '')
+diff --git a/ui-terminal-curses.c b/ui-terminal-curses.c
+index b89d9b58f..fa26cc413 100644
+--- a/ui-terminal-curses.c
++++ b/ui-terminal-curses.c
+@@ -237,6 +237,7 @@ static void ui_curses_blit(UiTerm *tui) {
+ 			cell++;
+ 		}
+ 	}
++	move(tui->row, tui->col);
+ 	wnoutrefresh(stdscr);
+ 	if (tui->doupdate)
+ 		doupdate();
+@@ -252,7 +253,6 @@ static bool ui_curses_resize(UiTerm *tui, int width, int height) {
+ }
+ 
+ static void ui_curses_save(UiTerm *tui, bool fscr) {
+-	curs_set(1);
+ 	if (fscr) {
+ 		def_prog_mode();
+ 		endwin();
+@@ -264,7 +264,6 @@ static void ui_curses_save(UiTerm *tui, bool fscr) {
+ static void ui_curses_restore(UiTerm *tui) {
+ 	reset_prog_mode();
+ 	wclear(stdscr);
+-	curs_set(0);
+ }
+ 
+ static int ui_curses_colors(Ui *ui) {
+@@ -284,7 +283,6 @@ static bool ui_curses_init(UiTerm *tui, char *term) {
+ 	nonl();
+ 	keypad(stdscr, TRUE);
+ 	meta(stdscr, TRUE);
+-	curs_set(0);
+ 	return true;
+ }
+ 
+diff --git a/ui-terminal-vt100.c b/ui-terminal-vt100.c
+index 565313f9e..188ee021d 100644
+--- a/ui-terminal-vt100.c
++++ b/ui-terminal-vt100.c
+@@ -12,8 +12,6 @@
+  *
+  *  - CSI ? 1049 h             Save cursor and use Alternate Screen Buffer (DECSET)
+  *  - CSI ? 1049 l             Use Normal Screen Buffer and restore cursor (DECRST)
+- *  - CSI ? 25 l               Hide Cursor (DECTCEM)
+- *  - CSI ? 25 h               Show Cursor (DECTCEM)
+  *  - CSI 2 J                  Erase in Display (ED)
+  *  - CSI row ; column H       Cursor Position (CUP)
+  *  - CSI ... m                Character Attributes (SGR)
+@@ -104,10 +102,6 @@ static void screen_alternate(bool alternate) {
+ 	output_literal(alternate ? "\x1b[?1049h" : "\x1b[0m" "\x1b[?1049l" "\x1b[0m" );
+ }
+ 
+-static void cursor_visible(bool visible) {
+-	output_literal(visible ? "\x1b[?25h" : "\x1b[?25l");
+-}
+-
+ static void ui_vt100_blit(UiTerm *tui) {
+ 	Buffer *buf = &((UiVt100*)tui)->buf;
+ 	buffer_clear(buf);
+@@ -171,6 +165,8 @@ static void ui_vt100_blit(UiTerm *tui) {
+ 			cell++;
+ 		}
+ 	}
++	/* set terminal's cursor position */
++	buffer_appendf(buf, "\x1b[%d;%dH", tui->row + 1, tui->col + 1);
+ 	output(buffer_content(buf), buffer_length0(buf));
+ }
+ 
+@@ -181,11 +177,9 @@ static bool ui_vt100_resize(UiTerm *tui, int width, int height) {
+ }
+ 
+ static void ui_vt100_save(UiTerm *tui, bool fscr) {
+-	cursor_visible(true);
+ }
+ 
+ static void ui_vt100_restore(UiTerm *tui) {
+-	cursor_visible(false);
+ }
+ 
+ static int ui_vt100_colors(Ui *ui) {
+@@ -196,13 +190,11 @@ static int ui_vt100_colors(Ui *ui) {
+ static void ui_vt100_suspend(UiTerm *tui) {
+ 	if (!tui->termkey) return;
+ 	termkey_stop(tui->termkey);
+-	cursor_visible(true);
+ 	screen_alternate(false);
+ }
+ 
+ static void ui_vt100_resume(UiTerm *tui) {
+ 	screen_alternate(true);
+-	cursor_visible(false);
+ 	termkey_start(tui->termkey);
+ }
+ 
+diff --git a/ui-terminal.c b/ui-terminal.c
+index cf343783a..026d6794f 100644
+--- a/ui-terminal.c
++++ b/ui-terminal.c
+@@ -41,6 +41,7 @@ typedef struct {
+ 	UiTermWin *selwin;        /* the currently selected layout */
+ 	char info[MAX_WIDTH];     /* info message displayed at the bottom of the screen */
+ 	int width, height;        /* terminal dimensions available for all windows */
++	int row, col;             /* active cursor's (0-based) position in the terminal */
+ 	enum UiLayout layout;     /* whether windows are displayed horizontally or vertically */
+ 	TermKey *termkey;         /* libtermkey instance to handle keyboard input (stdin or /dev/tty) */
+ 	size_t ids;               /* bit mask of in use window ids */
+@@ -372,8 +373,26 @@ static void ui_draw(Ui *ui) {
+ 	debug("ui-draw\n");
+ 	UiTerm *tui = (UiTerm*)ui;
+ 	ui_arrange(ui, tui->layout);
+-	for (UiTermWin *win = tui->windows; win; win = win->next)
++	int dx = 0, dy = 0;
++	for (UiTermWin *win = tui->windows; win; win = win->next) {
+ 		ui_window_draw((UiWin*)win);
++		if (win == tui->selwin || win->win->parent) {
++			View *view = win->win->view;
++			view_coord_get(view, view_cursor_get(view), NULL, &tui->row, &tui->col);
++			tui->col += win->sidebar_width;
++			tui->row += dy;
++			if (!win->win->parent)
++				tui->col += dx;
++			else if (tui->layout == UI_LAYOUT_VERTICAL)
++				tui->row += win->prev->height;
++		}
++		if (tui->layout == UI_LAYOUT_HORIZONTAL)
++			dy += win->height;
++		else if (win->win->parent)
++			dy += win->prev->height;
++		else
++			dx += win->width + 1; /* +1 for the |'s */
++	}
+ 	if (tui->info[0])
+ 		ui_draw_string(tui, 0, tui->height-1, tui->info, NULL, UI_STYLE_INFO);
+ 	ui_term_backend_blit(tui);
+@@ -556,6 +575,7 @@ static UiWin *ui_window_new(Ui *ui, Win *w, enum UiOption options) {
+ 
+ 	styles[UI_STYLE_CURSOR].attr |= CELL_ATTR_REVERSE;
+ 	styles[UI_STYLE_CURSOR_PRIMARY].attr |= CELL_ATTR_REVERSE|CELL_ATTR_BLINK;
++	styles[UI_STYLE_CURSOR_MATCHING].attr |= CELL_ATTR_REVERSE;
+ 	styles[UI_STYLE_SELECTION].attr |= CELL_ATTR_REVERSE;
+ 	styles[UI_STYLE_COLOR_COLUMN].attr |= CELL_ATTR_REVERSE;
+ 	styles[UI_STYLE_STATUS].attr |= CELL_ATTR_REVERSE;
+diff --git a/ui.h b/ui.h
+index 76bdcce33..a775c8332 100644
+--- a/ui.h
++++ b/ui.h
+@@ -38,6 +38,7 @@ enum UiStyle {
+ 	UI_STYLE_DEFAULT,
+ 	UI_STYLE_CURSOR,
+ 	UI_STYLE_CURSOR_PRIMARY,
++	UI_STYLE_CURSOR_MATCHING,
+ 	UI_STYLE_CURSOR_LINE,
+ 	UI_STYLE_SELECTION,
+ 	UI_STYLE_LINENUMBER,
+diff --git a/vis-lua.c b/vis-lua.c
+index 98a524993..1bc4619c6 100644
+--- a/vis-lua.c
++++ b/vis-lua.c
+@@ -3279,6 +3279,7 @@ void vis_lua_init(Vis *vis) {
+ 		{ UI_STYLE_DEFAULT,           "STYLE_DEFAULT"           },
+ 		{ UI_STYLE_CURSOR,            "STYLE_CURSOR"            },
+ 		{ UI_STYLE_CURSOR_PRIMARY,    "STYLE_CURSOR_PRIMARY"    },
++		{ UI_STYLE_CURSOR_MATCHING,   "STYLE_CURSOR_MATCHING"   },
+ 		{ UI_STYLE_CURSOR_LINE,       "STYLE_CURSOR_LINE"       },
+ 		{ UI_STYLE_SELECTION,         "STYLE_SELECTION"         },
+ 		{ UI_STYLE_LINENUMBER,        "STYLE_LINENUMBER"        },
+diff --git a/vis.c b/vis.c
+index e28740539..201c3180f 100644
+--- a/vis.c
++++ b/vis.c
+@@ -384,17 +384,18 @@ static void window_draw_cursor_matching(Win *win, Selection *cur) {
+ 		return;
+ 	if (!view_coord_get(win->view, pos_match, &line_match, NULL, &col_match))
+ 		return;
+-	win->ui->style_set(win->ui, &line_match->cells[col_match], UI_STYLE_SELECTION);
++	win->ui->style_set(win->ui, &line_match->cells[col_match], UI_STYLE_CURSOR_MATCHING);
+ }
+ 
+-static void window_draw_cursor(Win *win, Selection *cur) {
++static void window_draw_cursor(Win *win, Selection *cur, bool isprimary) {
+ 	if (win->vis->win != win)
+ 		return;
+ 	Line *line = view_cursors_line_get(cur);
+ 	int col = view_cursors_cell_get(cur);
+ 	if (!line || col == -1)
+ 		return;
+-	win->ui->style_set(win->ui, &line->cells[col], UI_STYLE_CURSOR);
++	win->ui->style_set(win->ui, &line->cells[col],
++		isprimary ? UI_STYLE_CURSOR_PRIMARY : UI_STYLE_CURSOR);
+ 	window_draw_cursor_matching(win, cur);
+ 	return;
+ }
+@@ -408,16 +409,16 @@ static void window_draw_selections(Win *win) {
+ 		size_t pos = view_cursors_pos(s);
+ 		if (pos < viewport.start)
+ 			break;
+-		window_draw_cursor(win, s);
++		window_draw_cursor(win, s, false);
+ 	}
+ 	window_draw_selection(win, sel);
+-	window_draw_cursor(win, sel);
++	window_draw_cursor(win, sel, true);
+ 	for (Selection *s = view_selections_next(sel); s; s = view_selections_next(s)) {
+ 		window_draw_selection(win, s);
+ 		size_t pos = view_cursors_pos(s);
+ 		if (pos > viewport.end)
+ 			break;
+-		window_draw_cursor(win, s);
++		window_draw_cursor(win, s, false);
+ 	}
+ }
+ 
