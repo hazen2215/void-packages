@@ -1,0 +1,13 @@
+diff --git a/miniaudio.h2 b/miniaudio.h
+index 181f452897..3820fae185 100644
+--- a/subprojects/miniaudio/miniaudio.h
++++ b/subprojects/miniaudio/miniaudio.h
+@@ -6557,7 +6557,7 @@ This section contains the APIs for device playback and capture. Here is where yo
+     #if defined(__NetBSD__) || defined(__OpenBSD__)
+         #define MA_SUPPORT_AUDIO4   /* Only support audio(4) on platforms with known support. */
+     #endif
+-    #if defined(__FreeBSD__) || defined(__DragonFly__)
++    #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(MA_LINUX)
+         #define MA_SUPPORT_OSS      /* Only support OSS on specific platforms with known support. */
+     #endif
+ #endif
