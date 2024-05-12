@@ -1,0 +1,23 @@
+diff --git a/src/platform.cpp b/src/platform.cpp
+index 0117e17..0010abd 100644
+--- a/src/platform.cpp
++++ b/src/platform.cpp
+@@ -117,15 +117,15 @@ std::string Platform::FindConfigFile() {
+     if (util::IsFile("./abaddon.ini"))
+         return "./abaddon.ini";
+ 
+-    if (const auto home_env = std::getenv("HOME")) {
++    if (const auto home_env = std::getenv("XDG_CONFIG_HOME")) {
+         // use ~/.config if present
+-        if (auto home_path = home_env + "/.config/abaddon/abaddon.ini"s; util::IsFile(home_path)) {
++        if (auto home_path = home_env + "/abaddon/abaddon.ini"s; util::IsFile(home_path)) {
+             return home_path;
+         }
+ 
+         // fallback to ~/.config if the directory exists/can be created
+         std::error_code ec;
+-        const auto home_path = home_env + "/.config/abaddon"s;
++        const auto home_path = home_env + "/abaddon"s;
+         if (!util::IsFolder(home_path))
+             std::filesystem::create_directories(home_path, ec);
+         if (util::IsFolder(home_path))
