@@ -1,0 +1,19 @@
+# Template file for 'discordo'
+pkgname=discordo
+version=0.0.20230427
+revision=1
+_commit=d76a7db668900a7fc41ead7db194e20f126071ac
+build_style=go
+go_import_path=github.com/ayn2op/discordo
+short_desc="Lightweight, secure, and feature-rich Discord terminal client"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/ayn2op/discordo/"
+distfiles="https://github.com/ayn2op/discordo/archive/${_commit}.tar.gz"
+checksum=acda004b6f450893609bafd17f8bf2c6b1ae4b8bb1053e776bcce4f03794be95
+
+export CGO_ENABLED=0
+
+post_install() {
+	vlicense LICENSE
+}
