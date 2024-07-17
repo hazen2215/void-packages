@@ -1,0 +1,12 @@
+diff --git a/pcsx2/SPU2/defs.h b/pcsx2/SPU2/defs.h
+index b6317b3..5f0b51a 100644
+--- a/pcsx2/SPU2/defs.h
++++ b/pcsx2/SPU2/defs.h
+@@ -7,6 +7,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <cstdio>
+ 
+ // --------------------------------------------------------------------------------------
+ //  SPU2 Register Table LUT
