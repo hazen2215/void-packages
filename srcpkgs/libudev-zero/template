@@ -21,19 +21,20 @@ post_build() {
 
 post_install() {
 	vlicense LICENSE
+	rm ${DESTDIR}/usr/lib/*.so
 }
 
 libudev-zero-devel_package() {
 	provides="libudev-devel-${_UDEV_VERSION}_${revision}"
 	conflicts="eudev-libudev-devel>=0"
-	depends="libudev-zero>=${version}_${revision}"
+	# depends="libudev-zero>=${version}_${revision}"
 	replaces="eudev-libudev-devel>=0"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include
 		vmove usr/lib/pkgconfig
+		# vmove "usr/lib/*.so"
 		vmove "usr/lib/*.a"
-		vmove "usr/lib/*.so"
 	}
 }
 
