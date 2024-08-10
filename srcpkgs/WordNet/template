@@ -1,0 +1,44 @@
+# Template file for 'WordNet'
+pkgname=WordNet
+version=3.1
+revision=1
+build_wrksrc=WordNet-3.0
+build_style=gnu-configure
+configure_args="--with-tcl=${XBPS_CROSS_BASE}/usr/lib
+ --with-tk=${XBPS_CROSS_BASE}/usr/lib --datadir=/usr/share/wordnet"
+makedepends="tcl-devel tk-devel"
+short_desc="Lexical database for the English language"
+maintainer="hazen2215 <haz@disroot.org>"
+license="custom:Princeton"
+homepage="https://wordnet.princeton.edu"
+distfiles="
+ http://wordnetcode.princeton.edu/3.0/WordNet-3.0.tar.gz
+ http://wordnetcode.princeton.edu/wn${version}.dict.tar.gz"
+checksum="640db279c949a88f61f851dd54ebbb22d003f8b90b85267042ef85a3781d3a52
+ 3f7d8be8ef6ecc7167d39b10d66954ec734280b5bdcd57f7d9eafe429d11c22a"
+patch_args="-Np1 --directory=${build_wrksrc}"
+
+CPPFLAGS="-DUNIX -I${XBPS_CROSS_BASE}/usr/include"
+
+post_configure() {
+	vsed -i config.h \
+		-e 's:#define DEFAULTPATH "/usr/dict":#define DEFAULTPATH "/usr/share/wordnet/dict":'
+	vsed -i src/wnb \
+		-e 's:"/usr/local/WordNet-3.0/lib/wnres":"/usr/share/wordnet/wnres":'
+	vsed -i include/wn.h \
+		-e 's:"/usr/local/WordNet-3.0/dict":"/usr/share/wordnet/dict":'
+}
+
+post_install() {
+	vlicense COPYING
+	vmkdir usr/share/doc
+	vmkdir usr/share/wordnet
+	mv ${DESTDIR}/usr/doc ${DESTDIR}/usr/share/doc/wordnet-3.0
+	mv ${DESTDIR}/usr/lib/wnres ${DESTDIR}/usr/share/wordnet
+	rm -r ${DESTDIR}/usr/include/tk
+
+	# For clarification: WN is still on  version 3.0. Only the database files
+	# have been updated to 3.1 as a package for 3.1 does not currently exist.
+	rm -r ${DESTDIR}/usr/dict
+	cp -a ${wrksrc}/dict ${DESTDIR}/usr/share/wordnet
+}
