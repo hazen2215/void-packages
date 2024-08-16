@@ -1,0 +1,31 @@
+# Template file for 'hyperestraier-encore'
+pkgname=hyperestraier-encore
+version=1.5.20220429
+revision=1
+_commit=bd649e8e0dc00d5e2e30d5854687b0b825ddc384
+build_style=gnu-configure
+hostmakedepends="autoconf automake pkg-config"
+makedepends="qdbm-devel zlib-devel"
+short_desc="Full-text search syst"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/ikazuhiro/hyperestraier-encore"
+distfiles="https://github.com/ikazuhiro/hyperestraier-encore/archive/${_commit}.tar.gz"
+checksum=81ac389ad9ba15f9a0cadc877c31e6bea6b54d6114fa26356e469aa251d5758a
+make_check=no
+
+pre_configure() {
+	autoreconf -fi
+}
+
+hyperestraier-encore-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+		vmove usr/lib/pkgconfig
+		vmove usr/share/man/man3
+	}
+}
