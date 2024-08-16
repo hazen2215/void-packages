@@ -1,0 +1,23 @@
+# Template file for 'qdbm'
+pkgname=qdbm
+version=1.8.78
+revision=1
+build_style=gnu-configure
+short_desc="Quick Database Manager"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-2.1-or-later"
+homepage="https://dbmx.net/qdbm/"
+distfiles="https://dbmx.net/qdbm/qdbm-${version}.tar.gz"
+checksum=b466fe730d751e4bfc5900d1f37b0fb955f2826ac456e70012785e012cdcb73e
+
+qdbm-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.so"
+		vmove "usr/lib/*.a"
+		vmove usr/lib/pkgconfig
+		vmove usr/share/man/man3
+	}
+}
