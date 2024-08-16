@@ -1,0 +1,16 @@
+# Template file for 'ebestmk'
+pkgname=ebestmk
+version=1.0.1
+revision=1
+build_style=gnu-configure
+makedepends="libebu-devel qdbm-devel hyperestraier-encore-devel"
+short_desc="Full text search indexer for EPWING dictionaries using Hyper Estraier"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-or-later"
+homepage="http://green.ribbon.to/~ikazuhiro/dic/ebestmk.html"
+distfiles="http://green.ribbon.to/~ikazuhiro/dic/files/ebestmk-${version}.tar.gz"
+checksum=0d5b114d80ff71d46924bf7e2a1ce07d0058e3c57a9558b0f911b424558ad267
+
+post_install() {
+	vdoc README.md
+}
