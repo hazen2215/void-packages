@@ -1,13 +1,13 @@
 # Template file for 'web'
 pkgname=web
-version=33.2.0
+version=33.3.1
 revision=1
-_UXP_version=RB_20240618
+_UXP_version=RB_20240909
 create_wrksrc=yes
 build_wrksrc="pale-moon"
 hostmakedepends="perl pkg-config python unzip yasm zip tar
  which m4"
-makedepends="libXt-devel $(vopt_if alsa alsa-lib-devel) $(vopt_if oss oss-devel)
+makedepends="libXt-devel $(vopt_if alsa alsa-lib-devel)
  $(vopt_if dbus dbus-glib-devel) $(vopt_if pulseaudio pulseaudio-devel)
  $(vopt_if xscreensaver libXScrnSaver-devel) $(vopt_if sndio sndio-devel)
  $(vopt_if jack jack-devel) $(vopt_if gtk3 gtk+3-devel gtk+-devel)"
@@ -17,15 +17,15 @@ license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
-checksum="8e6514c7bf0e97b4bf6946bcdae911b38d40b61344b42b8078a548b61a59dc53
- e07ffdea10bd30be61be1dd62a8135601ec2f5bf1d4de9267241fca2ec9b8e31"
+checksum="82b7bec590401149e8e2bf57c8029e1c3a6565c0d05e1366ef4ea55800945037
+ 8367a518f75821e31340ee29eff6bceee0eade9a32074e31586a872703a653ea"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 CFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
 CXXFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
 
-build_options="alsa jack dbus pulseaudio oss xscreensaver sndio gtk3"
-build_options_default="alsa oss xscreensaver"
+build_options="alsa jack dbus pulseaudio xscreensaver sndio gtk3"
+build_options_default="alsa xscreensaver"
 
 post_extract() {
 	rmdir pale-moon/platform
@@ -82,7 +82,6 @@ do_build() {
 	ac_add_options $(vopt_enable sndio)
 	ac_add_options $(vopt_enable dbus)
 	ac_add_options $(vopt_enable pulseaudio)
-	ac_add_options $(vopt_enable oss)
 	export MOZ_PKG_SPECIAL=gtk$(vopt_if gtk3 '3' '2')
 	!
 
