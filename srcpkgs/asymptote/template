@@ -1,0 +1,20 @@
+# Template file for 'asymptote'
+pkgname=asymptote
+version=2.91
+revision=1
+build_style=gnu-configure
+configure_args="--with-latex=/usr/share/texmf/tex/latex
+ --with-context=/usr/share/texmf/tex/context --disable-gc"
+make_build_target="asy all"
+make_install_target="install-all"
+hostmakedepends="autoconf bison flex texinfo texlive-dvi texlive-latexextra"
+makedepends="zlib-devel"
+short_desc="Vector graphics language for technical drawing"
+maintainer="hazen2215 <haz@disroot.org>"
+license="LGPL-3.0-or-later"
+homepage="https://asymptote.sourceforge.net/"
+changelog="https://asymptote.sourceforge.io/ChangeLog"
+distfiles="${SOURCEFORGE_SITE}/asymptote/asymptote-${version}.src.tgz"
+checksum=ea23b25ecbf4beb766539c821161b4d4c39edffbd8d01f3d9e3fc504a7a3c214
+disable_parallel_build=yes
+nocross=yes
