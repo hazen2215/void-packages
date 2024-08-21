@@ -1,0 +1,18 @@
+# Template file for 'mimetex'
+pkgname=mimetex
+version=1.76
+revision=1
+short_desc="Easily embed LaTeX math in web pages"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="http://www.forkosh.com/mimetex.html"
+distfiles="http://deb.debian.org/debian/pool/main/m/mimetex/mimetex_${version}.orig.tar.gz"
+checksum=37edf717cc8bf3ba78cf53080ec3d5fff576653c8c7d762e05055d183582814f
+
+do_build() {
+	${CC} ${CFLAGS} -DAA -o mimetex.cgi mimetex.c gifsave.c ${LDFLAGS} -lm
+}
+
+do_install() {
+	vbin mimetex.cgi
+}
