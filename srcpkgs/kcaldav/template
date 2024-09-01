@@ -1,0 +1,14 @@
+# Template file for 'kcaldav'
+pkgname=kcaldav
+version=0.2.5
+revision=1
+build_style=configure
+configure_args="PREFIX=/usr MANDIR=/usr/share/man"
+makedepends="expat-devel kcgi sqlite-devel zlib-devel"
+short_desc="Simple, safe, and minimal CalDAV server"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://kristaps.bsd.lv/kcaldav/"
+changelog="https://kristaps.bsd.lv/kcaldav/archive.html"
+distfiles="https://kristaps.bsd.lv/kcaldav/snapshots/kcaldav-${version}.tgz"
+checksum=42539b40e03220ee9a3b064fff020a09de96e02ff6d9d3ae9fcde692394fa33c
