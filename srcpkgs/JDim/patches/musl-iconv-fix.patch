@@ -1,0 +1,16 @@
+diff --git a/src/jdlib/misccharcode.cpp b/src/jdlib/misccharcode.cpp
+index b0d4a132..9602d097 100644
+--- a/src/jdlib/misccharcode.cpp
++++ b/src/jdlib/misccharcode.cpp
+@@ -19,7 +19,11 @@
+ 
+ 
+ namespace MISC::charset {
++#if defined(__GLIBC__)
+ constexpr const char* iconv[] = { "ISO-8859-1", "ASCII", "EUCJP-MS", "ISO-2022-JP", "MS932", "UTF-8" };
++#else
++constexpr const char* iconv[] = { "ISO-8859-1", "ASCII", "EUC-JP", "ISO-2022-JP", "Shift_JIS", "UTF-8" };
++#endif
+ constexpr const char* names[] = { "ISO-8859-1", "ASCII", "EUC-JP", "ISO-2022-JP", "Shift_JIS", "UTF-8" };
+ static_assert( std::size( iconv ) == std::size( names ) );
+ 

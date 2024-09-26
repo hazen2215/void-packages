@@ -1,0 +1,29 @@
+# Template file for 'JDim'
+pkgname=JDim
+version=0.13.0
+revision=1
+build_style=meson
+configure_args="-Dpangolayout=enabled $(vopt_if alsa '-Dalsa=enabled')
+ -Dtls=$(vopt_if openssl 'openssl' 'gnutls')"
+hostmakedepends="autoconf-archive automake libtool pkg-config"
+makedepends="libSM-devel gtkmm-devel $(vopt_if alsa alsa-lib-devel)
+ $(vopt_if openssl 'openssl-devel' 'gnutls-devel')"
+checkdepends="gtest-devel"
+short_desc="2channel browser written in C++ using gtkmm3"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/JDimproved/JDim"
+distfiles="https://github.com/JDimproved/JDim/archive/JDim-v${version}.tar.gz"
+checksum=e24b26f2ced137b08d706067c2bce603c618e01a20e1e681844931ded81c030f
+
+build_options="alsa openssl"
+build_options_default="alsa"
+
+if [ "$build_option_openssl" ]; then
+	# OpenSSL license is incompatible with GPL-2.0-only
+	restricted=yes
+fi
+
+if [ "$CROSS_BUILD" ]; then
+	hostmakedepends+=" gdk-pixbuf-devel"
+fi

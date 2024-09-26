@@ -1,0 +1,32 @@
+diff --git a/test/gtest_jdlib_jdiconv.cpp b/test/gtest_jdlib_jdiconv.cpp
+index 915b8ebf..d49e857c 100644
+--- a/test/gtest_jdlib_jdiconv.cpp
++++ b/test/gtest_jdlib_jdiconv.cpp
+@@ -47,8 +47,13 @@ TEST_F(Iconv_ToAsciiFromUtf8, hiragana)
+     JDLIB::Iconv icv( Encoding::ascii, Encoding::utf8, broken_sjis_be_utf8 );
+     const std::string& result = icv.convert( input, std::strlen(input) );
+ 
++#if defined(__GLIBC__)
+     EXPECT_EQ( "&#12354;&#12356;&#12358;&#12360;&#12362;", result );
+     EXPECT_EQ( 40, result.size() );
++#else
++    EXPECT_EQ( "*****", result );
++    EXPECT_EQ( 5, result.size() );
++#endif
+ }
+ 
+ TEST_F(Iconv_ToAsciiFromUtf8, subdivision_flag)
+@@ -60,8 +65,13 @@ TEST_F(Iconv_ToAsciiFromUtf8, subdivision_flag)
+     JDLIB::Iconv icv( Encoding::ascii, Encoding::utf8, broken_sjis_be_utf8 );
+     const std::string& result = icv.convert( input, std::strlen(input) );
+ 
++#if defined(__GLIBC__)
+     EXPECT_EQ( "&#127988;&#917607;&#917602;&#917605;&#917614;&#917607;&#917631;", result );
+     EXPECT_EQ( 63, result.size() );
++#else
++    EXPECT_EQ( "*******", result );
++    EXPECT_EQ( 7, result.size() );
++#endif
+ }
+ 
+ 
