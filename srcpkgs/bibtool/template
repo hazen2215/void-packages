@@ -1,0 +1,13 @@
+# Template file for 'bibtool'
+pkgname=bibtool
+version=2.68
+revision=1
+build_style=gnu-configure
+make_install_args="INSTALLPREFIX=\${DESTDIR}"
+make_install_target="install install-man"
+short_desc="Tool for manipulating BibTeX databases"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://gerd-neugebauer.de/software/TeX/BibTool/en/"
+distfiles="https://www.gerd-neugebauer.de/software/TeX/BibTool/BibTool-${version}.tar.gz"
+checksum=7134ce3a05fe94c04b88f18261139656ac4c0c0893de15acc0daabc90248b8fa
