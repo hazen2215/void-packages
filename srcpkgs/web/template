@@ -1,12 +1,11 @@
 # Template file for 'web'
 pkgname=web
-version=33.3.1
+version=33.4.0.1
 revision=1
-_UXP_version=RB_20240909
+_UXP_version=RB_20241008
 create_wrksrc=yes
 build_wrksrc="pale-moon"
-hostmakedepends="perl pkg-config python unzip yasm zip tar
- which m4"
+hostmakedepends="perl pkg-config python2 unzip yasm zip tar which m4"
 makedepends="libXt-devel $(vopt_if alsa alsa-lib-devel)
  $(vopt_if dbus dbus-glib-devel) $(vopt_if pulseaudio pulseaudio-devel)
  $(vopt_if xscreensaver libXScrnSaver-devel) $(vopt_if sndio sndio-devel)
@@ -17,8 +16,8 @@ license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
 homepage="https://www.palemoon.org/"
 distfiles="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/${version}_Release.tar.gz
  https://repo.palemoon.org/MoonchildProductions/UXP/archive/${_UXP_version}.tar.gz"
-checksum="82b7bec590401149e8e2bf57c8029e1c3a6565c0d05e1366ef4ea55800945037
- 8367a518f75821e31340ee29eff6bceee0eade9a32074e31586a872703a653ea"
+checksum="9aaf5b8469fd65515ab134419e572c52738daaf4e37b032b0f00dc7c44c6a2aa
+ 72b8644760ceb96d51f20cc70ec381eb5f91301ca35bd2264b53213061a7b3f3"
 patch_args="-Np1 --directory=${build_wrksrc}"
 
 CFLAGS="-D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"
