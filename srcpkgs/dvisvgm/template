@@ -1,0 +1,18 @@
+# Template file for 'dvisvgm'
+pkgname=dvisvgm
+version=3.4.1
+revision=1
+build_style=gnu-configure
+hostmakedepends="autoconf-archive automake libtool pkg-config"
+makedepends="brotli-devel freetype-devel ghostscript-devel potrace-devel
+ texlive-devel woff2-devel xxHash-devel zlib-devel"
+short_desc="Fast DVI to SVG converter"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://dvisvgm.de/"
+distfiles="https://github.com/mgieseki/dvisvgm/archive/refs/tags/${version}.tar.gz"
+checksum=0183e0cecdded0a4d878dc1033753e19c99bcad569eb1c4687f2f5e4ce05c6b2
+
+pre_configure() {
+	autoreconf -fi
+}
