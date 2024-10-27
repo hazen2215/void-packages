@@ -1,0 +1,19 @@
+# Template file for 'norikae'
+pkgname=norikae
+version=1.1.0
+revision=1
+build_style=go
+go_import_path=076/norikae
+short_desc="CLI Japanese train route search"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://gitler.moe/suwako/norikae"
+distfiles="https://076.moe/repo/src/norikae/norikae-${version}.tar.gz"
+checksum=464159f7d99ef493a9b4bd96bd0b11b1986a214d5f92587d48584070ad59a0cc
+
+export CGO_ENABLED=0
+
+post_install() {
+	vsed -i "s|VERSION|${version}|g" norikae.1
+	vman norikae.1
+}
