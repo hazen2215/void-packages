@@ -1,0 +1,75 @@
+diff --git a/src/article/articleviewbase.cpp b/src/article/articleviewbase.cpp
+index 393c30a3..17d1e8aa 100644
+--- a/src/article/articleviewbase.cpp
++++ b/src/article/articleviewbase.cpp
+@@ -1238,6 +1238,10 @@ bool ArticleViewBase::operate_view( const int control )
+             show_preference();
+             break;
+ 
++        case CONTROL::ShowHighRefRes:
++            slot_drawout_highly_referenced_res();
++            break;
++
+         default:
+             return false;
+     }
+diff --git a/src/control/controlid.h b/src/control/controlid.h
+index 0a61a989..531bb188 100644
+--- a/src/control/controlid.h
++++ b/src/control/controlid.h
+@@ -219,6 +219,7 @@ namespace CONTROL
+         DeleteSelectImage,
+         AboneSelectImage,
+         AboneSelectionRes,
++        ShowHighRefRes,
+ 
+         PopupWarpButton, // 以下、マウスボタン専用の設定
+         ReferResButton,
+diff --git a/src/control/controllabel.h b/src/control/controllabel.h
+index 38eff348..5463bc1d 100644
+--- a/src/control/controllabel.h
++++ b/src/control/controllabel.h
+@@ -227,6 +227,7 @@ namespace CONTROL
+         { "DeleteSelectImage", "削除する" },
+         { "AboneSelectImage", "あぼ〜んする" },
+         { "AboneSelectionRes", ITEM_NAME_ABONE_SELECTION },
++        { "ShowHighRefRes", "人気レス抽出" },
+ 
+         { "PopupWarpButton", "{X11} クリックで多重ポップアップモードに移行" },
+         { "ReferResButton", "参照レスポップアップ表示" },
+diff --git a/src/control/defaultconf.h b/src/control/defaultconf.h
+index eda2c6ad..40a3d38b 100644
+--- a/src/control/defaultconf.h
++++ b/src/control/defaultconf.h
+@@ -135,6 +135,7 @@ namespace CONTROL
+ #define KEYCONF_DeleteSelectImage  ""
+ #define KEYCONF_AboneSelectImage  ""
+ #define KEYCONF_AboneSelectionRes  ""
++#define KEYCONF_ShowHighRefRes  "P"
+ 
+ // IMAGE
+ #define KEYCONF_CancelMosaic  "c"
+diff --git a/src/control/keyconfig.cpp b/src/control/keyconfig.cpp
+index a4d0e2ba..d10efea3 100644
+--- a/src/control/keyconfig.cpp
++++ b/src/control/keyconfig.cpp
+@@ -165,6 +165,7 @@ void KeyConfig::load_conf()
+     load_keymotions( cf, "DeleteSelectImage", KEYCONF_DeleteSelectImage );
+     load_keymotions( cf, "AboneSelectImage", KEYCONF_AboneSelectImage );
+     load_keymotions( cf, "AboneSelectionRes", KEYCONF_AboneSelectionRes );
++    load_keymotions( cf, "ShowHighRefRes", KEYCONF_ShowHighRefRes );
+ 
+     // IMAGE
+     load_keymotions( cf, "CancelMosaic", KEYCONF_CancelMosaic );
+diff --git a/src/control/keypref.cpp b/src/control/keypref.cpp
+index cb2ea3dd..8d652264 100644
+--- a/src/control/keypref.cpp
++++ b/src/control/keypref.cpp
+@@ -219,6 +219,7 @@ KeyPref::KeyPref( Gtk::Window* parent, const std::string& url )
+     append_row( CONTROL::DeleteSelectImage, ITEM_NAME_SELECTDELIMG );
+     append_row( CONTROL::AboneSelectImage, ITEM_NAME_SELECTABONEIMG );
+     append_row( CONTROL::AboneSelectionRes );
++    append_row( CONTROL::ShowHighRefRes );
+ 
+     append_comment_row( "" );
+     append_comment_row( "■ " + CONTROL::get_mode_label( CONTROL::MODE_IMAGEVIEW ) );
