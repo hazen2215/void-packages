@@ -1,0 +1,21 @@
+# Template file for 'harec'
+pkgname=harec
+version=0.24.2
+revision=1
+archs="x86_64* aarch64* riscv64*"
+build_style=gnu-makefile
+hostmakedepends="qbe"
+make_build_args="ARCH=${XBPS_TARGET_MACHINE%-musl}"
+make_check_args="${make_build_args}"
+short_desc="Hare compiler"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-only"
+homepage="https://harelang.org"
+distfiles="https://git.sr.ht/~sircmpwn/harec/archive/${version}.tar.gz"
+checksum=88b3961b236fbfe3a0dfb46bb954741fa5c031bbda6d07fbc238c98f0abb41a2
+
+CFLAGS=-Iinclude
+
+pre_build() {
+	cp configs/linux.mk config.mk
+}
