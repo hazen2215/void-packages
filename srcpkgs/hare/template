@@ -1,0 +1,21 @@
+# Template file for 'hare'
+pkgname=hare
+version=0.24.2
+revision=1
+archs="x86_64* aarch64* riscv64*"
+build_style=gnu-makefile
+hostmakedepends="qbe harec scdoc"
+make_build_args="ARCH=${XBPS_TARGET_MACHINE%-musl} VERSION=${version}-void"
+make_check_args="${make_build_args} STDLIB_SLOW_TESTS=1"
+depends="qbe harec binutils"
+checkdepends="tzdata"
+short_desc="Hare systems programming language"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MPL-2.0, GPL-3.0-only"
+homepage="https://harelang.org"
+distfiles="https://git.sr.ht/~sircmpwn/hare/archive/${version}.tar.gz"
+checksum=afba69fd537a63442da53d115d9b50f525918159b395843ede2a5473323e0776
+
+pre_build() {
+	cp configs/linux.mk config.mk
+}
