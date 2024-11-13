@@ -1,0 +1,33 @@
+# Template file for 'KataGo'
+pkgname=KataGo
+version=1.15.3
+revision=1
+build_style=cmake
+build_wrksrc=cpp
+configure_args="-D NO_GIT_REVISION=1 -D USE_BACKEND=EIGEN"
+makedepends="boost-devel eigen zlib-devel libzip-devel"
+short_desc="GTP engine and self-play learning in Go"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/lightvector/KataGo"
+#changelog=""
+distfiles="https://github.com/lightvector/KataGo/archive/refs/tags/v${version}.tar.gz
+ https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b28c512nbt-s7332806912-d4357057652.bin.gz
+ https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b28c512nbt-s7503868160-d4406856118.bin.gz"
+checksum="96a1ef3d12eb30a950164f203b012b5f2257ef796b9bd15163d9ba3b79a32a1b
+ ff6861c6ddcebe3739befb5a633cbdb195f7adcfb70fce8733c062f95e619d1d
+ e8f9acf1dd0c1b1aa85b36a86798e4352a69fa70110f26bccd5e559e92ab8109"
+skip_extraction="kata1-b28c512nbt-s7332806912-d4357057652.bin.gz
+ kata1-b28c512nbt-s7503868160-d4406856118.bin.gz"
+
+# Strongest confidently-rated network
+# Latest network
+
+do_install() {
+	vbin build/katago
+	vlicense ../LICENSE
+	vinstall ${XBPS_SRCDISTDIR}/KataGo-${version}/kata1-b28c512nbt-s7332806912-d4357057652.bin.gz \
+		644 usr/share/katago/networks strongest_conf.bin.gz
+	vinstall ${XBPS_SRCDISTDIR}/KataGo-${version}/kata1-b28c512nbt-s7503868160-d4406856118.bin.gz \
+		644 usr/share/katago/networks latest_net.bin.gz
+}
