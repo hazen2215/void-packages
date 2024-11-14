@@ -1,0 +1,25 @@
+# Template file for 'leela-zero'
+pkgname=leela-zero
+version=0.17
+revision=1
+build_style=cmake
+configure_args="$(vopt_bool cpu_only USE_CPU_ONLY)"
+makedepends="boost-devel eigen ocl-icd-devel qt5-devel zlib-devel"
+short_desc="Go engine without human-provided knowledge based on AlphaGo Zero paper"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/leela-zero/leela-zero"
+distfiles="https://github.com/leela-zero/leela-zero/archive/refs/tags/v${version}.tar.gz
+ http://zero.sjeng.org/best-network"
+checksum="fc2cc2ae9739aeab058dfceee8e4e67fdcfc0f7bfe2777e565a2ba17a5579267
+ 6937f00970b368c3a7f686f7152d3c0fc491a1ad580258c257de4d2bc58ac00d"
+skip_extraction="best-network"
+make_check=no # skip building gtest
+
+build_options="cpu_only"
+build_options_default="cpu_only"
+
+post_install() {
+	vinstall ${XBPS_SRCDISTDIR}/leela-zero-${version}/best-network 644 \
+		usr/share/leela-zero/networks weights.txt
+}
