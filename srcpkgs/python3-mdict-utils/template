@@ -1,0 +1,18 @@
+# Template file for 'python3-mdict-utils'
+pkgname=python3-mdict-utils
+version=1.0.9.0
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-setuptools"
+depends="python3-tqdm python3-xxhash"
+short_desc="MDict pack/unpack/list/info tool"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/liuyug/mdict-utils"
+changelog="https://raw.githubusercontent.com/liuyug/mdict-utils/master/CHANGES.md"
+distfiles="https://github.com/liuyug/mdict-utils/archive/refs/tags/${version}.tar.gz"
+checksum=06da019ecd9c8a429f4705c17ca97a4bf88ec12db60cca1a4a4f8d004dfa09e9
+
+post_install() {
+	vlicense LICENSE
+}
