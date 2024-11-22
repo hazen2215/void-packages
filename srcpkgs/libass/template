@@ -17,6 +17,7 @@ case "$XBPS_TARGET_MACHINE" in
 	i686* | x86_64*) hostmakedepends+=" nasm"
 esac
 
+makedepends+=" libunibreak-devel"
 pre_configure() {
 	autoreconf -fi
 }
