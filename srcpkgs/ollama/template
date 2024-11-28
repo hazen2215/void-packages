@@ -1,0 +1,28 @@
+# Template file for 'ollama'
+pkgname=ollama
+version=0.4.6
+revision=1
+archs="x86_64* aarch64*"
+build_style=go
+go_import_path="github.com/ollama/ollama"
+hostmakedepends="cmake git"
+short_desc="Get up and running with large language models, locally"
+maintainer="IFoundSilentHouse <adeptslab@gmail.com>"
+license="MIT"
+homepage="https://ollama.com/"
+distfiles="https://github.com/ollama/ollama/archive/refs/tags/v${version}.tar.gz"
+checksum=2cd8a6140d5a0c5bbf8143310743db58cf1083fe95b8bc45651244cd5c3b9984
+
+system_accounts=_ollama
+
+pre_build() {
+	# "go generate" script uses "git submodule" command
+	git init
+	git add .
+	go generate ./...
+}
+
+post_install() {
+	vlicense LICENSE
+	vsv ollama
+}
