@@ -1,0 +1,18 @@
+# Template file for 'python3-SciencePlots'
+pkgname=python3-SciencePlots
+version=2.1.1
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-setuptools python3-wheel python3-matplotlib"
+depends="texlive python3-matplotlib"
+short_desc="Matplotlib styles for scientific plotting"
+maintainer="hazen2215 <haz@disroot.org>"
+license="MIT"
+homepage="https://github.com/garrettj403/SciencePlots"
+changelog="https://raw.githubusercontent.com/garrettj403/SciencePlots/master/CHANGES.md"
+distfiles="https://github.com/garrettj403/SciencePlots/archive/refs/tags/${version}.tar.gz"
+checksum=33c20d1c19f80259a62c1cb66cd4a13adba27af3ac758bac32f005f6eaed92bd
+
+post_install() {
+	vlicense LICENSE
+}
