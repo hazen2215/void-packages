@@ -1,0 +1,30 @@
+# Template file for 'ocaml4'
+pkgname=ocaml4
+version=4.14.2
+revision=1
+build_style="gnu-configure"
+configure_args="--with-pic --libdir=/usr/lib/ocaml"
+make_build_target="world.opt"
+makedepends="ncurses-devel libX11-devel"
+short_desc="Main implementation of the OCaml language (version 4)"
+maintainer="hazen2215 <haz@disroot.org>"
+license="QPL-1.0, LGPL-2.1-only"
+homepage="http://ocaml.org/"
+distfiles="https://github.com/ocaml/ocaml/archive/${version}.tar.gz"
+checksum=c2d706432f93ba85bd3383fa451d74543c32a4e84a1afaf3e8ace18f7f097b43
+nocross=yes
+
+export ASPP="cc -c"
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64*|ppc64*) ;;
+	# also just segfaults when compiled without PIE (BSS-PLT?)
+	ppc-musl) broken="/usr/bin/ocamlc: unsupported relocation type 6";;
+	# https://github.com/ocaml/ocaml/issues/7562
+	# for ppc we solved this separately though
+	*-musl) nopie=yes ;;
+esac
+
+post_install() {
+	vlicense LICENSE
+}
