@@ -1,0 +1,128 @@
+# Template file for 'chimerautils'
+pkgname=chimerautils
+version=14.2.1
+revision=1
+build_style=meson
+hostmakedepends="flex byacc meson pkg-config"
+makedepends="acl-devel ncurses-devel libedit-devel openssl-devel liblzma-devel
+ zlib-devel bzip2-devel libxo-devel libzstd-devel"
+depends="chimerautils-sh chimerautils-grep chimerautils-m4 chimerautils-custom"
+short_desc="Chimera Linux userland"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause"
+homepage="https://github.com/chimera-linux/chimerautils"
+distfiles="https://github.com/chimera-linux/chimerautils/archive/refs/tags/v${version}.tar.gz"
+checksum=122ee06196ad237148070b9dd9c7ab0a66aab8369090d21650da606492943bf2
+# no test suite
+make_check=no
+
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	makedepends+=" musl-fts-devel musl-rpmatch-devel musl-legacy-compat"
+fi
+
+build_options="static"
+
+if [ "$build_option_static" ]; then
+	configure_args="-Dprefer_static=true -Ddefault_library=static"
+	CFLAGS="-static"
+	CXXFLAGS="-static"
+fi
+
+conflicts="coreutils outils diffutils ed gzip patch sed which"
+
+register_shell="/usr/bin/chimera-sh"
+alternatives="
+ find:find:/usr/bin/chimera-find
+ find:find.1:/usr/share/man/man1/chimera-find.1
+ hostname:hostname:/usr/bin/chimera-hostname
+ hostname:hostname.1:/usr/share/man/man8/chimera-hostname.1
+ sed:sed:/usr/bin/chimera-sed
+ sed:sed.1:/usr/share/man/man1/chimera-sed.1
+ xargs:xargs:/usr/bin/chimera-xargs
+ xargs:xargs.1:/usr/share/man/man1/chimera-xargs.1
+"
+
+post_patch() {
+	# linux/ioprio.h
+	vsed -i src.custom/meson.build -e "/'ionice'/d"
+	# shared library
+	if [ "$build_option_static" ]; then
+		vsed -i src.freebsd/meson.build -e "/'libstdbuf'/d"
+		vsed -i src.freebsd/coreutils/meson.build -e "/'stdbuf'/d"
+	fi
+}
+
+post_install() {
+	# remove conflicts
+	for f in bzdiff bzgrep lzcmp lzdiff lzegrep lzfgrep lzgrep xzcmp \
+		xzdiff xzegrep xzfgrep xzgrep zstdgrep rgrep getopt; do
+		rm ${DESTDIR}/usr/bin/${f}
+		rm ${DESTDIR}/usr/share/man/man1/${f}.1
+	done
+
+	# rename for alternatives
+	for f in find hostname sh xargs \
+		grep egrep fgrep sed m4; do
+		mv ${DESTDIR}/usr/bin/{,chimera-}${f}
+		mv ${DESTDIR}/usr/share/man/man1/{,chimera-}${f}.1
+	done
+
+	for f in chimera-{e,f}grep; do
+		ln -sf chimera-grep ${DESTDIR}/usr/bin/${f}
+		ln -sf chimera-grep.1 ${DESTDIR}/usr/share/man/man1/${f}.1
+	done
+
+	vlicense LICENSE
+}
+
+chimerautils-sh_package() {
+	short_desc="Command interpreter (shell) from chimerautils"
+	alternatives="
+	 sh:sh:/usr/bin/chimera-sh
+	 sh:sh.1:/usr/share/man/man1/chimera-sh.1
+	"
+	pkg_install() {
+		vmove usr/bin/chimera-sh
+		vmove usr/share/man/man1/chimera-sh.1
+	}
+}
+
+chimerautils-m4_package() {
+	short_desc="Macro language processor from chimerautils"
+	alternatives="
+	 m4:m4:/usr/bin/chimera-m4
+	 m4:m4.1:/usr/share/man/man1/chimera-m4.1
+	"
+	pkg_install() {
+		vmove usr/bin/chimera-m4
+		vmove usr/share/man/man1/chimera-m4.1
+	}
+}
+
+chimerautils-grep_package() {
+	short_desc="Grep from chimerautils"
+	alternatives="
+	 grep:grep:/usr/bin/chimera-grep
+	 grep:grep.1:/usr/share/man/man1/chimera-grep.1
+	 grep:egrep:/usr/bin/chimera-egrep
+	 grep:egrep.1:/usr/share/man/man1/chimera-egrep.1
+	 grep:fgrep:/usr/bin/chimera-fgrep
+	 grep:fgrep.1:/usr/share/man/man1/chimera-fgrep.1
+	"
+	pkg_install() {
+		for f in grep egrep fgrep; do
+			vmove usr/bin/chimera-${f}
+			vmove usr/share/man/man1/chimera-${f}.1
+		done
+	}
+}
+
+chimerautils-custom_package() {
+	short_desc="Custom utilities from chimerautils"
+	pkg_install() {
+		for f in addpart delpart hostid isosize resizepart \
+			setarch; do
+			vmove usr/bin/${f}
+		done
+	}
+}
