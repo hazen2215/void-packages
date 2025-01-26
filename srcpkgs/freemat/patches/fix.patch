@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 507ecf2..eaf6fd6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -301,7 +296,6 @@ ADD_SUBDIRECTORY( src )
+ 
+ INCLUDE(InstallRequiredSystemLibraries)
+ 
+-GET_TARGET_PROPERTY(FreeMat_Loc FreeMat LOCATION)
+ # Do not run helpgen automatically -- there are too many things that
+ # have to be checked after it is run.
+ #INSTALL( CODE "EXECUTE_PROCESS( COMMAND ${FreeMat_Loc} -f run_helpgen WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})" )

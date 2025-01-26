@@ -1,0 +1,28 @@
+# Template file for 'freemat'
+pkgname=freemat
+version=4.2
+revision=1
+build_style=cmake
+configure_args="-DFORCE_BUNDLED_UMFPACK=ON -DPYTHON_EXECUTABLE=/usr/bin/python2"
+hostmakedepends="gcc-fortran pkg-config python2 doxygen"
+makedepends="SuiteSparse-devel arpack-ng-devel boost-devel fftw-devel glu-devel
+ libffi-devel ncurses-devel portaudio-devel qt-devel zlib-devel"
+short_desc="Free environment for rapid engineering, scientific prototyping and data processing"
+maintainer="hazen2215 <haz@disroot.org>"
+license="GPL-3.0-or-later"
+homepage="http://freemat.sourceforge.net/"
+distfiles="https://downloads.sourceforge.net/project/freemat/FreeMat4/FreeMat-${version}-Source.tar.gz"
+checksum=5f56dc18458da72fb8143d47faeb7a66fa104f8ac9160558e032f6d2d68c9ffb
+
+CXXFLAGS=-fpermissive
+
+post_patch() {
+	find . -type f -name '*.moc.cpp' -exec rm -f {} \;
+	find . -type f -name 'add.so' -exec rm -f {} \;
+	echo >libs/libMatC/CJitFuncClang.hpp
+	echo >libs/libMatC/CJitFuncClang.cpp
+}
+
+post_install() {
+	rm ${DESTDIR}/usr/bin/blas.ini
+}
