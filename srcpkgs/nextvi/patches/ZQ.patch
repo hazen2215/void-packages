@@ -1,13 +1,17 @@
 diff --git a/vi.c b/vi.c
-index 8f7ce6e..7de5005 100644
+index a622620..cf05502 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1908,6 +1908,8 @@ void vi(int init)
- 				k = vi_read();
- 				if (k == 'Z')
+@@ -1760,8 +1760,11 @@ void vi(int init)
+ 				ex_exec("reg");
+ 				break;
+ 			case 'Z':
+-				if (term_read() == 'Z')
++				k = term_read();
++				if (k == 'Z')
  					ex_exec("x");
 +				else if (k == 'Q')
-+					xquit = 1;
++					ex_exec("q");
  				break;
- 			case '~':
- 				vi_back(' ');
+ 			case '.':
+ 				vc_repeat();

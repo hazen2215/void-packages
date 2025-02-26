@@ -1,14 +1,14 @@
 # Template file for 'nextvi'
 pkgname=nextvi
-version=0.0.20240304
+version=0.0.20250223
 revision=1
-_commit=9ff1e7bfe41828ab6cd440bb2be4c4f8300474ef
+_commit=369ddbd6b4d97045b7ad07de926fbc3819400643
 short_desc="Next version of neatvi for editing bidirectional UTF-8 text"
 maintainer="hazen2215 <haz@disroot.org>"
 license="ISC"
 homepage="https://github.com/kyx0r/nextvi"
 distfiles="https://github.com/kyx0r/nextvi/archive/${_commit}.tar.gz"
-checksum=f29e611765b4306775882891dde81bbbb906cf058d52d1263ae93d013c5f1d0b
+checksum=26d2e9015fd18c3de89b47fdea964a6d5640816c7e662225a68e2b0f9591b597
 
 alternatives="
  vi:ex:/usr/bin/nextvi
@@ -20,7 +20,7 @@ CFLAGS+=" $(vopt_if static -static)"
 
 do_build() {
 	[ -e ${FILESDIR}/conf.c ] && cp ${FILESDIR}/conf.c conf.c
-	./build.sh
+	./cbuild.sh
 }
 
 do_install() {
