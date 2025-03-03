@@ -10,7 +10,7 @@ hostmakedepends="pkg-config gettext glib-devel doxygen graphviz
  $(vopt_if gtk_doc gtk-doc) $(vopt_if gir gobject-introspection)"
 makedepends="$(vopt_if hdf5 hdf5-devel) $(vopt_if hdf5 matio-devel)
  cfitsio-devel expat-devel fftw-devel fontconfig-devel giflib-devel
- glib-devel lcms2-devel libexif-devel libgsf-devel libimagequant-devel
+ glib-devel lcms2-devel libexif-devel libgsf-devel libimagequant2-devel
  libjpeg-turbo-devel libopenexr-devel libpng-devel librsvg-devel tiff-devel
  libwebp-devel libopenjpeg2-devel pango-devel libmagick-devel libheif-devel
  poppler-glib-devel libjxl-devel"
