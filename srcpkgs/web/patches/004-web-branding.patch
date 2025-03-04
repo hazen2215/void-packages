@@ -1,0 +1,72 @@
+diff --git a/palemoon/branding/unofficial/branding.nsi b/palemoon/branding/unofficial/branding.nsi
+index 62ed242a2..4d3b2bc8c 100644
+--- a/palemoon/branding/unofficial/branding.nsi
++++ b/palemoon/branding/unofficial/branding.nsi
+@@ -8,9 +8,9 @@
+ 
+ # BrandFullNameInternal is used for some registry and file system values
+ # instead of BrandFullName and typically should not be modified.
+-!define BrandFullNameInternal "New Moon"
+-!define CompanyName           "Moonchild Productions"
+-!define URLInfoAbout          "http://www.palemoon.org"
+-!define URLUpdateInfo         "http://www.palemoon.org"
+-!define HelpLink              "http://www.palemoon.org"
+-!define URLSystemRequirements "http://www.palemoon.org/download.shtml"
++!define BrandFullNameInternal "Web"
++!define CompanyName           "somebody"
++!define URLInfoAbout          " "
++!define URLUpdateInfo         " "
++!define HelpLink              " "
++!define URLSystemRequirements " "
+diff --git a/palemoon/branding/unofficial/configure.sh b/palemoon/branding/unofficial/configure.sh
+index c03b8382a..2f02ee5e0 100755
+--- a/palemoon/branding/unofficial/configure.sh
++++ b/palemoon/branding/unofficial/configure.sh
+@@ -2,4 +2,4 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-MOZ_APP_DISPLAYNAME="New Moon"
++MOZ_APP_DISPLAYNAME="Web"
+diff --git a/palemoon/branding/unofficial/locales/en-US/brand.dtd b/palemoon/branding/unofficial/locales/en-US/brand.dtd
+index debb7442d..f82c26fed 100644
+--- a/palemoon/branding/unofficial/locales/en-US/brand.dtd
++++ b/palemoon/branding/unofficial/locales/en-US/brand.dtd
+@@ -2,7 +2,7 @@
+    - License, v. 2.0. If a copy of the MPL was not distributed with this
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+ 
+-<!ENTITY  brandShortName        "New Moon">
+-<!ENTITY  brandFullName         "New Moon">
+-<!ENTITY  vendorShortName       "a community developer">
++<!ENTITY  brandShortName        "Web">
++<!ENTITY  brandFullName         "Web">
++<!ENTITY  vendorShortName       "somebody">
+ <!ENTITY  trademarkInfo.part1   " ">
+diff --git a/palemoon/branding/unofficial/locales/en-US/brand.properties b/palemoon/branding/unofficial/locales/en-US/brand.properties
+index 863a7c83b..d6cdefee6 100644
+--- a/palemoon/branding/unofficial/locales/en-US/brand.properties
++++ b/palemoon/branding/unofficial/locales/en-US/brand.properties
+@@ -2,8 +2,8 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-brandShortName=New Moon
+-brandFullName=New Moon
+-vendorShortName=Moonchild
++brandShortName=Web
++brandFullName=Web
++vendorShortName=somebody
+ 
+ syncBrandShortName=Sync
+diff --git a/palemoon/branding/unofficial/palemoon.VisualElementsManifest.xml b/palemoon/branding/unofficial/palemoon.VisualElementsManifest.xml
+index 070bfc99a..ac00b6129 100644
+--- a/palemoon/branding/unofficial/palemoon.VisualElementsManifest.xml
++++ b/palemoon/branding/unofficial/palemoon.VisualElementsManifest.xml
+@@ -4,5 +4,5 @@
+       Square150x150Logo='browser\VisualElements\VisualElements_150.png'
+       Square70x70Logo='browser\VisualElements\VisualElements_70.png'
+       ForegroundText='light'
+-      BackgroundColor='#171717'/>
++      BackgroundColor='#000000'/>
+ </Application>
