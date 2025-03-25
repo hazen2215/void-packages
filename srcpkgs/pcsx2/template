@@ -1,8 +1,8 @@
 # Template file for 'pcsx2'
 pkgname=pcsx2
-version=1.7.5973
+version=2.3.21
 revision=1
-_patches=85654677173d10ccabb67c89f0f04e4d527321e9
+_patches=1123a8e1ff0cb7d1b2a9a6772df675388982d4ab
 build_wrksrc="pcsx2-${version}"
 archs="x86_64*"
 build_style=cmake
@@ -13,6 +13,8 @@ configure_args="
  -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
  -DDISABLE_ADVANCE_SIMD=ON
  -DENABLE_TESTS=ON
+ -DPACKAGE_MODE=ON
+ -DUSE_BACKTRACE=OFF
  -DUSE_LINKED_FFMPEG=ON
  -DUSE_VTUNE=OFF
  -DUSE_VULKAN=ON
@@ -28,12 +30,12 @@ depends="desktop-file-utils gst-plugins-base1"
 checkdepends="perl"
 short_desc="Sony PlayStation 2 emulator"
 maintainer="hazen2215 <haz@disroot.org>"
-license="GPL-3.0-or-later, LGPL-3.0-or-later"
+license="GPL-3.0-or-later"
 homepage="http://www.pcsx2.net"
 distfiles="https://github.com/PCSX2/pcsx2/archive/refs/tags/v${version}.tar.gz
  https://github.com/PCSX2/pcsx2_patches/archive/${_patches}.tar.gz"
-checksum="ae7c920a5823583c9613673d2746baa10c8997592b21070f42efbd8297121961
- 710e9d258b4fb29127d9fa6d9079ded3dfae6afa0ad81ceddf5417f5e9032f2c"
+checksum="3914c06b1a0a04ddb1067807abadebf6348545cf2bd59981cc64dec6283ebfd9
+ bbdd8224f97590c8362ff126f6b1def930debbb08002cdb9590b5e3bdb9d5104"
 
 patch_args="-Np1 --directory=${build_wrksrc}"
 
@@ -47,14 +49,12 @@ post_build() {
 	bsdtar --strip-components=2 -cvaf patches.zip patches/patches/*.pnach
 }
 
-do_install() {
-	vmkdir usr/share/applications
+post_install() {
+	ln -s pcsx2-qt ${DESTDIR}/usr/bin/pcsx2
 	vinstall ${FILESDIR}/PCSX2.desktop 644 usr/share/applications
-
-	cp -a build/bin ${DESTDIR}/usr/lib/PCSX2
-	# vmkdir usr/lib/PCSX2/resources
-	cp ./patches.zip ${DESTDIR}/usr/lib/PCSX2/resources
-
-	vmkdir usr/bin
-	ln -s ../lib/PCSX2/pcsx2-qt ${DESTDIR}/usr/bin/pcsx2
+	vinstall patches.zip 644 usr/share/PCSX2/resources
+	vinstall bin/resources/icons/AppIconLarge.png 644 \
+		usr/share/icons/hicolor/512x512/apps PCSX2.png
+	vinstall pcsx2-qt/resources/icons/AppIcon64.png 644 \
+		usr/share/icons/hicolor/64x64/apps PCSX2.png
 }
