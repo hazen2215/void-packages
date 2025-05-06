@@ -1,0 +1,65 @@
+# Template file for 'oasis-openssh'
+pkgname=oasis-openssh
+version=10.0p2
+revision=1
+_commit=a4978283269f6c5fa269687ca41e02c9bbe6afbe
+build_style=gnu-configure
+configure_args="--datadir=/usr/share/openssh
+ --sysconfdir=/etc/ssh --without-selinux --with-privsep-user=nobody
+ --with-mantype=doc --without-rpath --with-xauth=/usr/bin/xauth
+ --disable-strip --with-privsep-path=/var/chroot/ssh
+ --with-default-path=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
+ --with-superuser-path=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin
+ --with-pid-dir=/run
+ --with-Werror
+ --with-bearssl
+ LD=$CC ac_cv_header_sys_cdefs_h=false
+ $(vopt_if static --with-ldflags=-static)"
+hostmakedepends="automake"
+makedepends="zlib-devel bearssl-devel"
+short_desc="OpenSSH free Secure Shell (SSH) client and server implementation"
+maintainer="hazen2215 <haz@disroot.org>"
+license="BSD-2-Clause, ISC"
+homepage="https://github.com/oasislinux/openssh"
+distfiles="https://github.com/oasislinux/openssh/archive/${_commit}.tar.gz"
+checksum=32d2339f2ba451bb2f18aed1f96a682cb5102936316f5b45de8be4835dfd3822
+conf_files="/etc/ssh/moduli /etc/ssh/ssh_config /etc/ssh/sshd_config"
+make_dirs="
+ /var/chroot/ssh 0755 root root
+ /etc/ssh/sshd_config.d 0755 root root"
+
+conflicts="openssh"
+provides="openssh-${version}_1"
+
+if [ "$XBPS_TARGET_LIBC" = "glibc" ]; then
+	makedepends+=" libxcrypt-devel"
+fi
+
+# Package build options
+build_options="static"
+build_options_default="static"
+
+CFLAGS="-Wno-format-truncation -Wno-stringop-truncation -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-error=use-after-free"
+
+case $XBPS_TARGET_MACHINE in
+	i686-musl)
+		CFLAGS+=" -fno-stack-protector"
+		configure_args+=" --disable-wtmp --disable-utmp"
+		;;
+	*-musl)
+		configure_args+=" --disable-wtmp --disable-utmp"
+		;;
+esac
+
+pre_configure() {
+	autoreconf -fi
+	vsed -i -e 's|#include <sys/sysctl.h>||' servconf.c
+}
+
+post_install() {
+	vbin contrib/ssh-copy-id
+	vman contrib/ssh-copy-id.1
+	vlicense LICENCE
+
+	vsv sshd
+}
