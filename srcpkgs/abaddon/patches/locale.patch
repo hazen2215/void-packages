@@ -1,11 +1,11 @@
 diff --git a/src/abaddon.cpp b/src/abaddon.cpp
-index 2be54ba..aee6f4f 100644
+index 337bd5d..57b12d5 100644
 --- a/src/abaddon.cpp
 +++ b/src/abaddon.cpp
-@@ -1129,7 +1129,7 @@ int main(int argc, char **argv) {
-     if (std::getenv("ABADDON_NO_FC") == nullptr)
-         Platform::SetupFonts();
+@@ -1162,7 +1162,7 @@ int main(int argc, char **argv) {
+     // i dont like the default translation so this lets us use strftime
  
+ #ifdef _WIN32
 -    char *systemLocale = std::setlocale(LC_ALL, "");
 +    char *systemLocale = std::setlocale(LC_ALL, "en_US.UTF-8");
      try {
