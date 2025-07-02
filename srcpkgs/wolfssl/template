@@ -1,6 +1,6 @@
 # Template file for 'wolfssl'
 pkgname=wolfssl
-version=5.7.4
+version=5.8.0
 revision=1
 build_style=gnu-configure
 configure_args="--enable-shared --enable-static
@@ -14,7 +14,7 @@ maintainer="hazen2215 <haz@disroot.org>"
 license="GPL-2.0-only"
 homepage="https://www.wolfssl.com/"
 distfiles="https://github.com/wolfSSL/wolfssl/archive/v${version}-stable.tar.gz"
-checksum=6c70f6fab34e2f963a255c3637c0c6f7250df2d1ef7c34eebca4f8e8d7323399
+checksum=f90f18c7f12913a0b351b1f4305e768697ea1380794df1f2984b9452ab0aeeaf
 
 pre_configure() {
 	./autogen.sh
