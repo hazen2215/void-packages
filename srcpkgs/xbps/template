@@ -33,7 +33,7 @@ if [ "$CHROOT_READY" ]; then
 fi
 
 do_configure() {
-	./configure --prefix=/usr --sysconfdir=/etc ${CHROOT_READY:+--enable-tests}
+	./configure --prefix=/usr --sysconfdir=/etc ${CHROOT_READY:+--enable-tests} --enable-static
 }
 
 post_install() {
@@ -52,6 +52,10 @@ post_install() {
 	vlicense LICENSE.3RDPARTY
 
 	echo "" > ${DESTDIR}/usr/share/xbps.d/void-virtualpkgs.conf
+
+	for f in ${DESTDIR}/usr/bin/xbps-*.static; do
+		mv "$f" "${f%.static}"
+	done
 }
 
 libxbps_package() {
