@@ -1,0 +1,28 @@
+diff --git a/source/misc.cpp b/source/misc.cpp
+index 881da32..00c69c6 100644
+--- a/source/misc.cpp
++++ b/source/misc.cpp
+@@ -983,7 +983,11 @@ namespace SystemIO
+ #if defined(_MSC_VER)
+ 		return _ftelli64(f);
+ #elif defined(__GNUC__) && defined(IS_64BIT) && !(defined(__ANDROID__) && defined(__ANDROID_API__) && __ANDROID_API__ < 24) && !defined(__MACH__)
++# if defined(__GLIBC__)
+ 		return ftello64(f);
++# else
++		return ftello(f);
++# endif
+ #else
+ 		return ftell(f);
+ #endif
+@@ -994,7 +998,11 @@ namespace SystemIO
+ #if defined(_MSC_VER)
+ 		return _fseeki64(f, offset, origin);
+ #elif defined(__GNUC__) && defined(IS_64BIT) && !(defined(__ANDROID__) && defined(__ANDROID_API__) && __ANDROID_API__ < 24) && !defined(__MACH__)
++# if defined(__GLIBC__)
+ 		return fseeko64(f, offset, origin);
++# else
++		return fseeko(f, offset, origin);
++# endif
+ #else
+ 		return fseek(f, offset, origin);
+ #endif
